@@ -1,0 +1,35 @@
+NEON Geolocation Repository
+================
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- ****** Description ****** -->
+This repository hosts code packages for acquiring and calculating geolocation data for NEON data products.
+
+<!-- ****** Usage ****** -->
+Usage
+-----
+
+The code packages in this repository contain functions with two related purposes: (1) to acquire geolocation data via the NEON API, and (2) to calculate more precise geolocations, where possible, than NEON publishes directly. Only a subset of all NEON data products and named locations are covered by these code packages. See help files for individual packages and functions for details.
+
+<!-- ****** Acknowledgements ****** -->
+Credits & Acknowledgements
+--------------------------
+
+<!-- HTML tags to produce image, resize, add hyperlink. -->
+<!-- ONLY WORKS WITH HTML or GITHUB documents -->
+<a href="http://www.neonscience.org/"> <img src="logo.png" width="300px" /> </a>
+
+<!-- Acknowledgements text -->
+The National Ecological Observatory Network is a project solely funded by the National Science Foundation and managed under cooperative agreement by Battelle. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.
+
+<!-- ****** License ****** -->
+License
+-------
+
+GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007
+
+<!-- ****** Disclaimer ****** -->
+Disclaimer
+----------
+
+*Information and documents contained within this repository are available as-is. Codes or documents, or their use, may not be supported or maintained under any program or service and may not be compatible with data currently available from the NEON Data Portal.*
