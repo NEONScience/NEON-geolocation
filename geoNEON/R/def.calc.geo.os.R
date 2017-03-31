@@ -79,9 +79,38 @@ def.calc.geo.os <- function(
     return(subplot.return)
   }
   
+  # Soil core location calculations:
+  if(dataProd=="NEON.DP1.10086.001") {
+    
+    # Use the def.extr.geo.os function to pull the plot geolocations from the API
+    plot.loc <- geoNEON::def.extr.geo.os(data, locCol="namedLocation")
+    
+    # Subtract 20 meters from the easting and northing values to get the 
+    # location of the southwest corner
+    options(digits=15)
+    plot.loc$easting <- as.numeric(plot.loc$easting) - 20
+    plot.loc$northing <- as.numeric(plot.loc$northing) - 20
+    
+    # Add coreCoordinateX to the easting value and coreCoordinateY to the northing value
+    plot.loc$easting <- plot.loc$easting + data$coreCoordinateX
+    plot.loc$northing <- plot.loc$northing + data$coreCoordinateY
+    
+    # Set the coordinate uncertainty to 0.5 meter
+    plot.loc$coordinateUncertainty <- 0.5
+    
+    # Return relevant columns
+    plot.return <- plot.loc[,c("domainID","siteID","data.locationName","utmZone",
+                                     "northing","easting","coordinateUncertainty",
+                                     "elevation","elevationUncertainty")]
+    return(plot.return)
+  }
+  
   else {
     print(paste("This function has not been configured for data product ", 
                  dataProd, sep=""))
   }
 
 }
+
+
+
