@@ -104,12 +104,41 @@ def.calc.geo.os <- function(
                                      "elevation","elevationUncertainty")]
     return(plot.return)
   }
+  # Bird point calculations:
+  if(dataProd=="NEON.DP1.10003.001") {
+    #check to make sure pointID is in the name of the file
+    if (!'pointID'%in%names(data)){stop('pointID is a required input to this function')}
+    
+    # Concatenate the named location (the plot) and point IDs to get the 
+    #      point named locations
+    points <- paste(data$namedLocation, data$pointID, sep=".")
+    data <- cbind(data, points)
+    
+    # Use the def.extr.geo.os function to pull the subplot geolocations from the API
+    point.loc <- geoNEON::def.extr.geo.os(data, locCol="points")
+    
+    #add additional coordinateUncertainty
+    point.loc$additionalUncertainty<-NA
+    #monumented corners, no additional uncertainty, GPS readings from here
+    point.loc$additionalUncertainty[grepl('\\.21$', point.loc$data.locationName)]<-0
+    #monumented grid centers, no additional uncertainty, GPS readings from here
+    point.loc$additionalUncertainty[grepl('\\.B2$', point.loc$data.locationName)]<-0
+    
+    #sum uncertainties
+    point.loc$coordinateUncertainty <- as.numeric(point.loc$coordinateUncertainty) + point.loc$additionalUncertainty
+    #rest navigated to with recreational GPS, uncertainty of ~15m, not provided in spatial data
+    point.loc$coordinateUncertainty[!grepl('\\.21$|\\.B2$',point.loc$data.locationName)] <- 15
+    # Return relevant columns
+    point.return <- point.loc[,c("domainID","siteID","data.locationName","utmZone",
+                                 "northing","easting","coordinateUncertainty",
+                                 "elevation","elevationUncertainty")]
+    return(point.return)
+  }
   
   else {
     print(paste("This function has not been configured for data product ", 
                  dataProd, sep=""))
   }
-
 }
 
 
