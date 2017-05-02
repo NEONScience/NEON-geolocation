@@ -2,9 +2,16 @@ Package: geoNEON
 Title: Geolocation Data for NEON Data Products
 Version: 0.0.0.9000
 Authors@R: person("Claire", "Lunch", email = "clunch@battelleecology.org", role = c("aut", "cre"))
-Description: Contains basic shared functions for acquisition and calculation of geolocation data applicable to National Ecological Observatory Network (NEON) data products.
-Depends: R (>= 3.3.1)
+Description: Contains basic shared functions for acquisition and calculation of
+    geolocation data applicable to National Ecological Observatory Network (NEON)
+    data products.
+Depends:
+    R (>= 3.3.1)
 License: GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.0.0
+RoxygenNote: 6.0.1
+Suggests:
+    testthat
+Imports: plyr,
+    httr
