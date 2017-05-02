@@ -49,6 +49,12 @@ def.extr.geo.os <- function(
     req <- httr::GET(paste("http://data.neonscience.org/api/v0/locations/", j, sep=''))
     req.content <- httr::content(req, as="parsed")
     
+    # Give warnings for missing values
+    if (!is.null(req.content$error$status)){
+      warning(paste("WARNING: the following namedLocation was not found:",
+                    j, sep=" "))
+    }
+    
     # Extract location properties from JSON
     properties <- req.content$data$locationProperties
     props <- lapply(properties, function(x) getIndexval(x, 2))
@@ -111,13 +117,6 @@ def.extr.geo.os <- function(
   # Fill unused fields with NA
   plotInfo[, paste(allTerms[!allTerms %in% (names(plotInfo))])] <- NA
 
-  # Give warnings for missing values
-  if ('error.detail' %in% (names(plotInfo))){
-    probRows <- which(plotInfo$error.detail=='Unable to find the requested location.')
-    warning(paste("the following namedLocations are not in PDR:",
-                  namedLocations[probRows], sep=" "))
-  }
-  
   # Return a data frame of the named locations and geolocations
   return(plotInfo)
   
