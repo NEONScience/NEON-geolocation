@@ -7,8 +7,8 @@
 #' @description 
 #' Definition Function. Extract geolocation data from the NEON API, for a given set of named location values
 #' 
-#' @param \code{data} A data frame in which one column contains the named locations
-#' @param \code{locCol} The column name of the column containing the named locations. Defaults to namedLocation
+#' @param data A data frame in which one column contains the named locations
+#' @param locCol The column name of the column containing the named locations. Defaults to namedLocation
 
 #' @return A data frame of the geolocation data for the input named locations
 
@@ -17,7 +17,8 @@
 
 #' @keywords Currently none
 
-#' @examples Currently none
+#' @examples 
+#' def.extr.geo.os(data, "namedLocation")
 
 #' @seealso Currently none
 
