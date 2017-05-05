@@ -50,11 +50,11 @@ def.calc.latlong.by.zone<-function(df, utmZone){
     sp::coordinates(df) <- c("easting", "northing")
     #fail on s. hemisphere zones, outside of neon area
     if (grepl('^-|S$', utmZone)){stop('This function only defined for Northern Hemisphere locations')}
-    sp::proj4string(df) <- CRS(paste('+proj=utm +zone=', 
+    sp::proj4string(df) <- sp::CRS(paste('+proj=utm +zone=', 
                                      gsub("[^0-9]", "", utmZone), " ellps=WGS84",
                                      sep=''))
-    transf <- sp::spTransform(df, CRS('+proj=longlat'))
-    latLong<-data.frame(coordinates(transf))
+    transf <- sp::spTransform(df, sp::CRS('+proj=longlat'))
+    latLong<-data.frame(sp::coordinates(transf))
     names (latLong)<-c('decimalLongitude', 'decimalLatitude')
     res <- cbind(data.frame(df), latLong)
     if (nrow (df1)>0){

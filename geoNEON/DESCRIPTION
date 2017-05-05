@@ -17,4 +17,5 @@ Imports: plyr,
     httr,
     sp,
     gtools,
-    dplyr
+    dplyr,
+    rgdal
