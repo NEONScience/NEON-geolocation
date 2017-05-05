@@ -7,8 +7,8 @@
 #' @description 
 #' Calculation Function. Refine the geolocation data associated with NEON data products, based on product-specific rules and spatial designs.
 #' 
-#' @param \code{data} A data frame containing either NEON named locations or geolocations. Field names of locations must match standard NEON location field names.
-#' @param \code{dataProd} The data product ID of the NEON data product to find locations for. Must be one of: NEON.DP1.10033.001 (list will continue to expand over time)
+#' @param data A data frame containing either NEON named locations or geolocations. Field names of locations must match standard NEON location field names.
+#' @param dataProd The table name of the NEON data product table to find locations for. Must be one of: ltr_fielddata, sls_soilCoreCollection, brd_perpoint (list will continue to expand over time)
 
 #' @return A data frame of geolocations for the input product and data
 
@@ -17,7 +17,8 @@
 
 #' @keywords Currently none
 
-#' @examples Currently none
+#' @examples 
+#' def.calc.geo.os(ltr_fielddata_example, "ltr_fielddata")
 
 #' @seealso Currently none
 
@@ -33,7 +34,7 @@ def.calc.geo.os <- function(
 ){
   
   # Litter trap location calculations:
-  if(dataProd=="NEON.DP1.10033.001") {
+  if(dataProd=="ltr_fielddata") {
     
     # Concatenate the named location (the plot) and subplot IDs to get the 
     #      subplot named locations
@@ -80,7 +81,7 @@ def.calc.geo.os <- function(
   }
   
   # Soil core location calculations:
-  if(dataProd=="NEON.DP1.10086.001") {
+  if(dataProd=="sls_soilCoreCollection") {
     
     # Use the def.extr.geo.os function to pull the plot geolocations from the API
     plot.loc <- geoNEON::def.extr.geo.os(data, locCol="namedLocation")
@@ -105,7 +106,7 @@ def.calc.geo.os <- function(
     return(plot.return)
   }
   # Bird point calculations:
-  if(dataProd=="NEON.DP1.10003.001") {
+  if(dataProd=="brd_perpoint") {
     #check to make sure pointID is in the name of the file
     if (!'pointID'%in%names(data)){stop('pointID is a required input to this function')}
     
@@ -136,7 +137,7 @@ def.calc.geo.os <- function(
   }
   
   else {
-    print(paste("This function has not been configured for data product ", 
+    print(paste("This function has not been configured for data product table ", 
                  dataProd, sep=""))
   }
 }

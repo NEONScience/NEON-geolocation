@@ -7,9 +7,9 @@
 def.extr.geo.os(data, locCol = "namedLocation")
 }
 \arguments{
-\item{\code{data}}{A data frame in which one column contains the named locations}
+\item{data}{A data frame in which one column contains the named locations}
 
-\item{\code{locCol}}{The column name of the column containing the named locations. Defaults to namedLocation}
+\item{locCol}{The column name of the column containing the named locations. Defaults to namedLocation}
 }
 \value{
 A data frame of the geolocation data for the input named locations
@@ -18,7 +18,7 @@ A data frame of the geolocation data for the input named locations
 Definition Function. Extract geolocation data from the NEON API, for a given set of named location values
 }
 \examples{
-Currently none
+def.extr.geo.os(data, "namedLocation")
 }
 \references{
 License: GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007

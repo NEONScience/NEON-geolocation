@@ -7,9 +7,9 @@
 def.calc.geo.os(data, dataProd)
 }
 \arguments{
-\item{\code{data}}{A data frame containing either NEON named locations or geolocations. Field names of locations must match standard NEON location field names.}
+\item{data}{A data frame containing either NEON named locations or geolocations. Field names of locations must match standard NEON location field names.}
 
-\item{\code{dataProd}}{The data product ID of the NEON data product to find locations for. Must be one of: NEON.DP1.10033.001 (list will continue to expand over time)}
+\item{dataProd}{The table name of the NEON data product table to find locations for. Must be one of: ltr_fielddata, sls_soilCoreCollection, brd_perpoint (list will continue to expand over time)}
 }
 \value{
 A data frame of geolocations for the input product and data
@@ -18,7 +18,7 @@ A data frame of geolocations for the input product and data
 Calculation Function. Refine the geolocation data associated with NEON data products, based on product-specific rules and spatial designs.
 }
 \examples{
-Currently none
+def.calc.geo.os(ltr_fielddata_example, "ltr_fielddata")
 }
 \references{
 License: GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007
