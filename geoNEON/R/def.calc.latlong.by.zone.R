@@ -7,8 +7,8 @@
 #' @description 
 #' Conversion Function. Given a data frame with geolocations in UTMs, return corresponding decimalLatitude and decimalLongitude. Original decimalLatitude and decimalLongitude will be removed. This conversion function works only with a datafram with a single (unique) utmZone. Use def.utm.tolatlong to apply over variable utmZones.
 #' 
-#' @param \code{df} A data frame columns labeled easting, northing.
-#' @param \code{utmZone} The utmZone of all rows of the dataframe to be converted in form "17N"
+#' @param df A data frame columns labeled easting, northing.
+#' @param utmZone The utmZone of all rows of the dataframe to be converted in form "17N"
 
 #' @return The original data frame with decimalLatitude and decimalLongitude calculated.
 

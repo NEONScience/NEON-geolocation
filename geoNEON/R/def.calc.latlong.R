@@ -7,7 +7,7 @@
 #' @description 
 #' Conversion Function. Given a data frame with geolocations in UTMs, return corresponding decimalLatitude and decimalLongitude. Original decimalLatitude and decimalLongitude will be removed. This conversion function wraps def.calc.utm.tolatlong.by.zone to apply over variable utmZones.
 #' 
-#' @param \code{df} A data frame columns labeled easting, northing.
+#' @param df A data frame columns labeled easting, northing.
 
 #' @return The original data frame with decimalLatitude and decimalLongitude calculated.
 
@@ -29,9 +29,9 @@
 
 
 def.calc.latlong<-function(df){ #requires columns easting, northing, utmZone
+    df<-df[,!names(df) %in% c("decimalLatitude","decimalLongitude")]
     res<-plyr::dlply(df, c('utmZone'), function(x) def.calc.latlong.by.zone (x, unique (x$utmZone)))
     res<-plyr::rbind.fill(res)
-    res<-dplyr::select(res, -optional)
     if (any(is.na(df$easting)|any(is.na(df$northing)|any(is.na(df$utmZone))))){
       warning('one or more rows had missing inputs for easting, northing, or UTM zone and were not converted')
     }

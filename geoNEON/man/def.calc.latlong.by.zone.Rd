@@ -7,9 +7,9 @@
 def.calc.latlong.by.zone(df, utmZone)
 }
 \arguments{
-\item{\code{df}}{A data frame columns labeled easting, northing.}
+\item{df}{A data frame columns labeled easting, northing.}
 
-\item{\code{utmZone}}{The utmZone of all rows of the dataframe to be converted in form "17N"}
+\item{utmZone}{The utmZone of all rows of the dataframe to be converted in form "17N"}
 }
 \value{
 The original data frame with decimalLatitude and decimalLongitude calculated.

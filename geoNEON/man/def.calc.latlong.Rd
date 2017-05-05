@@ -7,7 +7,7 @@
 def.calc.latlong(df)
 }
 \arguments{
-\item{\code{df}}{A data frame columns labeled easting, northing.}
+\item{df}{A data frame columns labeled easting, northing.}
 }
 \value{
 The original data frame with decimalLatitude and decimalLongitude calculated.

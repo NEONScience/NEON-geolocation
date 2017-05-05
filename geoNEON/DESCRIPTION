@@ -14,4 +14,7 @@ RoxygenNote: 6.0.1
 Suggests:
     testthat
 Imports: plyr,
-    httr
+    httr,
+    sp,
+    gtools,
+    dplyr
