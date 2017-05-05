@@ -8,7 +8,7 @@
 #' Calculation Function. Refine the geolocation data associated with NEON data products, based on product-specific rules and spatial designs.
 #' 
 #' @param data A data frame containing either NEON named locations or geolocations. Field names of locations must match standard NEON location field names.
-#' @param dataProd The table name of the NEON data product table to find locations for. Must be one of: ltr_fielddata, sls_soilCoreCollection, brd_perpoint (list will continue to expand over time)
+#' @param dataProd The table name of the NEON data product table to find locations for. Must be one of: ltr_pertrap, sls_soilCoreCollection, brd_perpoint (list will continue to expand over time)
 
 #' @return A data frame of geolocations for the input product and data
 
@@ -18,7 +18,8 @@
 #' @keywords Currently none
 
 #' @examples 
-#' def.calc.geo.os(ltr_fielddata_example, "ltr_fielddata")
+#' d <- data.frame(namedLocation="GUAN_044.basePlot.ltr", subplotID=23, trapID="GUAN_044_385")
+#' def.calc.geo.os(d, "ltr_pertrap")
 
 #' @seealso Currently none
 
@@ -34,7 +35,7 @@ def.calc.geo.os <- function(
 ){
   
   # Litter trap location calculations:
-  if(dataProd=="ltr_fielddata") {
+  if(dataProd=="ltr_pertrap") {
     
     # Concatenate the named location (the plot) and subplot IDs to get the 
     #      subplot named locations

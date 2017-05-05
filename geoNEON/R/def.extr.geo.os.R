@@ -18,7 +18,8 @@
 #' @keywords Currently none
 
 #' @examples 
-#' def.extr.geo.os(data, "namedLocation")
+#' d <- data.frame(namedLocation=c("GUAN_044.basePlot.ltr","GRSM_003.birdGrid.brd"))
+#' def.extr.geo.os(d, "namedLocation")
 
 #' @seealso Currently none
 
