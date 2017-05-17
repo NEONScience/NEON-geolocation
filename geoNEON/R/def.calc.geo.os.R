@@ -8,7 +8,7 @@
 #' Calculation Function. Refine the geolocation data associated with NEON data products, based on product-specific rules and spatial designs.
 #' 
 #' @param data A data frame containing either NEON named locations or geolocations. Field names of locations must match standard NEON location field names.
-#' @param dataProd The table name of the NEON data product table to find locations for. Must be one of: ltr_pertrap, sls_soilCoreCollection, brd_perpoint (list will continue to expand over time)
+#' @param dataProd The table name of the NEON data product table to find locations for. Must be one of: ltr_pertrap, hbp_perbout, sls_soilCoreCollection, brd_perpoint (list will continue to expand over time)
 
 #' @return A data frame of geolocations for the input product and data
 
@@ -35,7 +35,7 @@ def.calc.geo.os <- function(
 ){
   
   # Litter trap location calculations:
-  if(dataProd=="ltr_pertrap") {
+  if(dataProd=="ltr_pertrap" | dataProd=="hbp_pertrap") {
     
     # Concatenate the named location (the plot) and subplot IDs to get the 
     #      subplot named locations
@@ -46,7 +46,14 @@ def.calc.geo.os <- function(
     subplot.loc <- geoNEON::def.extr.geo.os(data, locCol="subplots")
     
     # Strip the final 3 digits of trapID to get the clip cell numbers
-    cellNum <- as.numeric(substr(data$trapID, 10, 12))
+    if(dataProd=="ltr_pertrap") {
+      cellID <- data$trapID
+    } else {
+      if(dataProd=="hbp_pertrap") {
+        cellID <- data$clipID
+      }
+    }
+    cellNum <- as.numeric(substr(cellID, 10, 12))
     eastOff <- numeric(length(cellNum))
     northOff <- numeric(length(cellNum))
     subplot.loc <- cbind(subplot.loc, cellNum, eastOff, northOff)
