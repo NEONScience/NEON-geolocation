@@ -16,7 +16,9 @@
 
 #' @keywords Currently none
 
-#' @examples Currently none
+#' @examples
+#' d <- data.frame(northing=c(4308017.75), easting=c(747725.21), utmZone=c('17N'))
+#' def.calc.latlong(d)
 
 #' @seealso Currently none
 

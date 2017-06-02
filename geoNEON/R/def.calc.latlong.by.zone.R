@@ -17,7 +17,9 @@
 
 #' @keywords Currently none
 
-#' @examples Currently none
+#' @examples
+#' d <- data.frame(northing=c(4308017.75), easting=c(747725.21))
+#' def.calc.latlong.by.zone(d, '17N')
 
 #' @seealso Currently none
 
@@ -34,19 +36,17 @@ def.calc.latlong.by.zone<-function(df, utmZone){
   if (is.na(utmZone)){
     res<-df
   }else{
-    #remove any old names
-    if ('decimalLatitude'%in%names(df)){
-      df<-dplyr::select(data.frame(df), -decimalLatitude)
-    }
-    if ('decimalLongitude'%in%names(df)){
-      df<-dplyr::select(data.frame(df), -decimalLongitude)
-    }
+    # #remove any old names
+    df<-df[,!names(df) %in% c("decimalLatitude","decimalLongitude")]
     df$easting<-as.numeric(df$easting)
     df$northing<-as.numeric(df$northing)
-    #subset out any rows which do not contain easting and northing
-    #so they don't error out
-    df1<-dplyr::filter(df, is.na(easting)|is.na(northing))
-    df<-dplyr::filter(df, !is.na(easting)&!is.na(northing))
+    # #subset out any rows which do not contain easting and northing
+    # #so they don't error out
+    # df1<-dplyr::filter(df, is.na(easting)|is.na(northing))
+    # df<-dplyr::filter(df, !is.na(easting)&!is.na(northing))
+    # devtools doesn't like the dplyr construction, re-did using which
+    df1 <- df[which(is.na(df$easting) | is.na(df$northing)),]
+    df <- df[which(!is.na(df$easting) & !is.na(df$northing)),]
     sp::coordinates(df) <- c("easting", "northing")
     #fail on s. hemisphere zones, outside of neon area
     if (grepl('^-|S$', utmZone)){stop('This function only defined for Northern Hemisphere locations')}

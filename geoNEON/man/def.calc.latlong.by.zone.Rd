@@ -18,7 +18,8 @@ The original data frame with decimalLatitude and decimalLongitude calculated.
 Conversion Function. Given a data frame with geolocations in UTMs, return corresponding decimalLatitude and decimalLongitude. Original decimalLatitude and decimalLongitude will be removed. This conversion function works only with a datafram with a single (unique) utmZone. Use def.utm.tolatlong to apply over variable utmZones.
 }
 \examples{
-Currently none
+d <- data.frame(northing=c(4308017.75), easting=c(747725.21))
+def.calc.latlong.by.zone(d, '17N')
 }
 \references{
 License: GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007
