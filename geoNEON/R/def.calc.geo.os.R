@@ -122,10 +122,14 @@ def.calc.geo.os <- function(
     #      point named locations
     points <- paste(data$namedLocation, data$pointID, sep=".")
     data <- cbind(data, points)
+    data$points<-as.character(data$points)
+    
+    #if it's an 88 bird, the only resolution is SITE
+    data$points[data$pointID==88]<-substr(data$namedLocation[data$pointID==88], 1,4)
     
     # Use the def.extr.geo.os function to pull the subplot geolocations from the API
     point.loc <- geoNEON::def.extr.geo.os(data, locCol="points")
-    
+
     #add additional coordinateUncertainty
     point.loc$additionalUncertainty<-NA
     #monumented corners, no additional uncertainty, GPS readings from here
@@ -137,6 +141,11 @@ def.calc.geo.os <- function(
     point.loc$coordinateUncertainty <- as.numeric(point.loc$coordinateUncertainty) + point.loc$additionalUncertainty
     #rest navigated to with recreational GPS, uncertainty of ~15m, not provided in spatial data
     point.loc$coordinateUncertainty[!grepl('\\.21$|\\.B2$',point.loc$data.locationName)] <- 15
+    
+    #88 points uncertainty unknown, all that's being provided is the site (aka tower) location
+    point.loc$coordinateUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
+    point.loc$elevationUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
+    
     # Return relevant columns
     point.return <- point.loc[,c("domainID","siteID","data.locationName","utmZone",
                                  "northing","easting","coordinateUncertainty",
