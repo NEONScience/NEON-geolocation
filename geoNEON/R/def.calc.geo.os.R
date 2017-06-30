@@ -85,7 +85,8 @@ def.calc.geo.os <- function(
     subplot.return <- subplot.loc[,c("domainID","siteID","data.locationName","utmZone",
                                      "northing","easting","coordinateUncertainty",
                                      "elevation","elevationUncertainty")]
-    return(subplot.return)
+    all.return <- cbind(data,subplot.return)
+    return(all.return)
   }
   
   # Soil core location calculations:
@@ -111,7 +112,8 @@ def.calc.geo.os <- function(
     plot.return <- plot.loc[,c("domainID","siteID","data.locationName","utmZone",
                                      "northing","easting","coordinateUncertainty",
                                      "elevation","elevationUncertainty")]
-    return(plot.return)
+    all.return <- cbind(data,plot.return)
+    return(all.return)
   }
   # Bird point calculations:
   if(dataProd=="brd_perpoint") {
@@ -150,7 +152,8 @@ def.calc.geo.os <- function(
     point.return <- point.loc[,c("domainID","siteID","data.locationName","utmZone",
                                  "northing","easting","coordinateUncertainty",
                                  "elevation","elevationUncertainty")]
-    return(point.return)
+    all.return <- cbind(data,point.return)
+    return(all.return)
   }
   
   else {

@@ -51,7 +51,11 @@ def.extr.geo.os <- function(
     req <- httr::GET(paste("http://data.neonscience.org/api/v0/locations/", j, sep=''))
     req.content <- httr::content(req, as="parsed")
     
-    # Give warnings for missing values
+    # Give warnings for missing values & API errors
+    if (!is.null(req.content$doc)){
+      warning("The NEON publication server is down, please try again later. 
+              Check the NEON data portal for additional service messages.")
+    }
     if (!is.null(req.content$error$status)){
       warning(paste("WARNING: the following namedLocation was not found:",
                     j, sep=" "))
@@ -112,7 +116,7 @@ def.extr.geo.os <- function(
   
   allTerms <- c('domainID', 'type', 'description', 'filteredPositions', 'coordinateSource','minimumElevation',
               'slopeGradient', 'plotPdop', 'plotHdop', 'slopeAspect', 'maximumElevation', 'plotSize',
-              'subtype', 'referencePointPosition', 'plotType', 'siteID', 'domainID', 'easting','northing' ,'utmZone',
+              'subtype', 'referencePointPosition', 'plotType', 'siteID', 'easting','northing' ,'utmZone',
               'elevation','decimalLatitude', 'decimalLongitude','coordinateUncertainty', 'elevationUncertainty',
               'nlcdClass','plotDimensions','soilTypeOrder', 'subtypeSpecification')
   
@@ -120,6 +124,7 @@ def.extr.geo.os <- function(
   plotInfo[, paste(allTerms[!allTerms %in% (names(plotInfo))])] <- NA
 
   # Return a data frame of the named locations and geolocations
-  return(plotInfo)
+  allInfo <- cbind(data,plotInfo)
+  return(allInfo)
   
 }
