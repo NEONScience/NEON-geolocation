@@ -81,10 +81,18 @@ def.calc.geo.os <- function(
     subplot.loc$northing <- as.numeric(subplot.loc$northing) + subplot.loc$northOff
     subplot.loc$coordinateUncertainty <- as.numeric(subplot.loc$coordinateUncertainty) + 1
     
+    # calculate latitude and longitude from the corrected northing and easting
+    subplot.loc <- def.calc.latlong(subplot.loc)
+    
     # Return relevant columns
-    subplot.return <- subplot.loc[,c("domainID","siteID","data.locationName","utmZone",
+    subplot.return <- subplot.loc[,c("data.locationName","utmZone",
                                      "northing","easting","coordinateUncertainty",
+                                     "decimalLatitude","decimalLongitude",
                                      "elevation","elevationUncertainty")]
+    colnames(subplot.return)[5:9] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
+                                       "adjDecimalLongitude","adjElevation",
+                                       "adjElevationUncertainty")
+    
     all.return <- cbind(data,subplot.return)
     return(all.return)
   }
@@ -108,10 +116,18 @@ def.calc.geo.os <- function(
     # Set the coordinate uncertainty to 0.5 meter
     plot.loc$coordinateUncertainty <- 0.5
     
+    # calculate latitude and longitude from the corrected northing and easting
+    plot.loc <- def.calc.latlong(plot.loc)
+    
     # Return relevant columns
-    plot.return <- plot.loc[,c("domainID","siteID","data.locationName","utmZone",
+    plot.return <- plot.loc[,c("data.locationName","utmZone",
                                      "northing","easting","coordinateUncertainty",
+                               "decimalLatitude","decimalLongitude",
                                      "elevation","elevationUncertainty")]
+    colnames(plot.return)[5:9] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
+                                       "adjDecimalLongitude","adjElevation",
+                                       "adjElevationUncertainty")
+    
     all.return <- cbind(data,plot.return)
     return(all.return)
   }
@@ -148,10 +164,18 @@ def.calc.geo.os <- function(
     point.loc$coordinateUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
     point.loc$elevationUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
     
+    # calculate latitude and longitude from the corrected northing and easting
+    point.loc <- def.calc.latlong(point.loc)
+    
     # Return relevant columns
-    point.return <- point.loc[,c("domainID","siteID","data.locationName","utmZone",
+    point.return <- point.loc[,c("data.locationName","utmZone",
                                  "northing","easting","coordinateUncertainty",
+                                 "decimalLatitude","decimalLongitude",
                                  "elevation","elevationUncertainty")]
+    colnames(point.return)[5:9] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
+                                       "adjDecimalLongitude","adjElevation",
+                                       "adjElevationUncertainty")
+    
     all.return <- cbind(data,point.return)
     return(all.return)
   }
