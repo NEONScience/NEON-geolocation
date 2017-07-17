@@ -4,7 +4,7 @@ NEON data files include differing levels of information about where data were co
 
 Terrestrial Observational Sampling (TOS): These are data collected under the TOS Spatial Design, available here:  Downloads of these data products include latitude, longitude, elevation, and associated uncertainties, at the level of a TOS plot. More location information can be pulled using the geoNEON package, including easting, northing, and UTM zone. For select TOS data products, more precise sampling locations within a plot can be derived as well. See below for instructions on using the geoNEON package to do this.
 
-Terrestrial and Aquatic Instrumentation (TIS & AIS): Data collected by streaming sensors does not include any location information in the data download. Location data will be available through the geoNEON package and the NEON API in the near future; still pending.
+Terrestrial and Aquatic Instrumentation (TIS & AIS): Data collected by streaming sensors does not include any location information in the data download. Some AIS locations and a very small number of TIS locations are currently available via the NEON API; location data will be expanded in the near future and the geoNEON package will be updated to access these data.
 
 Aquatic Observational Sampling (AOS): Observational data collected in aquatic systems include latitude, longitude, elevation, and associated uncertainties. Most AOS data products also report an additional uncertainty that should be added to the reported uncertainty; the user guides for each product describe the spatial data in more detail.
 
