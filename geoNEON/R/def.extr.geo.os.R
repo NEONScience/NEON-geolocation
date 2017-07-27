@@ -113,12 +113,16 @@ def.extr.geo.os <- function(
   names (plotInfo)[names(plotInfo)=='Value.for.Filtered.positions'] <- 'filteredPositions'
   names (plotInfo)[names(plotInfo)=='data.locationDescription'] <- 'description'
   names (plotInfo)[names(plotInfo)=='data.locationType'] <- 'type'
+  names (plotInfo)[names(plotInfo)=='Value.for.Geodetic.datum'] <- 'geodeticDatum'
+  names (plotInfo)[names(plotInfo)=='Value.for.State.province'] <- 'stateProvince'
+  names (plotInfo)[names(plotInfo)=='Value.for.County'] <- 'county'
+  names (plotInfo)[names(plotInfo)=='Value.for.Country'] <- 'country'
   
   allTerms <- c('domainID', 'type', 'description', 'filteredPositions', 'coordinateSource','minimumElevation',
               'slopeGradient', 'plotPdop', 'plotHdop', 'slopeAspect', 'maximumElevation', 'plotSize',
               'subtype', 'referencePointPosition', 'plotType', 'siteID', 'easting','northing' ,'utmZone',
               'elevation','decimalLatitude', 'decimalLongitude','coordinateUncertainty', 'elevationUncertainty',
-              'nlcdClass','plotDimensions','soilTypeOrder', 'subtypeSpecification')
+              'nlcdClass','plotDimensions','soilTypeOrder', 'subtypeSpecification', 'county', 'stateProvince', 'country')
   
   # Fill unused fields with NA
   plotInfo[, paste(allTerms[!allTerms %in% (names(plotInfo))])] <- NA
