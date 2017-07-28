@@ -34,8 +34,8 @@ def.calc.geo.os <- function(
   dataProd
 ){
   
-  # Litter trap location calculations:
-  if(dataProd=="ltr_pertrap" | dataProd=="hbp_pertrap") {
+  # Litter trap and herb clip location calculations:
+  if(dataProd=="ltr_pertrap" | dataProd=="hbp_perbout") {
     
     # Concatenate the named location (the plot) and subplot IDs to get the 
     #      subplot named locations
@@ -49,7 +49,7 @@ def.calc.geo.os <- function(
     if(dataProd=="ltr_pertrap") {
       cellID <- data$trapID
     } else {
-      if(dataProd=="hbp_pertrap") {
+      if(dataProd=="hbp_perbout") {
         cellID <- data$clipID
       }
     }
@@ -97,6 +97,7 @@ def.calc.geo.os <- function(
     return(all.return)
   }
   
+  
   # Soil core location calculations:
   if(dataProd=="sls_soilCoreCollection") {
     
@@ -131,9 +132,11 @@ def.calc.geo.os <- function(
     all.return <- cbind(data,plot.return)
     return(all.return)
   }
+  
+  
   # Bird point calculations:
   if(dataProd=="brd_perpoint") {
-    #check to make sure pointID is in the name of the file
+    # check to make sure pointID is in the column names
     if (!'pointID'%in%names(data)){stop('pointID is a required input to this function')}
     
     # Concatenate the named location (the plot) and point IDs to get the 
@@ -142,25 +145,27 @@ def.calc.geo.os <- function(
     data <- cbind(data, points)
     data$points<-as.character(data$points)
     
-    #if it's an 88 bird, the only resolution is SITE
-    data$points[data$pointID==88]<-substr(data$namedLocation[data$pointID==88], 1,4)
+    # if it's an 88 bird, the only resolution is SITE
+    # 2017-07-28: K. Thibault says these should be resolved to the point level
+    #data$points[data$pointID==88]<-substr(data$namedLocation[data$pointID==88], 1,4)
     
     # Use the def.extr.geo.os function to pull the subplot geolocations from the API
     point.loc <- geoNEON::def.extr.geo.os(data, locCol="points")
 
-    #add additional coordinateUncertainty
+    # add additional coordinateUncertainty
     point.loc$additionalUncertainty<-NA
-    #monumented corners, no additional uncertainty, GPS readings from here
+    # monumented corners, no additional uncertainty, GPS readings from here
     point.loc$additionalUncertainty[grepl('\\.21$', point.loc$data.locationName)]<-0
-    #monumented grid centers, no additional uncertainty, GPS readings from here
+    # monumented grid centers, no additional uncertainty, GPS readings from here
     point.loc$additionalUncertainty[grepl('\\.B2$', point.loc$data.locationName)]<-0
     
-    #sum uncertainties
+    # sum uncertainties
     point.loc$coordinateUncertainty <- as.numeric(point.loc$coordinateUncertainty) + point.loc$additionalUncertainty
-    #rest navigated to with recreational GPS, uncertainty of ~15m, not provided in spatial data
+    # rest navigated to with recreational GPS, uncertainty of ~15m, not provided in spatial data
     point.loc$coordinateUncertainty[!grepl('\\.21$|\\.B2$',point.loc$data.locationName)] <- 15
     
-    #88 points uncertainty unknown, all that's being provided is the site (aka tower) location
+    # 88 points uncertainty unknown, all that's being provided is the site (aka tower) location
+    # left in when taking out 88 special case, to handle missing data case
     point.loc$coordinateUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
     point.loc$elevationUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
     
