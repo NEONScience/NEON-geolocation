@@ -2,7 +2,7 @@
 
 NEON data files include differing levels of information about where data were collected. Aside from remote sensing data, there are 4 categories for delivery of spatial data:
 
-Terrestrial Observational Sampling (TOS): These are data collected under the TOS Spatial Design, available here:  Downloads of these data products include latitude, longitude, elevation, and associated uncertainties, at the level of a TOS plot. More location information can be pulled using the geoNEON package, including easting, northing, and UTM zone. For select TOS data products, more precise sampling locations within a plot can be derived as well. See below for instructions on using the geoNEON package to do this.
+Terrestrial Observational Sampling (TOS): These are data collected under the TOS Spatial Design, available here: http://data.neonscience.org/api/v0/documents/NEON.DOC.000913vA Downloads of these data products include latitude, longitude, elevation, and associated uncertainties, at the level of a TOS plot. More location information can be pulled using the geoNEON package, including easting, northing, and UTM zone. For select TOS data products, more precise sampling locations within a plot can be derived as well. See below for instructions on using the geoNEON package to do this.
 
 Terrestrial and Aquatic Instrumentation (TIS & AIS): Data collected by streaming sensors does not include any location information in the data download. Some AIS locations and a very small number of TIS locations are currently available via the NEON API; location data will be expanded in the near future and the geoNEON package will be updated to access these data.
 
