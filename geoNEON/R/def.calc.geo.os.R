@@ -90,6 +90,10 @@ def.calc.geo.os <- function(
                                      "decimalLatitude","decimalLongitude",
                                      "elevation","elevationUncertainty")]
 
+    # change field names of fields in original data
+    colnames(data)[which(colnames(data) %in% colnames(subplot.return))] <- 
+      paste("uncorr.", colnames(data)[which(colnames(data) %in% colnames(subplot.return))], sep="")
+    
     all.return <- cbind(data,subplot.return)
     return(all.return)
   }
@@ -123,6 +127,10 @@ def.calc.geo.os <- function(
                                "decimalLatitude","decimalLongitude",
                                      "elevation","elevationUncertainty")]
 
+    # change field names of fields in original data
+    colnames(data)[which(colnames(data) %in% colnames(plot.return))] <- 
+      paste("uncorr.", colnames(data)[which(colnames(data) %in% colnames(plot.return))], sep="")
+    
     all.return <- cbind(data,plot.return)
     return(all.return)
   }
@@ -164,6 +172,7 @@ def.calc.geo.os <- function(
     point.loc$elevationUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
     
     # calculate latitude and longitude from the corrected northing and easting
+    options(digits=15)
     point.loc <- def.calc.latlong(point.loc)
     
     # Return relevant columns
@@ -172,6 +181,10 @@ def.calc.geo.os <- function(
                                  "decimalLatitude","decimalLongitude",
                                  "elevation","elevationUncertainty")]
 
+    # change field names of fields in original data
+    colnames(data)[which(colnames(data) %in% colnames(point.return))] <- 
+      paste("uncorr.", colnames(data)[which(colnames(data) %in% colnames(point.return))], sep="")
+    
     all.return <- cbind(data,point.return)
     return(all.return)
   }
