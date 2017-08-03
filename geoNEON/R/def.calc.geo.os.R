@@ -89,10 +89,7 @@ def.calc.geo.os <- function(
                                      "northing","easting","coordinateUncertainty",
                                      "decimalLatitude","decimalLongitude",
                                      "elevation","elevationUncertainty")]
-    colnames(subplot.return)[5:9] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
-                                       "adjDecimalLongitude","adjElevation",
-                                       "adjElevationUncertainty")
-    
+
     all.return <- cbind(data,subplot.return)
     return(all.return)
   }
@@ -125,10 +122,7 @@ def.calc.geo.os <- function(
                                      "northing","easting","coordinateUncertainty",
                                "decimalLatitude","decimalLongitude",
                                      "elevation","elevationUncertainty")]
-    colnames(plot.return)[5:9] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
-                                       "adjDecimalLongitude","adjElevation",
-                                       "adjElevationUncertainty")
-    
+
     all.return <- cbind(data,plot.return)
     return(all.return)
   }
@@ -177,10 +171,7 @@ def.calc.geo.os <- function(
                                  "northing","easting","coordinateUncertainty",
                                  "decimalLatitude","decimalLongitude",
                                  "elevation","elevationUncertainty")]
-    colnames(point.return)[5:9] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
-                                       "adjDecimalLongitude","adjElevation",
-                                       "adjElevationUncertainty")
-    
+
     all.return <- cbind(data,point.return)
     return(all.return)
   }

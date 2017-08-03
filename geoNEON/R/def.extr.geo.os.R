@@ -126,6 +126,10 @@ def.extr.geo.os <- function(
   
   # Fill unused fields with NA
   plotInfo[, paste(allTerms[!allTerms %in% (names(plotInfo))])] <- NA
+  
+  # change field names of fields in original data
+  colnames(data)[which(colnames(data) %in% allTerms)] <- 
+    paste("uncorr.", colnames(data)[which(colnames(data) %in% allTerms)], sep="")
 
   # Return a data frame of the named locations and geolocations
   allInfo <- cbind(data,plotInfo)
