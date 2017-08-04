@@ -18,7 +18,7 @@
 #' @keywords Currently none
 
 #' @examples 
-#' d <- data.frame(namedLocation=c("GUAN_044.basePlot.ltr","GRSM_003.birdGrid.brd"))
+#' d <- data.frame(namedLocation=c("GUAN_044.basePlot.ltr","GRSM_003.birdGrid.brd"), otherData=c(1,2))
 #' def.extr.geo.os(d, "namedLocation")
 
 #' @seealso Currently none
@@ -45,7 +45,7 @@ def.extr.geo.os <- function(
   outList <- list()
   
   # Iterate over input locations
-  for (j in data[,locCol]) {
+  for (j in unique(data[,locCol])) {
     
     # Pull data from API
     req <- httr::GET(paste("http://data.neonscience.org/api/v0/locations/", j, sep=''))
@@ -126,9 +126,14 @@ def.extr.geo.os <- function(
   
   # Fill unused fields with NA
   plotInfo[, paste(allTerms[!allTerms %in% (names(plotInfo))])] <- NA
+  
+  #add blank column if all values are invalid
+  if (!'data.locationName'%in%names(plotInfo)){
+    plotInfo$data.locationName<-NA
+  }
 
   # Return a data frame of the named locations and geolocations
-  allInfo <- cbind(data,plotInfo)
+  # removing anything that was previously in the data itself
+  allInfo <- merge(data[,!names(data)%in%names(plotInfo)],plotInfo, by.x=locCol, by.y='data.locationName', all.x=T)
   return(allInfo)
-  
 }

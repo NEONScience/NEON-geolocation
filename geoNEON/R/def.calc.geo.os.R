@@ -43,7 +43,8 @@ def.calc.geo.os <- function(
     data <- cbind(data, subplots)
     
     # Use the def.extr.geo.os function to pull the subplot geolocations from the API
-    subplot.loc <- geoNEON::def.extr.geo.os(data, locCol="subplots")
+    locCol="subplots"
+    subplot.loc <- geoNEON::def.extr.geo.os(data, locCol=locCol)
     
     # Strip the final 3 digits of trapID to get the clip cell numbers
     if(dataProd=="ltr_pertrap") {
@@ -85,15 +86,17 @@ def.calc.geo.os <- function(
     subplot.loc <- def.calc.latlong(subplot.loc)
     
     # Return relevant columns
-    subplot.return <- subplot.loc[,c("data.locationName","utmZone",
+    subplot.return <- subplot.loc[,c(locCol,"utmZone",
                                      "northing","easting","coordinateUncertainty",
                                      "decimalLatitude","decimalLongitude",
                                      "elevation","elevationUncertainty")]
     colnames(subplot.return)[5:9] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
                                        "adjDecimalLongitude","adjElevation",
                                        "adjElevationUncertainty")
-    
-    all.return <- cbind(data,subplot.return)
+    data$row.index<-1:nrow(data)
+    all.return <- merge(data,subplot.return, by=locCol)
+    all.return<-all.return[order(all.return$row.index),]
+    all.return<-all.return[,-which(names(all.return)=='row.index')]
     return(all.return)
   }
   
@@ -101,7 +104,8 @@ def.calc.geo.os <- function(
   if(dataProd=="sls_soilCoreCollection") {
     
     # Use the def.extr.geo.os function to pull the plot geolocations from the API
-    plot.loc <- geoNEON::def.extr.geo.os(data, locCol="namedLocation")
+    locCol="namedLocation"
+    plot.loc <- geoNEON::def.extr.geo.os(data, locCol=locCol)
     
     # Subtract 20 meters from the easting and northing values to get the 
     # location of the southwest corner
@@ -120,19 +124,21 @@ def.calc.geo.os <- function(
     plot.loc <- def.calc.latlong(plot.loc)
     
     # Return relevant columns
-    plot.return <- plot.loc[,c("data.locationName","utmZone",
+    plot.return <- plot.loc[,c(locCol,"utmZone",
                                      "northing","easting","coordinateUncertainty",
                                "decimalLatitude","decimalLongitude",
                                      "elevation","elevationUncertainty")]
     colnames(plot.return)[5:9] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
                                        "adjDecimalLongitude","adjElevation",
                                        "adjElevationUncertainty")
-    
-    all.return <- cbind(data,plot.return)
+    data$row.index<-1:nrow(data)
+    all.return <- merge(data,plot.return, by=locCol)
+    all.return<-all.return[order(all.return$row.index),]
+    all.return<-all.return[,-which(names(all.return)=='row.index')]
     return(all.return)
   }
   # Bird point calculations:
-  if(dataProd=="brd_perpoint") {
+  if(dataProd=="brd_perpoint" | dataProd=="brd_countdata") {
     #check to make sure pointID is in the name of the file
     if (!'pointID'%in%names(data)){stop('pointID is a required input to this function')}
     
@@ -143,22 +149,23 @@ def.calc.geo.os <- function(
     data$points<-as.character(data$points)
     
     #if it's an 88 bird, the only resolution is SITE
-    data$points[data$pointID==88]<-substr(data$namedLocation[data$pointID==88], 1,4)
+    data$points[data$pointCountMinute==88]<-substr(data$namedLocation[data$pointCountMinute==88], 1,4)
+    locCol="points"
     
     # Use the def.extr.geo.os function to pull the subplot geolocations from the API
-    point.loc <- geoNEON::def.extr.geo.os(data, locCol="points")
+    point.loc <- geoNEON::def.extr.geo.os(data, locCol=locCol)
 
     #add additional coordinateUncertainty
     point.loc$additionalUncertainty<-NA
     #monumented corners, no additional uncertainty, GPS readings from here
-    point.loc$additionalUncertainty[grepl('\\.21$', point.loc$data.locationName)]<-0
+    point.loc$additionalUncertainty[grepl('\\.21$', point.loc[[locCol]])]<-0
     #monumented grid centers, no additional uncertainty, GPS readings from here
-    point.loc$additionalUncertainty[grepl('\\.B2$', point.loc$data.locationName)]<-0
+    point.loc$additionalUncertainty[grepl('\\.B2$', point.loc[[locCol]])]<-0
     
     #sum uncertainties
     point.loc$coordinateUncertainty <- as.numeric(point.loc$coordinateUncertainty) + point.loc$additionalUncertainty
     #rest navigated to with recreational GPS, uncertainty of ~15m, not provided in spatial data
-    point.loc$coordinateUncertainty[!grepl('\\.21$|\\.B2$',point.loc$data.locationName)] <- 15
+    point.loc$coordinateUncertainty[!grepl('\\.21$|\\.B2$',point.loc[[locCol]])] <- 15
     
     #88 points uncertainty unknown, all that's being provided is the site (aka tower) location
     point.loc$coordinateUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
@@ -168,15 +175,17 @@ def.calc.geo.os <- function(
     point.loc <- def.calc.latlong(point.loc)
     
     # Return relevant columns
-    point.return <- point.loc[,c("data.locationName","utmZone",
+    point.return <- point.loc[,c(locCol,"utmZone",
                                  "northing","easting","coordinateUncertainty",
                                  "decimalLatitude","decimalLongitude",
                                  "elevation","elevationUncertainty")]
     colnames(point.return)[5:9] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
                                        "adjDecimalLongitude","adjElevation",
                                        "adjElevationUncertainty")
-    
-    all.return <- cbind(data,point.return)
+    data$row.index<-1:nrow(data)
+    all.return <- merge(data,point.return, by=locCol)
+    all.return<-all.return[order(all.return$row.index),]
+    all.return<-all.return[, -which(names(all.return)=='row.index')]
     return(all.return)
   }
   

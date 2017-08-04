@@ -18,7 +18,7 @@ A data frame of the geolocation data for the input named locations
 Definition Function. Extract geolocation data from the NEON API, for a given set of named location values
 }
 \examples{
-d <- data.frame(namedLocation=c("GUAN_044.basePlot.ltr","GRSM_003.birdGrid.brd"))
+d <- data.frame(namedLocation=c("GUAN_044.basePlot.ltr","GRSM_003.birdGrid.brd"), otherData=c(1,2))
 def.extr.geo.os(d, "namedLocation")
 }
 \references{
