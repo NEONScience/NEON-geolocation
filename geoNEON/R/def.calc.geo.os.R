@@ -150,9 +150,9 @@ def.calc.geo.os <- function(
     
     #if it's an 88 bird, the only resolution is SITE
     data$points[data$pointCountMinute==88]<-substr(data$namedLocation[data$pointCountMinute==88], 1,4)
-    locCol="points"
-    
+
     # Use the def.extr.geo.os function to pull the subplot geolocations from the API
+    locCol="points"
     point.loc <- geoNEON::def.extr.geo.os(data, locCol=locCol)
 
     #add additional coordinateUncertainty
