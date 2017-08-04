@@ -37,5 +37,6 @@ def.calc.latlong<-function(df){ #requires columns easting, northing, utmZone
     if (any(is.na(df$easting)|any(is.na(df$northing)|any(is.na(df$utmZone))))){
       warning('one or more rows had missing inputs for easting, northing, or UTM zone and were not converted')
     }
+    res<-res[,!names(res)%in%'optional']
   return(res)
 }
