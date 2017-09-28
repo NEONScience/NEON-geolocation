@@ -9,7 +9,8 @@ def.calc.geo.os(data, dataProd)
 \arguments{
 \item{data}{A data frame containing either NEON named locations or geolocations. Field names of locations must match standard NEON location field names.}
 
-\item{dataProd}{The table name of the NEON data product table to find locations for. Must be one of: ltr_pertrap, hbp_perbout, sls_soilCoreCollection, brd_perpoint (list will continue to expand over time)}
+\item{dataProd}{The table name of the NEON data product table to find locations for. Must be one of: ltr_pertrap, hbp_perbout, sls_soilCoreCollection,
+brd_perpoint, phe_perindividual (list will continue to expand over time)}
 }
 \value{
 A data frame of geolocations for the input product and data

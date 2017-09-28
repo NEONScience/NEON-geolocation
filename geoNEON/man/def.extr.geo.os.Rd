@@ -4,12 +4,14 @@
 \alias{def.extr.geo.os}
 \title{Extract geolocation data from NEON API}
 \usage{
-def.extr.geo.os(data, locCol = "namedLocation")
+def.extr.geo.os(data, locCol = "namedLocation", locOnly = F)
 }
 \arguments{
 \item{data}{A data frame in which one column contains the named locations}
 
 \item{locCol}{The column name of the column containing the named locations. Defaults to namedLocation}
+
+\item{locOnly}{Boolean whether to return the full input data frame or just the extracted geolocations}
 }
 \value{
 A data frame of the geolocation data for the input named locations
