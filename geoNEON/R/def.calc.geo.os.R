@@ -129,17 +129,24 @@ def.calc.geo.os <- function(
     plot.loc <- geoNEON::def.calc.latlong(plot.loc)
     
     # Return relevant columns
-    plot.return <- plot.loc[,c(locCol,"utmZone",
+    plot.return <- plot.loc[,c('uid',locCol,"utmZone",
                                "northing","easting","coordinateUncertainty",
                                "decimalLatitude","decimalLongitude",
                                "elevation","elevationUncertainty")]
-    colnames(plot.return)[5:9] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
-                                    "adjDecimalLongitude","adjElevation",
-                                    "adjElevationUncertainty")
+    col.name.list <- names(plot.return)
+    col.name.list <- gsub('coordinateUncertainty','adjCoordinateUncertainty', col.name.list)
+    col.name.list <- gsub('decimalLatitude','adjDecimalLatitude', col.name.list)
+    col.name.list <- gsub('decimalLongitude','adjDecimalLongitude', col.name.list)
+    col.name.list <- gsub('elevation','adjElevation', col.name.list)
+    col.name.list <- gsub('elevationUncertainty','adjElevationUncertainty', col.name.list)
+    
+    colnames(plot.return) <- col.name.list
     
     #Claire I think you just want to cbind this here?
+    cols.keepers <- names(plot.return)[which(!names(plot.return) %in% names(data))]
+    
     data$row.index<-1:nrow(data)
-    all.return <- merge(data,plot.return, by=locCol)
+    all.return <- merge(data,plot.return[c('uid',cols.keepers)], by='uid')
     all.return<-all.return[order(all.return$row.index),]
     all.return[,!names(all.return)%in%'row.index']
     return(all.return)
