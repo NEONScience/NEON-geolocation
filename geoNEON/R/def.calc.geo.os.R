@@ -145,10 +145,7 @@ def.calc.geo.os <- function(
     #Claire I think you just want to cbind this here?
     cols.keepers <- names(plot.return)[which(!names(plot.return) %in% names(data))]
     
-    data$row.index<-1:nrow(data)
-    all.return <- merge(data,plot.return[c('uid',cols.keepers)], by='uid')
-    all.return<-all.return[order(all.return$row.index),]
-    all.return[,!names(all.return)%in%'row.index']
+    all.return <- cbind(data, plot.return[cols.keepers])
     return(all.return)
   }
   # Bird point calculations:
