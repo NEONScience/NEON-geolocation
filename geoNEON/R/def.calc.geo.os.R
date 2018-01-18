@@ -114,8 +114,8 @@ def.calc.geo.os <- function(
     # Subtract 20 meters from the easting and northing values to get the 
     # location of the southwest corner
     options(digits=15)
-    plot.loc$easting <- as.numeric(plot.loc$easting) - 20
-    plot.loc$northing <- as.numeric(plot.loc$northing) - 20
+    plot.loc$easting <- as.numeric(plot.loc$api.easting) - 20
+    plot.loc$northing <- as.numeric(plot.loc$api.northing) - 20
     
     # Add coreCoordinateX to the easting value and coreCoordinateY to the northing value
     plot.loc$easting <- plot.loc$easting + data$coreCoordinateX
@@ -125,16 +125,17 @@ def.calc.geo.os <- function(
     plot.loc$coordinateUncertainty <- 0.5
     
     # calculate latitude and longitude from the corrected northing and easting
-    plot.loc <- def.calc.latlong(plot.loc)
+    plot.loc$utmZone <- plot.loc$api.utmZone
+    plot.loc <- geoNEON::def.calc.latlong(plot.loc)
     
     # Return relevant columns
     plot.return <- plot.loc[,c(locCol,"utmZone",
-                                     "northing","easting","coordinateUncertainty",
+                               "northing","easting","coordinateUncertainty",
                                "decimalLatitude","decimalLongitude",
-                                     "elevation","elevationUncertainty")]
+                               "elevation","elevationUncertainty")]
     colnames(plot.return)[5:9] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
-                                       "adjDecimalLongitude","adjElevation",
-                                       "adjElevationUncertainty")
+                                    "adjDecimalLongitude","adjElevation",
+                                    "adjElevationUncertainty")
     
     #Claire I think you just want to cbind this here?
     data$row.index<-1:nrow(data)
