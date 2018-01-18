@@ -197,10 +197,8 @@ def.calc.geo.os <- function(
     colnames(point.return)[5:9] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
                                        "adjDecimalLongitude","adjElevation",
                                        "adjElevationUncertainty")
-    data$row.index<-1:nrow(data)
-    all.return <- merge(data,point.return, by=locCol)
-    all.return<-all.return[order(all.return$row.index),]
-    all.return[,!names(all.return)%in%'row.index']
+
+    all.return <- cbind(data,point.return)
     return(all.return)
   }
   
