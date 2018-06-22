@@ -142,6 +142,9 @@ def.extr.geo.os <- function(
   if (!'data.locationName'%in%names(plotInfo)){
     plotInfo$data.locationName<-NA
   }
+  
+  utils::setTxtProgressBar(pb, length(unique(data[,locCol])))
+  close(pb)
 
   # Return a data frame of the named locations and geolocations
   # removing anything that was previously in the data itself

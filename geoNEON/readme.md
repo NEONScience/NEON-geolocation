@@ -13,7 +13,7 @@ Special cases: A limited subset of terrestrial data are collected outside the TO
 
 ### Instructions
 
-The geoNEON package currently contains two functions, `def.extr.geo.os()` and `def.calc.geo.os()`
+The geoNEON package currently contains two functions, `def.extr.geo.os()` and `def.calc.geo.os()`. To load the package, install from [GitHub](https://github.com/NEONScience/NEON-geolocation/tree/master/geoNEON)
 
 ```
 library(devtools)
@@ -21,15 +21,31 @@ install_github('NEONScience/NEON-geolocation/geoNEON', dependencies=TRUE)
 library(geoNEON)
 ```
 
-To pull geolocation data from the NEON API, where 'data' is a data frame with NEON named locations in the column 'namedLocation' (this will work on nearly all OS data tables):
+To append geolocation data from the NEON API to an existing data table from an OS data product, use `def.extr.geo.os()`. Here, `data` is an OS data table, and `'namedLocation'` is the name of the column in the table where NEON named locations can be found (it's `namedLocation` for nearly all OS data products).
 
 ```
-def.extr.geo.os(data, 'namedLocation')
+data.plusSpatial <- def.extr.geo.os(data, 'namedLocation')
 ```
 
-To calculate precise geolocations for one of the data product tables covered by `def.calc.geo.os()` (see function documentation):
+To get geolocation data from the NEON API for each of the locations in a data table, without merging the geolocation data into the original table, use the `locOnly=T` option. If your data include many repetitions of the same locations, this will be faster.
+
+```
+spatialOnly <- def.extr.geo.os(data, 'namedLocation', locOnly=T)
+```
+
+To calculate precise geolocations for one of the OS data product tables covered by `def.calc.geo.os()`, input the data table and specify the table name, shown here for the litterfall data product:
 
 ```
 def.calc.geo.os(data, 'ltr_pertrap')
 ```
+
+Not just any table from a covered data product can be used, because typically the spatial data details are provided in only one table for a given product. Currently, the data product tables included in `def.calc.geo.os()` are:
+
++ Litterfall: ltr_pertrap
++ Herbaceous clip harvest: hbp_perbout
++ Soil physical properties (Distributed periodic): sls_soilCoreCollection
++ Breeding bird point counts: brd_perpoint or brd_countdata
++ Small mammal box trapping: mam_pertrapnight
++ Plant presence and percent cover: div_1m2Data or div_10m2Data100m2Data
+
 
