@@ -492,7 +492,7 @@ def.calc.geo.os <- function(
     
     # Use the def.extr.geo.os function to pull the subplot geolocations from the API
     locCol="points"
-    point.loc <- geoCERT::def.extr.geo.os(data, locCol=locCol, locOnly=F)
+    point.loc <- geoNEON::def.extr.geo.os(data, locCol=locCol, locOnly=F)
     
     # Calculate easting and northing for individuals
     options(digits=15)
