@@ -482,6 +482,53 @@ def.calc.geo.os <- function(
     all.return<-all.return[,!names(all.return)%in%'row.index']
     return(all.return)
   }
+  
+  if(dataProd=="vst_mappingandtagging"){
+    
+    # Concatenate the named location (the plot) and point IDs to get the 
+    #      point named locations
+    points <- paste(data$namedLocation, data$pointID, sep=".")
+    data <- cbind(data, points)
+    
+    # Use the def.extr.geo.os function to pull the subplot geolocations from the API
+    locCol="points"
+    point.loc <- geoCERT::def.extr.geo.os(data, locCol=locCol, locOnly=F)
+    
+    # Calculate easting and northing for individuals
+    options(digits=15)
+    point.loc$easting <- as.numeric(point.loc$api.easting) + point.loc$stemDistance * 
+      sin((point.loc$stemAzimuth * pi) / 180)
+    point.loc$northing <- as.numeric(point.loc$api.northing) + point.loc$stemDistance * 
+      cos((point.loc$stemAzimuth * pi) / 180)
+    
+    # Increase coordinate uncertainties
+    point.loc$adjCoordinateUncertainty <- 
+      as.numeric(point.loc$api.coordinateUncertainty) + 0.6
+    point.loc$adjElevationUncertainty <- 
+      as.numeric(point.loc$api.elevationUncertainty) + 1
+    
+    # calculate latitude and longitude from the corrected northing and easting
+    names(point.loc)[names(point.loc)=='api.utmZone'] <- 'utmZone'
+    point.loc <- def.calc.latlong(point.loc)
+    names(point.loc)[names(point.loc)=='utmZone'] <- 'api.utmZone'
+    
+    # Return relevant columns
+    point.return <- point.loc[,c(locCol,"individualID","api.utmZone",
+                                 "northing","easting","adjCoordinateUncertainty",
+                                 "api.decimalLatitude","api.decimalLongitude",
+                                 "api.elevation","adjElevationUncertainty")]
+    colnames(point.return)[4:8] <- c("adjNorthing","adjEasting",
+                                     "adjCoordinateUncertainty",
+                                     "adjDecimalLatitude","adjDecimalLongitude")
+    
+    data$row.index <- 1:nrow(data)
+    all.return <- merge(data, point.return, by=c("points","individualID"))
+    all.return <- all.return[order(all.return$row.index),]
+    all.return <- all.return[,!names(all.return) %in% 'row.index']
+    return(all.return)
+    
+  }
+  
   else {
     print(paste("This function has not been configured for data product table ", 
                  dataProd, sep=""))
