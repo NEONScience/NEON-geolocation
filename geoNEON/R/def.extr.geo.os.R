@@ -149,10 +149,13 @@ def.extr.geo.os <- function(
   # Return a data frame of the named locations and geolocations
   # removing anything that was previously in the data itself
   if (!locOnly){
-  data$row.index <- 1:nrow(data)
-  allInfo <- merge(data,plotInfo, by.x=locCol, by.y='data.locationName', all.x=T)
-  allInfo <- allInfo[order(allInfo$row.index),]
-  allInfo <- allInfo[,!names(allInfo)%in%'row.index']
-  } else{ allInfo <- plotInfo}
+    plotInfo <- plotInfo[which(is.na(plotInfo$error.status)),]
+    data$row.index <- 1:nrow(data)
+    allInfo <- merge(data,plotInfo, by.x=locCol, by.y='data.locationName', all.x=T)
+    allInfo <- allInfo[order(allInfo$row.index),]
+    allInfo <- allInfo[,!names(allInfo)%in%'row.index']
+  } else { 
+    allInfo <- plotInfo
+  }
   return(allInfo)
 }

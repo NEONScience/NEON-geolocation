@@ -36,22 +36,28 @@ def.calc.geo.os <- function(
 ){
   
     #Litter trap and herb clip location calculations:
-    if(dataProd=="ltr_pertrap" | dataProd=="hbp_perbout"){
+    if(dataProd=="ltr_pertrap" | dataProd=="hbp_perbout" | dataProd=="cfc_fieldData"){
     
     # Concatenate the named location (the plot) and subplot IDs to get the 
     #      subplot named locations
     subplots <- paste(data$namedLocation, data$subplotID, sep=".")
     data <- cbind(data, subplots)
     
+    if(dataProd=="cfc_fieldData") {
+      data$row.index <- 1:nrow(data)
+      dataN <- data[which(data$clipID=="" | is.na(data$clipID)),]
+      data <- data[which(data$clipID!="" & !is.na(data$clipID)),]
+    }
+    
     # Use the def.extr.geo.os function to pull the subplot geolocations from the API
-    locCol="subplots"
+    locCol <- "subplots"
     subplot.loc <- geoNEON::def.extr.geo.os(data, locCol=locCol)
     
     # Strip the final 3 digits of trapID to get the clip cell numbers
     if(dataProd=="ltr_pertrap") {
       cellID <- data$trapID
     } else {
-      if(dataProd=="hbp_perbout") {
+      if(dataProd=="hbp_perbout" | dataProd=="cfc_fieldData") {
         cellID <- data$clipID
       }
     }
@@ -65,8 +71,9 @@ def.calc.geo.os <- function(
     #      easting and northing offsets
     for(i in 1:nrow(subplot.loc)) {
       clipInd <- which(clipCell$clipCellNumber==subplot.loc$cellNum[i] & 
-                         clipCell$pointID==data$subplotID[i])
-      if(length(clipInd)==0) {
+#                         clipCell$pointID==data$subplotID[i])
+                         clipCell$pointID==31)
+  if(length(clipInd)==0) {
         print(paste("Subplot ", data$subplotID[i], "and clip cell ", 
                      subplot.loc$cellNum[i], "is not a valid location", sep=""))
         subplot.loc$eastOff[i] <- NA
@@ -97,10 +104,15 @@ def.calc.geo.os <- function(
                                        "adjDecimalLongitude","adjElevation",
                                        "adjElevationUncertainty")
     
-    data$row.index<-1:nrow(data)
-    all.return <- merge(data,subplot.return, by=locCol)
-    all.return<-all.return[order(all.return$row.index),]
-    all.return<-all.return[,!names(all.return)%in%'row.index']
+    if(dataProd=="cfc_fieldData") {
+      sub.return <- merge(data, subplot.return, by=locCol)
+      all.return <- plyr::rbind.fill(sub.return, dataN)
+    } else {
+      data$row.index <- 1:nrow(data)
+      all.return <- merge(data,subplot.return, by=locCol)
+    }
+    all.return <- all.return[order(all.return$row.index),]
+    all.return <- all.return[,!names(all.return)%in%'row.index']
     return(all.return)
   }
   
