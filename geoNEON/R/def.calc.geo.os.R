@@ -129,10 +129,8 @@ def.calc.geo.os <- function(
     plot.loc <- geoNEON::def.calc.latlong(plot.loc)
     
     # Return relevant columns
-    plot.return <- plot.loc[,c('uid',locCol,"utmZone",
-                               "northing","easting","coordinateUncertainty",
-                               "decimalLatitude","decimalLongitude",
-                               "elevation","elevationUncertainty")]
+    plot.return <- plot.loc[,c(names(plot.loc)[which(names(plot.loc) %in% names(data))], 
+                               "utmZone","northing","easting")]
     col.name.list <- names(plot.return)
     col.name.list <- gsub('coordinateUncertainty','adjCoordinateUncertainty', col.name.list)
     col.name.list <- gsub('decimalLatitude','adjDecimalLatitude', col.name.list)
@@ -142,10 +140,7 @@ def.calc.geo.os <- function(
     
     colnames(plot.return) <- col.name.list
     
-    #Claire I think you just want to cbind this here?
-    cols.keepers <- names(plot.return)[which(!names(plot.return) %in% names(data))]
-    
-    all.return <- cbind(data, plot.return[cols.keepers])
+    all.return <- plot.return
     return(all.return)
   }
   # Bird point calculations:
@@ -187,15 +182,20 @@ def.calc.geo.os <- function(
     point.loc$api.elevationUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
     
     # Return relevant columns
-    point.return <- point.loc[,c(locCol,"api.utmZone",
-                                 "api.northing","api.easting","coordinateUncertainty",
-                                 "api.decimalLatitude","api.decimalLongitude",
-                                 "api.elevation","api.elevationUncertainty")]
-    colnames(point.return)[5:9] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
-                                       "adjDecimalLongitude","adjElevation",
-                                       "adjElevationUncertainty")
-
-    all.return <- cbind(data,point.return)
+    point.return <- point.loc[,c(names(point.loc)[which(names(point.loc) %in% names(data))], 
+                               "api.utmZone","api.northing","api.easting",
+                               "api.decimalLatitude","api.decimalLongitude",
+                               "api.elevation","api.elevationUncertainty")]
+    
+    col.name.list <- names(point.return)
+    col.name.list <- gsub('coordinateUncertainty','adjCoordinateUncertainty', col.name.list)
+    col.name.list <- gsub('api.decimalLatitude','adjDecimalLatitude', col.name.list)
+    col.name.list <- gsub('api.decimalLongitude','adjDecimalLongitude', col.name.list)
+    col.name.list <- gsub('api.elevation','adjElevation', col.name.list)
+    col.name.list <- gsub('api.elevationUncertainty','adjElevationUncertainty', col.name.list)
+    colnames(point.return) <- col.name.list
+    
+    all.return <- point.return
     return(all.return)
   }
   
