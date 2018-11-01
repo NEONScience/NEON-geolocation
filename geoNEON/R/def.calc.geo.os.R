@@ -182,8 +182,9 @@ def.calc.geo.os <- function(
     point.loc$api.elevationUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
     
     # Return relevant columns
-    point.return <- point.loc[,c(names(point.loc)[which(names(point.loc) %in% names(data))], 
+    point.return <- point.loc[,c(locCol, 
                                "api.utmZone","api.northing","api.easting",
+                               "coordinateUncertainty",
                                "api.decimalLatitude","api.decimalLongitude",
                                "api.elevation","api.elevationUncertainty")]
     
@@ -195,7 +196,10 @@ def.calc.geo.os <- function(
     col.name.list <- gsub('api.elevationUncertainty','adjElevationUncertainty', col.name.list)
     colnames(point.return) <- col.name.list
     
-    all.return <- point.return
+    data$row.index <- 1:nrow(data)
+    all.return <- merge(data, point.return, by=locCol)
+    all.return <- all.return[order(all.return$row.index),]
+    all.return <- all.return[,!names(all.return) %in% 'row.index']
     return(all.return)
   }
   
