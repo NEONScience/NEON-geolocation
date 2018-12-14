@@ -7,9 +7,8 @@
 #' @description 
 #' Calculation Function. Refine the geolocation data associated with NEON data products, based on product-specific rules and spatial designs.
 #' 
-#' @param data A data frame containing either NEON named locations or geolocations. Field names of locations must match standard NEON location field names.
-#' @param dataProd The table name of the NEON data product table to find locations for. Must be one of: ltr_pertrap, hbp_perbout, sls_soilCoreCollection,
-#'  brd_perpoint, phe_perindividual (list will continue to expand over time)
+#' @param data A data frame containing NEON named locations and other sampling information. For reliable results, use data tables as downloaded from the NEON data portal or API.
+#' @param dataProd The table name of the NEON data product table to find locations for. Must be one of: ltr_pertrap, hbp_perbout, sls_soilCoreCollection, brd_perpoint or brd_countdata, mam_pertrapnight, div_1m2Data or div_10m2Data100m2Data, vst_mappingandtagging.
 
 #' @return A data frame of geolocations for the input product and data
 
@@ -34,6 +33,9 @@ def.calc.geo.os <- function(
   data,
   dataProd
 ){
+  
+  # convert format for safety
+  data <- data.frame(data)
   
     #Litter trap and herb clip location calculations:
     if(dataProd=="ltr_pertrap" | dataProd=="hbp_perbout"){
