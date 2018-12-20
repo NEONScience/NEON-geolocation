@@ -38,26 +38,32 @@ def.calc.geo.os <- function(
   data <- data.frame(data)
   
     #Litter trap and herb clip location calculations:
-    if(dataProd=="ltr_pertrap" | dataProd=="hbp_perbout"){
+    if(dataProd=="ltr_pertrap" | dataProd=="hbp_perbout" | dataProd=="cfc_fieldData"){
     
     # Concatenate the named location (the plot) and subplot IDs to get the 
     #      subplot named locations
     subplots <- paste(data$namedLocation, data$subplotID, sep=".")
     data <- cbind(data, subplots)
     
+    if(dataProd=="cfc_fieldData") {
+      data$row.index <- 1:nrow(data)
+      dataN <- data[which(data$clipID=="" | is.na(data$clipID)),]
+      data <- data[which(data$clipID!="" & !is.na(data$clipID)),]
+    }
+    
     # Use the def.extr.geo.os function to pull the subplot geolocations from the API
-    locCol="subplots"
+    locCol <- "subplots"
     subplot.loc <- geoNEON::def.extr.geo.os(data, locCol=locCol)
     
     # Strip the final 3 digits of trapID to get the clip cell numbers
     if(dataProd=="ltr_pertrap") {
-      cellID <- data$trapID
+      data$cellID <- data$trapID
     } else {
-      if(dataProd=="hbp_perbout") {
-        cellID <- data$clipID
+      if(dataProd=="hbp_perbout" | dataProd=="cfc_fieldData") {
+        data$cellID <- data$clipID
       }
     }
-    cellNum <- as.numeric(substr(cellID, 10, 12))
+    cellNum <- as.numeric(substr(data$cellID, 10, 12))
     eastOff <- numeric(length(cellNum))
     northOff <- numeric(length(cellNum))
     subplot.loc <- cbind(subplot.loc, cellNum, eastOff, northOff)
@@ -68,9 +74,10 @@ def.calc.geo.os <- function(
     for(i in 1:nrow(subplot.loc)) {
       clipInd <- which(clipCell$clipCellNumber==subplot.loc$cellNum[i] & 
                          clipCell$pointID==data$subplotID[i])
-      if(length(clipInd)==0) {
-        print(paste("Subplot ", data$subplotID[i], "and clip cell ", 
-                     subplot.loc$cellNum[i], "is not a valid location", sep=""))
+
+        if(length(clipInd)==0) {
+        print(paste("Subplot ", data$subplotID[i], " and clip cell ", 
+                     subplot.loc$cellNum[i], " is not a valid location", sep=""))
         subplot.loc$eastOff[i] <- NA
         subplot.loc$northOff[i] <- NA
       } else {
@@ -83,26 +90,33 @@ def.calc.geo.os <- function(
     options(digits=15)
     subplot.loc$easting <- as.numeric(subplot.loc$api.easting) + subplot.loc$eastOff
     subplot.loc$northing <- as.numeric(subplot.loc$api.northing) + subplot.loc$northOff
-    subplot.loc$api.coordinateUncertainty <- as.numeric(subplot.loc$api.coordinateUncertainty) + 1
+    subplot.loc$api.coordinateUncertainty <- 
+      as.numeric(subplot.loc$api.coordinateUncertainty) + 1
     
     # calculate latitude and longitude from the corrected northing and easting
-    names(subplot.loc)[names(subplot.loc)=='api.utmZone']<-'utmZone'
+    names(subplot.loc)[names(subplot.loc)=='api.utmZone'] <- 'utmZone'
     subplot.loc <- def.calc.latlong(subplot.loc)
-    names(subplot.loc)[names(subplot.loc)=='utmZone']<-'api.utmZone'
+    names(subplot.loc)[names(subplot.loc)=='utmZone'] <- 'api.utmZone'
     
     # Return relevant columns
-    subplot.return <- subplot.loc[,c(locCol,"api.utmZone",
+    subplot.return <- subplot.loc[,c(locCol,cellID,"api.utmZone",
                                      "northing","easting","api.coordinateUncertainty",
-                                     "api.decimalLatitude","api.decimalLongitude",
+                                     "decimalLatitude","decimalLongitude",
                                      "api.elevation","api.elevationUncertainty")]
-    colnames(subplot.return)[5:9] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
+    colnames(subplot.return)[6:10] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
                                        "adjDecimalLongitude","adjElevation",
                                        "adjElevationUncertainty")
     
-    data$row.index<-1:nrow(data)
-    all.return <- merge(data,subplot.return, by=locCol)
-    all.return<-all.return[order(all.return$row.index),]
-    all.return<-all.return[,!names(all.return)%in%'row.index']
+    if(dataProd=="cfc_fieldData") {
+      sub.return <- base::merge(data, subplot.return, by=c(locCol, cellID))
+      all.return <- plyr::rbind.fill(sub.return, dataN)
+      print("Please note locations have been calculated only for herbaceous clip samples. Woody vegetation sample locations can be calculated using the woody vegetation structure data product.")
+    } else {
+      data$row.index <- 1:nrow(data)
+      all.return <- base::merge(data, subplot.return, by=c(locCol, cellID))
+    }
+    all.return <- all.return[order(all.return$row.index),]
+    all.return <- all.return[,!names(all.return) %in% c('row.index','cellID')]
     return(all.return)
   }
   
