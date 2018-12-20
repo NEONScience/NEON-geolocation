@@ -7,9 +7,8 @@
 #' @description 
 #' Calculation Function. Refine the geolocation data associated with NEON data products, based on product-specific rules and spatial designs.
 #' 
-#' @param data A data frame containing either NEON named locations or geolocations. Field names of locations must match standard NEON location field names.
-#' @param dataProd The table name of the NEON data product table to find locations for. Must be one of: ltr_pertrap, hbp_perbout, sls_soilCoreCollection,
-#'  brd_perpoint, phe_perindividual (list will continue to expand over time)
+#' @param data A data frame containing NEON named locations and other sampling information. For reliable results, use data tables as downloaded from the NEON data portal or API.
+#' @param dataProd The table name of the NEON data product table to find locations for. Must be one of: ltr_pertrap, hbp_perbout, sls_soilCoreCollection, brd_perpoint or brd_countdata, mam_pertrapnight, div_1m2Data or div_10m2Data100m2Data, vst_mappingandtagging.
 
 #' @return A data frame of geolocations for the input product and data
 
@@ -34,6 +33,9 @@ def.calc.geo.os <- function(
   data,
   dataProd
 ){
+  
+  # convert format for safety
+  data <- data.frame(data)
   
     #Litter trap and herb clip location calculations:
     if(dataProd=="ltr_pertrap" | dataProd=="hbp_perbout" | dataProd=="cfc_fieldData"){
@@ -143,10 +145,8 @@ def.calc.geo.os <- function(
     plot.loc <- geoNEON::def.calc.latlong(plot.loc)
     
     # Return relevant columns
-    plot.return <- plot.loc[,c('uid',locCol,"utmZone",
-                               "northing","easting","coordinateUncertainty",
-                               "decimalLatitude","decimalLongitude",
-                               "elevation","elevationUncertainty")]
+    plot.return <- plot.loc[,c(names(plot.loc)[which(names(plot.loc) %in% names(data))], 
+                               "utmZone","northing","easting")]
     col.name.list <- names(plot.return)
     col.name.list <- gsub('coordinateUncertainty','adjCoordinateUncertainty', col.name.list)
     col.name.list <- gsub('decimalLatitude','adjDecimalLatitude', col.name.list)
@@ -156,9 +156,7 @@ def.calc.geo.os <- function(
     
     colnames(plot.return) <- col.name.list
     
-    cols.keepers <- names(plot.return)[which(!names(plot.return) %in% names(data))]
-    
-    all.return <- cbind(data, plot.return[cols.keepers])
+    all.return <- plot.return
     return(all.return)
   }
   # Bird point calculations:
@@ -200,15 +198,24 @@ def.calc.geo.os <- function(
     point.loc$api.elevationUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
     
     # Return relevant columns
-    point.return <- point.loc[,c(locCol,"api.utmZone",
-                                 "api.northing","api.easting","coordinateUncertainty",
-                                 "api.decimalLatitude","api.decimalLongitude",
-                                 "api.elevation","api.elevationUncertainty")]
-    colnames(point.return)[5:9] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
-                                       "adjDecimalLongitude","adjElevation",
-                                       "adjElevationUncertainty")
-
-    all.return <- cbind(data,point.return)
+    point.return <- point.loc[,c(locCol, 
+                               "api.utmZone","api.northing","api.easting",
+                               "coordinateUncertainty",
+                               "api.decimalLatitude","api.decimalLongitude",
+                               "api.elevation","api.elevationUncertainty")]
+    
+    col.name.list <- names(point.return)
+    col.name.list <- gsub('coordinateUncertainty','adjCoordinateUncertainty', col.name.list)
+    col.name.list <- gsub('api.decimalLatitude','adjDecimalLatitude', col.name.list)
+    col.name.list <- gsub('api.decimalLongitude','adjDecimalLongitude', col.name.list)
+    col.name.list <- gsub('api.elevation','adjElevation', col.name.list)
+    col.name.list <- gsub('api.elevationUncertainty','adjElevationUncertainty', col.name.list)
+    colnames(point.return) <- col.name.list
+    
+    data$row.index <- 1:nrow(data)
+    all.return <- merge(data, point.return, by=locCol)
+    all.return <- all.return[order(all.return$row.index),]
+    all.return <- all.return[,!names(all.return) %in% 'row.index']
     return(all.return)
   }
   
