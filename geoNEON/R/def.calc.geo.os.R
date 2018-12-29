@@ -219,186 +219,191 @@ def.calc.geo.os <- function(
     return(all.return)
   }
   
-  # Plant phenology individual location calculations:
-  # if(dataProd=="phe_perindividual") {
-  #   data$row.index<-1:nrow(data)
-  #   
-  #   #for phenocamRows, the sampleLat, long, datum, etc are correct
-  #   phenocamRows<-data[data$subtypeSpecification=='phenocam',]
-  #   phenocamRows$geodeticDatum<-phenocamRows$sampleGeodeticDatum
-  #   phenocamRows$decimalLatitude<-phenocamRows$sampleLatitude
-  #   phenocamRows$decimalLongitude<-phenocamRows$sampleLongitude
-  #   phenocamRows$adjCoordinateUncertainty-phenocamRows$sampleCoordinateUncertainty
-  #   phenocamRows$adjElevation<-phenocamRows$sampleElevation
-  #   phenocamRows$adjElevationUncertainty<-phenocamRows$sampleElevationUncertainty
-  #   
-  #   data<-data[!data$subtypeSpecification=='phenocam',]
-  #   corners <- data.frame(namedLocation=paste(unique(data$namedLocation), c('N', 'E', 'S', 'W', 'NE', 'SE', 'SW', 'NW'), sep="."), vals=NA)
-  #   
-  #   # Use the def.extr.geo.os function to pull the subplot geolocations from the API
-  #   locCol="namedLocation"
-  #   pointSpatialData <- geoNEON::def.extr.geo.os(corners, locCol=locCol, locOnly=T)
-  #   
-  #   #exception handling for missing inputs
-  #   nogeo<-data[which(is.na(data$transectMeter)|is.na(data$directionFromTransect)),]
-  #   
-  #   if (nrow(nogeo)>0){
-  #     data<-data[-which(is.na(data$transectMeter)|is.na(data$directionFromTransect)),]
-  #   }
-  #   
-  #   data$referencePoint_tempA<-NA
-  #   data$referencePoint_tempB<-NA
-  #   
-  #   #exceptions in R -> this just will pass the NA if transectMeter is NA
-  #   data$referencePoint_tempA[data$transectMeter>0&data$transectMeter<=100]<-'SW'
-  #   data$referencePoint_tempB[data$transectMeter>0&data$transectMeter<=100]<-'W'
-  #   data$referencePoint_tempA[data$transectMeter>100&data$transectMeter<=200]<-'W'
-  #   data$referencePoint_tempB[data$transectMeter>100&data$transectMeter<=200]<-'NW'
-  #   data$referencePoint_tempA[data$transectMeter>200&data$transectMeter<=300]<-'NW'
-  #   data$referencePoint_tempB[data$transectMeter>200&data$transectMeter<=300]<-'N'
-  #   data$referencePoint_tempA[data$transectMeter>300&data$transectMeter<=400]<-'N'
-  #   data$referencePoint_tempB[data$transectMeter>300&data$transectMeter<=400]<-'NE'
-  #   data$referencePoint_tempA[data$transectMeter>400&data$transectMeter<=500]<-'NE'
-  #   data$referencePoint_tempB[data$transectMeter>400&data$transectMeter<=500]<-'E'
-  #   data$referencePoint_tempA[data$transectMeter>=500&data$transectMeter<=600]<-'E'
-  #   data$referencePoint_tempB[data$transectMeter>=500&data$transectMeter<=600]<-'SE'
-  #   data$referencePoint_tempA[data$transectMeter>600&data$transectMeter<=700]<-'SE'
-  #   data$referencePoint_tempB[data$transectMeter>600&data$transectMeter<=700]<-'S'
-  #   data$referencePoint_tempA[data$transectMeter>700&data$transectMeter<=800]<-'S'
-  #   data$referencePoint_tempB[data$transectMeter>700&data$transectMeter<=800]<-'SW'
-  #   
-  #   #determine which way the offsets are going
-  #   data$offset_sign<-NA
-  #   data$offset_sign[data$transectMeter<=200&
-  #                      data$directionFromTransect=='Left']<-'W'
-  #   data$offset_sign[data$transectMeter>200&
-  #                      data$transectMeter<=400&data$directionFromTransect=='Left']<-'N'
-  #   data$offset_sign[data$transectMeter>400&data$transectMeter<=600&data$directionFromTransect=='Left']<-'E'
-  #   data$offset_sign[data$transectMeter>600&
-  #                      data$transectMeter<=800&data$directionFromTransect=='Left']<-'S'
-  #   
-  #   data$offset_sign[data$transectMeter<=200&
-  #                      data$directionFromTransect=='Right']<-'E'
-  #   
-  #   data$offset_sign[data$transectMeter>200&
-  #                      
-  #                      data$transectMeter<=400&data$directionFromTransect=='Right']<-'S'
-  #   data$offset_sign[data$transectMeter>400&data$transectMeter<=600&data$directionFromTransect=='Right']<-'W'
-  #   data$offset_sign[data$transectMeter>600&
-  #                      data$transectMeter<=800&data$directionFromTransect=='Right']<-'N'
-  #   
-  #   #determine distance from last point by subtraction
-  #   calcDistanceFromLast<-function(distance){
-  #     while(distance>100){
-  #       distance<-distance-100
-  #     }
-  #     return (distance)
-  #   }
-  #   
-  #   data$distFromLastPoint<-NA
-  #   
-  #   for (i in 1:nrow(data)){
-  #     if (!is.na(data$transectMeter[i])){
-  #       data$distFromLastPoint[i]<-calcDistanceFromLast(data$transectMeter[i])
-  #     }  
-  #   }
-  #   
-  #   data$northing<-NA
-  #   data$easting<-NA
-  #   data$utmZone<-NA
-  #   data$coordinateUncertainty<-NA
-  #   data$elevation<-NA
-  #   data$namedLocation<-as.character(data$namedLocation)
-  #   pointSpatialData$namedLocation<-as.character(pointSpatialData$namedLocation)
-  #   
-  #   for (i in 1:nrow(data)){
-  #     if (!is.na(data$referencePoint_tempA[i])&
-  #         !is.na(data$referencePoint_tempB[i])){
-  #       northingA<-as.numeric(pointSpatialData$northing[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-  #                                                         pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]])
-  #       northingB<-as.numeric(pointSpatialData$northing[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-  #                                                         pointSpatialData$Value.for.Point.ID==data$referencePoint_tempB[i]])
-  #       eastingA<-as.numeric(pointSpatialData$easting[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-  #                                                       pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]])
-  #       eastingB<-as.numeric(pointSpatialData$easting[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-  #                                                       pointSpatialData$Value.for.Point.ID==data$referencePoint_tempB[i]])
-  #       
-  #       elevationA<-as.numeric(pointSpatialData$elevation[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-  #                                                           pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]])
-  #       elevationB<-as.numeric(pointSpatialData$elevation[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-  #                                                           pointSpatialData$Value.for.Point.ID==data$referencePoint_tempB[i]])
-  #       wt<-c(100-data$distFromLastPoint[i],data$distFromLastPoint[i])
-  #       if (length(c(northingA, northingB, eastingA, eastingB))==4){#make sure all elements known
-  #         northing <- stats::weighted.mean(c(northingA,northingB), wt)
-  #         easting <- stats::weighted.mean(c(eastingA,eastingB), wt)
-  #         data$adjCoordinateUncertainty[i]<-max (as.numeric(pointSpatialData$coordinateUncertainty[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
-  #                                                                                                    pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]]),
-  #                                                as.numeric(pointSpatialData$coordinateUncertainty[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
-  #                                                                                                    pointSpatialData$Value.for.Point.ID==data$referencePoint_tempB[i]]))+2
-  #       }else{
-  #         northing<-NA
-  #         easting<-NA
-  #         data$adjCoordinateUncertainty[i]<-NA
-  #       }
-  #       if (length(c(elevationA, elevationB))==2){#make sure all elements known
-  #         data$adjElevation[i]<- stats::weighted.mean(c(elevationA,elevationB), wt)
-  #       }else{
-  #         data$elevation[i]<- NA
-  #       }
-  #       
-  #       
-  #       #then add the distance from transect
-  #       if (data$offset_sign[i]=='N'){
-  #         northing<-northing+data$ninetyDegreeDistance[i]
-  #       }
-  #       if (data$offset_sign[i]=='E'){
-  #         easting<-easting+data$ninetyDegreeDistance[i]
-  #       }
-  #       if (data$offset_sign[i]=='W'){
-  #         easting<-easting-data$ninetyDegreeDistance[i]
-  #       }
-  #       if (data$offset_sign[i]=='S'){
-  #         northing<-northing-data$ninetyDegreeDistance[i]
-  #       }
-  #       data$easting[i]<-easting
-  #       data$northing[i]<-northing
-  #       if (!is.na(northing)&&!is.na(easting)){
-  #         data$utmZone[i]<-pointSpatialData$utmZone[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
-  #                                                     pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]]
-  #       }
-  #     }
-  #   }
-  #   
-  #   #don't transform the missing points
-  #   if (length(which(is.na(data$easting)|is.na(data$northing))>0)){
-  #     nogeo<-rbind(nogeo, data[is.na(data$easting)|is.na(data$northing),])
-  #     data<-data[-which(is.na(data$easting)|is.na(data$northing)),]
-  #   }
-  #   
-  #   #elevation uncertainty is really unknowable without knowing the microterrain
-  #   data$adjElevationUncertainty<-NA
-  #   
-  #   # calculate latitude and longitude from the corrected northing and easting
-  #   data <- def.calc.latlong(data)
-  #   if (nrow(nogeo)>0){
-  #     data<-gtools::smartbind(data, nogeo)
-  #   }
-  #   
-  #   if (nrow(phenocamRows)>0){
-  #     data<-gtools::smartbind(data, phenocamRows)
-  #   }
-  #   
-  #   #cleanup
-  #   data<-data[order(data$row.index),]
-  #   data<-data[,!names(data)%in%c('row.index','referencePoint_tempA', 'referencePoint_tempB',
-  #                      'offset_sign', 'distFromLastPoint', 'sampleGeodeticDatum',
-  #                       'sampleLatitude', 'sampleLongitude', 'sampleCoordinateUncertainty',
-  #                       'sampleElevation', 'sampleElevationUncertainty',
-  #                       'elevation', 'elevationUncertainty', 'coordinateUncertainty')]
-  #   names(data)[names(data)=='decimalLatitude']<-'adjDecimalLatitude'
-  #   names(data)[names(data)=='decimalLongitude']<-'adjDecimalLongitude'
-  #   return(data)
-  # }
+  #Plant phenology individual location calculations:
+  if(dataProd=="phe_perindividual") {
+    data$row.index <- 1:nrow(data)
+
+    #for phenocamRows, the sampleLat, long, datum, etc are correct
+    phenocamRows <- data[data$subtypeSpecification=='phenocam',]
+    phenocamRows$geodeticDatum <- phenocamRows$sampleGeodeticDatum
+    phenocamRows$decimalLatitude <- phenocamRows$sampleLatitude
+    phenocamRows$decimalLongitude <- phenocamRows$sampleLongitude
+    phenocamRows$adjCoordinateUncertainty <- phenocamRows$sampleCoordinateUncertainty
+    phenocamRows$adjElevation <- phenocamRows$sampleElevation
+    phenocamRows$adjElevationUncertainty <- phenocamRows$sampleElevationUncertainty
+
+    data <- data[!data$subtypeSpecification=='phenocam',]
+    corners <- data.frame(namedLocation=paste(unique(data$namedLocation), 
+                                              c('N', 'E', 'S', 'W', 'NE', 'SE', 'SW', 'NW'), sep="."), vals=NA)
+
+    # Use the def.extr.geo.os function to pull the subplot geolocations from the API
+    locCol="namedLocation"
+    pointSpatialData <- geoNEON::def.extr.geo.os(corners, locCol=locCol, locOnly=T)
+
+    #exception handling for missing inputs
+    nogeo <- data[which(is.na(data$transectMeter) | is.na(data$directionFromTransect)),]
+
+    if (nrow(nogeo)>0){
+      data <- data[-which(is.na(data$transectMeter) | is.na(data$directionFromTransect)),]
+    }
+
+    data$referencePoint_tempA<-NA
+    data$referencePoint_tempB<-NA
+
+    #exceptions in R -> this just will pass the NA if transectMeter is NA
+    data$referencePoint_tempA[data$transectMeter>0&data$transectMeter<=100]<-'SW'
+    data$referencePoint_tempB[data$transectMeter>0&data$transectMeter<=100]<-'W'
+    data$referencePoint_tempA[data$transectMeter>100&data$transectMeter<=200]<-'W'
+    data$referencePoint_tempB[data$transectMeter>100&data$transectMeter<=200]<-'NW'
+    data$referencePoint_tempA[data$transectMeter>200&data$transectMeter<=300]<-'NW'
+    data$referencePoint_tempB[data$transectMeter>200&data$transectMeter<=300]<-'N'
+    data$referencePoint_tempA[data$transectMeter>300&data$transectMeter<=400]<-'N'
+    data$referencePoint_tempB[data$transectMeter>300&data$transectMeter<=400]<-'NE'
+    data$referencePoint_tempA[data$transectMeter>400&data$transectMeter<=500]<-'NE'
+    data$referencePoint_tempB[data$transectMeter>400&data$transectMeter<=500]<-'E'
+    data$referencePoint_tempA[data$transectMeter>=500&data$transectMeter<=600]<-'E'
+    data$referencePoint_tempB[data$transectMeter>=500&data$transectMeter<=600]<-'SE'
+    data$referencePoint_tempA[data$transectMeter>600&data$transectMeter<=700]<-'SE'
+    data$referencePoint_tempB[data$transectMeter>600&data$transectMeter<=700]<-'S'
+    data$referencePoint_tempA[data$transectMeter>700&data$transectMeter<=800]<-'S'
+    data$referencePoint_tempB[data$transectMeter>700&data$transectMeter<=800]<-'SW'
+
+    #determine which way the offsets are going
+    data$offset_sign<-NA
+    data$offset_sign[data$transectMeter<=200&
+                       data$directionFromTransect=='Left']<-'W'
+    data$offset_sign[data$transectMeter>200&
+                       data$transectMeter<=400&data$directionFromTransect=='Left']<-'N'
+    data$offset_sign[data$transectMeter>400&data$transectMeter<=600&data$directionFromTransect=='Left']<-'E'
+    data$offset_sign[data$transectMeter>600&
+                       data$transectMeter<=800&data$directionFromTransect=='Left']<-'S'
+
+    data$offset_sign[data$transectMeter<=200&
+                       data$directionFromTransect=='Right']<-'E'
+
+    data$offset_sign[data$transectMeter>200&
+
+                       data$transectMeter<=400&data$directionFromTransect=='Right']<-'S'
+    data$offset_sign[data$transectMeter>400&data$transectMeter<=600&data$directionFromTransect=='Right']<-'W'
+    data$offset_sign[data$transectMeter>600&
+                       data$transectMeter<=800&data$directionFromTransect=='Right']<-'N'
+
+    #determine distance from last point by subtraction
+    calcDistanceFromLast<-function(distance){
+      while(distance>100){
+        distance<-distance-100
+      }
+      return (distance)
+    }
+
+    data$distFromLastPoint<-NA
+
+    for (i in 1:nrow(data)){
+      if (!is.na(data$transectMeter[i])){
+        data$distFromLastPoint[i]<-calcDistanceFromLast(data$transectMeter[i])
+      }
+    }
+
+    data$northing<-NA
+    data$easting<-NA
+    data$utmZone<-NA
+    data$coordinateUncertainty<-NA
+    data$elevation<-NA
+    data$namedLocation<-as.character(data$namedLocation)
+    pointSpatialData$namedLocation<-as.character(pointSpatialData$data.locationName)
+
+    for (i in 1:nrow(data)){
+      if (!is.na(data$referencePoint_tempA[i])&
+          !is.na(data$referencePoint_tempB[i])){
+        northingA<-as.numeric(pointSpatialData$api.northing[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
+                                                          pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]])
+        northingB<-as.numeric(pointSpatialData$api.northing[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
+                                                          pointSpatialData$Value.for.Point.ID==data$referencePoint_tempB[i]])
+        eastingA<-as.numeric(pointSpatialData$api.easting[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
+                                                        pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]])
+        eastingB<-as.numeric(pointSpatialData$api.easting[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
+                                                        pointSpatialData$Value.for.Point.ID==data$referencePoint_tempB[i]])
+
+        elevationA<-as.numeric(pointSpatialData$api.elevation[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
+                                                            pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]])
+        elevationB<-as.numeric(pointSpatialData$api.elevation[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
+                                                            pointSpatialData$Value.for.Point.ID==data$referencePoint_tempB[i]])
+        wt<-c(100-data$distFromLastPoint[i],data$distFromLastPoint[i])
+        if (length(c(northingA, northingB, eastingA, eastingB))==4){#make sure all elements known
+          northing <- stats::weighted.mean(c(northingA,northingB), wt)
+          easting <- stats::weighted.mean(c(eastingA,eastingB), wt)
+          data$adjCoordinateUncertainty[i]<-max (as.numeric(pointSpatialData$api.coordinateUncertainty[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
+                                                                                                     pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]]),
+                                                 as.numeric(pointSpatialData$api.coordinateUncertainty[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
+                                                                                                     pointSpatialData$Value.for.Point.ID==data$referencePoint_tempB[i]]))+2
+        }else{
+          northing<-NA
+          easting<-NA
+          data$adjCoordinateUncertainty[i]<-NA
+        }
+        if (length(c(elevationA, elevationB))==2){#make sure all elements known
+          data$adjElevation[i]<- stats::weighted.mean(c(elevationA,elevationB), wt)
+        }else{
+          data$adjElevation[i]<- NA
+        }
+
+
+        #then add the distance from transect
+        if (data$offset_sign[i]=='N'){
+          northing<-northing+data$ninetyDegreeDistance[i]
+        }
+        if (data$offset_sign[i]=='E'){
+          easting<-easting+data$ninetyDegreeDistance[i]
+        }
+        if (data$offset_sign[i]=='W'){
+          easting<-easting-data$ninetyDegreeDistance[i]
+        }
+        if (data$offset_sign[i]=='S'){
+          northing<-northing-data$ninetyDegreeDistance[i]
+        }
+        data$easting[i]<-easting
+        data$northing[i]<-northing
+        if (!is.na(northing)&&!is.na(easting)){
+          data$utmZone[i]<-pointSpatialData$api.utmZone[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
+                                                      pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]]
+        }
+      }
+    }
+
+    #don't transform the missing points
+    if(length(which(is.na(data$easting)|is.na(data$northing)))>0) {
+      nogeo <- gtools::smartbind(nogeo, data[is.na(data$easting)|is.na(data$northing),])
+      data <- data[-which(is.na(data$easting)|is.na(data$northing)),]
+    }
+
+    #elevation uncertainty is really unknowable without knowing the microterrain
+    data$adjElevationUncertainty<-NA
+
+    # calculate latitude and longitude from the corrected northing and easting
+    # this is overwriting the existing lat and long. would need to modify def.calc.latlong() to fix
+    # or modify this code so it merges at the end, instead of modifying `data` throughout
+    data <- def.calc.latlong(data)
+    if (nrow(nogeo)>0){
+      data<-gtools::smartbind(data, nogeo)
+    }
+
+    if (nrow(phenocamRows)>0){
+      data<-gtools::smartbind(data, phenocamRows)
+    }
+
+    #cleanup
+    data<-data[order(data$row.index),]
+    data<-data[,!names(data) %in% c('row.index','referencePoint_tempA', 'referencePoint_tempB',
+                       'offset_sign', 'distFromLastPoint', 'sampleGeodeticDatum',
+                        'sampleLatitude', 'sampleLongitude', 'sampleCoordinateUncertainty',
+                        'sampleElevation', 'sampleElevationUncertainty',
+                        'elevation', 'elevationUncertainty', 'coordinateUncertainty')]
+    names(data)[names(data)=='decimalLatitude'] <- 'adjDecimalLatitude'
+    names(data)[names(data)=='decimalLongitude'] <- 'adjDecimalLongitude'
+    return(data)
+  }
+
+  
   #Small mammal trap locations:
   if(dataProd=="mam_pertrapnight"){
     
