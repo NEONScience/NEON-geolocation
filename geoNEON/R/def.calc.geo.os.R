@@ -477,9 +477,9 @@ def.calc.geo.os <- function(
     subplot.loc$api.coordinateUncertainty<-as.numeric(subplot.loc$api.coordinateUncertainty)
     
     #Increase coordinateUncertainty by an appropriate amount to account for error
-    # introduced by navigating within plots. Addi􀆟onal error may be introduced due 
+    # introduced by navigating within plots. Additional error may be introduced due to�onal error may be introduced due 
     # to tape stretching to navigate to locations within plots
-    # and is es􀆟mated as:
+    # and is estimated as:�mated as:
     # 0.25m for 1m2 subplot centroids
     # 1.0m for 10m2 subplot centroids
     # 2.0m for 100m2 subplot centroids
