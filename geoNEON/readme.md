@@ -47,6 +47,7 @@ Not just any table from a covered data product can be used, because typically th
 + Breeding bird point counts: brd_perpoint or brd_countdata
 + Small mammal box trapping: mam_pertrapnight
 + Plant presence and percent cover: div_1m2Data or div_10m2Data100m2Data
-+ Woody vegetation structure: vst_mappingandtagging (also available in Plant foliar physical and chemical properties)
-
++ Plant phenology observation: phe_perindividual
++ Woody vegetation structure: vst_mappingandtagging
++ Plant foliar physical and chemical properties: cfc_fieldData for herbaceous samples, vst_mappingandtagging for woody plant samples
 

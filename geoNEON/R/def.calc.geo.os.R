@@ -57,16 +57,18 @@ def.calc.geo.os <- function(
     
     # Strip the final 3 digits of trapID to get the clip cell numbers
     if(dataProd=="ltr_pertrap") {
-      data$cellID <- data$trapID
+      cellID <- data$trapID
+      data$cellID <- cellID
     } else {
       if(dataProd=="hbp_perbout" | dataProd=="cfc_fieldData") {
-        data$cellID <- data$clipID
+        cellID <- data$clipID
+        data$cellID <- cellID
       }
     }
     cellNum <- as.numeric(substr(data$cellID, 10, 12))
     eastOff <- numeric(length(cellNum))
     northOff <- numeric(length(cellNum))
-    subplot.loc <- cbind(subplot.loc, cellNum, eastOff, northOff)
+    subplot.loc <- cbind(subplot.loc, cellID, cellNum, eastOff, northOff)
     
     # Look up the clip cell numbers in the clip cell table (included in this package),
     #      check that the clip cell-subplot combination is valid, and find the 
@@ -99,7 +101,7 @@ def.calc.geo.os <- function(
     names(subplot.loc)[names(subplot.loc)=='utmZone'] <- 'api.utmZone'
     
     # Return relevant columns
-    subplot.return <- subplot.loc[,c(locCol,cellID,"api.utmZone",
+    subplot.return <- subplot.loc[,c(locCol,"cellID","api.utmZone",
                                      "northing","easting","api.coordinateUncertainty",
                                      "decimalLatitude","decimalLongitude",
                                      "api.elevation","api.elevationUncertainty")]
@@ -108,12 +110,12 @@ def.calc.geo.os <- function(
                                        "adjElevationUncertainty")
     
     if(dataProd=="cfc_fieldData") {
-      sub.return <- base::merge(data, subplot.return, by=c(locCol, cellID))
+      sub.return <- base::merge(data, subplot.return, by=c(locCol, "cellID"))
       all.return <- plyr::rbind.fill(sub.return, dataN)
       print("Please note locations have been calculated only for herbaceous clip samples. Woody vegetation sample locations can be calculated using the woody vegetation structure data product.")
     } else {
       data$row.index <- 1:nrow(data)
-      all.return <- base::merge(data, subplot.return, by=c(locCol, cellID))
+      all.return <- base::merge(data, subplot.return, by=c(locCol, "cellID"))
     }
     all.return <- all.return[order(all.return$row.index),]
     all.return <- all.return[,!names(all.return) %in% c('row.index','cellID')]
@@ -159,6 +161,7 @@ def.calc.geo.os <- function(
     all.return <- plot.return
     return(all.return)
   }
+  
   # Bird point calculations:
   if(dataProd=="brd_perpoint" | dataProd=="brd_countdata") {
     #check to make sure pointID is in the name of the file
@@ -209,6 +212,8 @@ def.calc.geo.os <- function(
     col.name.list <- gsub('api.decimalLatitude','adjDecimalLatitude', col.name.list)
     col.name.list <- gsub('api.decimalLongitude','adjDecimalLongitude', col.name.list)
     col.name.list <- gsub('api.elevation','adjElevation', col.name.list)
+    col.name.list <- gsub('api.northing','northing', col.name.list)
+    col.name.list <- gsub('api.easting','easting', col.name.list)
     col.name.list <- gsub('api.elevationUncertainty','adjElevationUncertainty', col.name.list)
     colnames(point.return) <- col.name.list
     
@@ -226,12 +231,14 @@ def.calc.geo.os <- function(
     #for phenocamRows, the sampleLat, long, datum, etc are correct
     phenocamRows <- data[data$subtypeSpecification=='phenocam',]
     phenocamRows$geodeticDatum <- phenocamRows$sampleGeodeticDatum
-    phenocamRows$decimalLatitude <- phenocamRows$sampleLatitude
-    phenocamRows$decimalLongitude <- phenocamRows$sampleLongitude
+    phenocamRows$adjDecimalLatitude <- phenocamRows$sampleLatitude
+    phenocamRows$adjDecimalLongitude <- phenocamRows$sampleLongitude
     phenocamRows$adjCoordinateUncertainty <- phenocamRows$sampleCoordinateUncertainty
     phenocamRows$adjElevation <- phenocamRows$sampleElevation
     phenocamRows$adjElevationUncertainty <- phenocamRows$sampleElevationUncertainty
 
+    data$tempLat <- data$decimalLatitude
+    data$tempLong <- data$decimalLongitude
     data <- data[!data$subtypeSpecification=='phenocam',]
     corners <- data.frame(namedLocation=paste(unique(data$namedLocation), 
                                               c('N', 'E', 'S', 'W', 'NE', 'SE', 'SW', 'NW'), sep="."), vals=NA)
@@ -307,8 +314,6 @@ def.calc.geo.os <- function(
     data$northing<-NA
     data$easting<-NA
     data$utmZone<-NA
-    data$coordinateUncertainty<-NA
-    data$elevation<-NA
     data$namedLocation<-as.character(data$namedLocation)
     pointSpatialData$namedLocation<-as.character(pointSpatialData$data.locationName)
 
@@ -380,9 +385,14 @@ def.calc.geo.os <- function(
     data$adjElevationUncertainty<-NA
 
     # calculate latitude and longitude from the corrected northing and easting
-    # this is overwriting the existing lat and long. would need to modify def.calc.latlong() to fix
-    # or modify this code so it merges at the end, instead of modifying `data` throughout
     data <- def.calc.latlong(data)
+    
+    names(data)[names(data)=='decimalLatitude'] <- 'adjDecimalLatitude'
+    names(data)[names(data)=='decimalLongitude'] <- 'adjDecimalLongitude'
+    names(data)[names(data)=='tempLat'] <- 'decimalLatitude'
+    names(data)[names(data)=='tempLong'] <- 'decimalLongitude'
+    
+    # merge with other data
     if (nrow(nogeo)>0){
       data<-gtools::smartbind(data, nogeo)
     }
@@ -394,12 +404,7 @@ def.calc.geo.os <- function(
     #cleanup
     data<-data[order(data$row.index),]
     data<-data[,!names(data) %in% c('row.index','referencePoint_tempA', 'referencePoint_tempB',
-                       'offset_sign', 'distFromLastPoint', 'sampleGeodeticDatum',
-                        'sampleLatitude', 'sampleLongitude', 'sampleCoordinateUncertainty',
-                        'sampleElevation', 'sampleElevationUncertainty',
-                        'elevation', 'elevationUncertainty', 'coordinateUncertainty')]
-    names(data)[names(data)=='decimalLatitude'] <- 'adjDecimalLatitude'
-    names(data)[names(data)=='decimalLongitude'] <- 'adjDecimalLongitude'
+                       'offset_sign', 'distFromLastPoint', 'tempLat', 'tempLong')]
     return(data)
   }
 
@@ -449,7 +454,7 @@ def.calc.geo.os <- function(
                                  "api.northing","api.easting","tot.unc",
                                  "api.decimalLatitude","api.decimalLongitude",
                                  "api.elevation","api.elevationUncertainty")]
-    colnames(point.return) <- c("points", "utmZone", "adjNorthing", "adjEasting", "adjCoordinateUncertainty","adjDecimalLatitude",
+    colnames(point.return) <- c("points", "utmZone", "northing", "easting", "adjCoordinateUncertainty","adjDecimalLatitude",
                                 "adjDecimalLongitude","adjElevation",
                                 "adjElevationUncertainty")
     data$row.index<-1:nrow(data)
