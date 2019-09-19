@@ -421,7 +421,7 @@ def.calc.geo.os <- function(
     
     # Use the def.extr.geo.os function to pull the subplot geolocations from the API
     # Don't bother looking up any of the 'X' traps - those have uncertain geolocations
-    locCol="points"
+    locCol <- "points"
     point.loc <- def.extr.geo.os(data[!grepl('X', data$points),], locCol=locCol, locOnly=T)
     names(point.loc)[names(point.loc)=='data.locationName']<-locCol
     point.loc$api.coordinateUncertainty<-as.numeric(point.loc$api.coordinateUncertainty)
@@ -447,14 +447,18 @@ def.calc.geo.os <- function(
     point.loc$tot.unc <- mapply(tot.unc, point.loc$api.coordinateUncertainty, point.loc$maxUncertainty)
     
     # calculate latitude and longitude from the corrected northing and easting
-    #point.loc <- def.calc.latlong(point.loc)
+    point.loc$utmZone <- point.loc$api.utmZone
+    point.loc$easting <- point.loc$api.easting
+    point.loc$northing <- point.loc$api.northing
+    point.loc <- def.calc.latlong(point.loc)
     
     # Return relevant columns
-    point.return <- point.loc[,c(locCol,"api.utmZone",
-                                 "api.northing","api.easting","tot.unc",
-                                 "api.decimalLatitude","api.decimalLongitude",
+    point.return <- point.loc[,c(locCol,"utmZone",
+                                 "northing","easting","tot.unc",
+                                 "decimalLatitude","decimalLongitude",
                                  "api.elevation","api.elevationUncertainty")]
-    colnames(point.return) <- c("points", "utmZone", "northing", "easting", "adjCoordinateUncertainty","adjDecimalLatitude",
+    colnames(point.return) <- c("points", "utmZone", "northing", "easting", 
+                                "adjCoordinateUncertainty","adjDecimalLatitude",
                                 "adjDecimalLongitude","adjElevation",
                                 "adjElevationUncertainty")
     data$row.index<-1:nrow(data)
