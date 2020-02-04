@@ -476,10 +476,7 @@ getLocTOS <- function(
     subplots <- paste(data$namedLocation, data$subplotID, sep=".")
     data <- cbind(data, subplots)
     
-    #remove any X columns
-    
     # Use the getLocByName function to pull the subplot geolocations from the API
-    # Don't bother looking up any of the 'X' traps - those have uncertain geolocations
     locCol="subplots"
     subplot.loc <- getLocByName(data, locCol=locCol, locOnly=T)
     names (subplot.loc)[names(subplot.loc)=='data.locationName']<-locCol
