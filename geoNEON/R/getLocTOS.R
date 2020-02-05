@@ -560,6 +560,13 @@ getLocTOS <- function(
     
   }
   
+  if(dataProd=="bet_fielddata") {
+    
+    # concatenate the named location with the trapID
+    traps <- paste(data$namedLocation, data$trapID, sep=".")
+    
+  }
+  
   else {
     print(paste("This function has not been configured for data product table ", 
                  dataProd, sep=""))
