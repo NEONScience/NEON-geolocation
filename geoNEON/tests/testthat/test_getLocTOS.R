@@ -22,7 +22,7 @@ test_that("Select plant pres named locations are correct", {
   df<-data.frame(namedLocation=c('BART_036.basePlot.div', 'BART_071.basePlot.div',
                                  'BART_019.basePlot.div'), subplotID=c('32.4.1','32.4.10', '32'))
   out<-getLocTOS(df, 'div_10m2Data100m2Data')
-  expect_equal(as.numeric(out$adjNorthing), c(4881309.50371794, 4881968.47614891, 4882112.72882359), tolerance=1)
+  expect_equal(as.numeric(out$northing), c(4881309.50371794, 4881968.47614891, 4882112.72882359), tolerance=1)
   expect_equal(as.numeric(out$adjCoordinateUncertainty), c(NA, NA, 2.29), tolerance=0.01)
 })
 
