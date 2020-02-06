@@ -95,49 +95,62 @@ getLocByName <- function(
   plotInfo <- plyr::rbind.fill(outList)
   
   # Simplify names from the database names
-  names (plotInfo)[names(plotInfo)=='data.siteCode'] <- 'api.siteID'
-  names (plotInfo)[names(plotInfo)=='data.domainCode'] <- 'api.domainID'
-  names (plotInfo)[names(plotInfo)=='data.locationUtmEasting'] <- 'api.easting'
-  names (plotInfo)[names(plotInfo)=='data.locationUtmNorthing'] <- 'api.northing'
-  names (plotInfo)[names(plotInfo)=='Value.for.UTM.Zone'] <- 'api.utmZone'
-  names (plotInfo)[names(plotInfo)=='data.locationElevation'] <- 'api.elevation'
-  names (plotInfo)[names(plotInfo)=='data.locationDecimalLatitude'] <- 'api.decimalLatitude'
-  names (plotInfo)[names(plotInfo)=='data.locationDecimalLongitude'] <- 'api.decimalLongitude'
-  names (plotInfo)[names(plotInfo)=='Value.for.Coordinate.uncertainty'] <- 'api.coordinateUncertainty'
-  names (plotInfo)[names(plotInfo)=='Value.for.Elevation.uncertainty'] <- 'api.elevationUncertainty'
-  names (plotInfo)[names(plotInfo)=='Value.for.National.Land.Cover.Database..2001.'] <- 'api.nlcdClass'
-  names (plotInfo)[names(plotInfo)=='Value.for.Plot.dimensions'] <- 'api.plotDimensions'
-  names (plotInfo)[names(plotInfo)=='Value.for.Soil.type.order'] <- 'api.soilTypeOrder'
-  names (plotInfo)[names(plotInfo)=='Value.for.Subtype.Specification'] <- 'api.subtypeSpecification'
-  names (plotInfo)[names(plotInfo)=='Value.for.Plot.type'] <- 'api.plotType'
-  names (plotInfo)[names(plotInfo)=='Value.for.Reference.Point.Position'] <- 'api.referencePointPosition'
-  names (plotInfo)[names(plotInfo)=='Value.for.Plot.subtype'] <- 'api.subtype'
-  names (plotInfo)[names(plotInfo)=='Value.for.Plot.size'] <- 'api.plotSize'
-  names (plotInfo)[names(plotInfo)=='Value.for.Maximum.elevation'] <- 'api.maximumElevation'
-  names (plotInfo)[names(plotInfo)=='Value.for.Slope.aspect'] <- 'api.slopeAspect'
-  names (plotInfo)[names(plotInfo)=='Value.for.Horizontal.dilution.of.precision'] <- 'api.plotHdop'
-  names (plotInfo)[names(plotInfo)=='Value.for.Positional.dilution.of.precision'] <- 'api.plotPdop'
-  names (plotInfo)[names(plotInfo)=='Value.for.Slope.gradient'] <- 'api.slopeGradient'
-  names (plotInfo)[names(plotInfo)=='Value.for.Minimum.elevation'] <- 'api.minimumElevation'
-  names (plotInfo)[names(plotInfo)=='Value.for.Coordinate.source'] <- 'api.coordinateSource'
-  names (plotInfo)[names(plotInfo)=='Value.for.Filtered.positions'] <- 'api.filteredPositions'
-  names (plotInfo)[names(plotInfo)=='data.locationDescription'] <- 'api.description'
-  names (plotInfo)[names(plotInfo)=='data.locationType'] <- 'api.type'
-  names (plotInfo)[names(plotInfo)=='Value.for.Geodetic.datum'] <- 'api.geodeticDatum'
-  names (plotInfo)[names(plotInfo)=='Value.for.State.province'] <- 'api.stateProvince'
-  names (plotInfo)[names(plotInfo)=='Value.for.County'] <- 'api.county'
-  names (plotInfo)[names(plotInfo)=='Value.for.Country'] <- 'api.country'
+  names (plotInfo)[names(plotInfo)=='data.siteCode'] <- 'siteID'
+  names (plotInfo)[names(plotInfo)=='data.domainCode'] <- 'domainID'
+  names (plotInfo)[names(plotInfo)=='data.locationUtmEasting'] <- 'easting'
+  names (plotInfo)[names(plotInfo)=='data.locationUtmNorthing'] <- 'northing'
+  names (plotInfo)[names(plotInfo)=='Value.for.UTM.Zone'] <- 'utmZone'
+  names (plotInfo)[names(plotInfo)=='data.locationElevation'] <- 'elevation'
+  names (plotInfo)[names(plotInfo)=='data.locationDecimalLatitude'] <- 'decimalLatitude'
+  names (plotInfo)[names(plotInfo)=='data.locationDecimalLongitude'] <- 'decimalLongitude'
+  names (plotInfo)[names(plotInfo)=='Value.for.Coordinate.uncertainty'] <- 'coordinateUncertainty'
+  names (plotInfo)[names(plotInfo)=='Value.for.Elevation.uncertainty'] <- 'elevationUncertainty'
+  names (plotInfo)[names(plotInfo)=='Value.for.National.Land.Cover.Database..2001.'] <- 'nlcdClass'
+  names (plotInfo)[names(plotInfo)=='Value.for.Plot.dimensions'] <- 'plotDimensions'
+  names (plotInfo)[names(plotInfo)=='Value.for.Soil.type.order'] <- 'soilTypeOrder'
+  names (plotInfo)[names(plotInfo)=='Value.for.Subtype.Specification'] <- 'subtypeSpecification'
+  names (plotInfo)[names(plotInfo)=='Value.for.Plot.type'] <- 'plotType'
+  names (plotInfo)[names(plotInfo)=='Value.for.Reference.Point.Position'] <- 'referencePointPosition'
+  names (plotInfo)[names(plotInfo)=='Value.for.Plot.subtype'] <- 'subtype'
+  names (plotInfo)[names(plotInfo)=='Value.for.Plot.size'] <- 'plotSize'
+  names (plotInfo)[names(plotInfo)=='Value.for.Maximum.elevation'] <- 'maximumElevation'
+  names (plotInfo)[names(plotInfo)=='Value.for.Slope.aspect'] <- 'slopeAspect'
+  names (plotInfo)[names(plotInfo)=='Value.for.Horizontal.dilution.of.precision'] <- 'plotHdop'
+  names (plotInfo)[names(plotInfo)=='Value.for.Positional.dilution.of.precision'] <- 'plotPdop'
+  names (plotInfo)[names(plotInfo)=='Value.for.Slope.gradient'] <- 'slopeGradient'
+  names (plotInfo)[names(plotInfo)=='Value.for.Minimum.elevation'] <- 'minimumElevation'
+  names (plotInfo)[names(plotInfo)=='Value.for.Coordinate.source'] <- 'coordinateSource'
+  names (plotInfo)[names(plotInfo)=='Value.for.Filtered.positions'] <- 'filteredPositions'
+  names (plotInfo)[names(plotInfo)=='data.locationDescription'] <- 'locationDescription'
+  names (plotInfo)[names(plotInfo)=='data.locationType'] <- 'locationType'
+  names (plotInfo)[names(plotInfo)=='Value.for.Geodetic.datum'] <- 'geodeticDatum'
+  names (plotInfo)[names(plotInfo)=='Value.for.State.province'] <- 'stateProvince'
+  names (plotInfo)[names(plotInfo)=='Value.for.County'] <- 'county'
+  names (plotInfo)[names(plotInfo)=='Value.for.Country'] <- 'country'
+  names (plotInfo)[names(plotInfo)=='Value.for.Plot.ID'] <- 'plotID'
+  names (plotInfo)[names(plotInfo)=='data.xOffset'] <- 'xOffset'
+  names (plotInfo)[names(plotInfo)=='data.yOffset'] <- 'yOffset'
+  names (plotInfo)[names(plotInfo)=='data.zOffset'] <- 'zOffset'
+  names (plotInfo)[names(plotInfo)=='data.alphaOrientation'] <- 'alphaOrientation'
+  names (plotInfo)[names(plotInfo)=='data.betaOrientation'] <- 'betaOrientation'
+  names (plotInfo)[names(plotInfo)=='data.gammaOrientation'] <- 'gammaOrientation'
+  names (plotInfo)[names(plotInfo)=='data.locationUtmHemisphere'] <- 'utmHemisphere'
+  names (plotInfo)[names(plotInfo)=='data.locationUtmZone'] <- 'utmZoneNumber'
+  names (plotInfo)[names(plotInfo)=='data.locationParent'] <- 'locationParent'
+  names (plotInfo)[names(plotInfo)=='data.locationParentUrl'] <- 'locationParentUrl'
   
-  allTerms <- c('api.domainID', 'api.type', 'api.description', 'api.filteredPositions', 'api.coordinateSource','api.minimumElevation',
-              'api.slopeGradient', 'api.plotPdop', 'api.plotHdop', 'api.slopeAspect', 'api.maximumElevation', 'api.plotSize',
-              'api.subtype', 'api.referencePointPosition', 'api.plotType', 'api.siteID', 'api.easting','api.northing' ,'api.utmZone',
-              'api.elevation','api.decimalLatitude', 'api.decimalLongitude','api.coordinateUncertainty', 'api.elevationUncertainty',
-              'api.nlcdClass','api.plotDimensions','api.soilTypeOrder', 'api.subtypeSpecification', 'api.county', 'api.stateProvince', 'api.country')
+  
+  allTerms <- c('domainID', 'type', 'description', 'filteredPositions', 'coordinateSource','minimumElevation',
+              'slopeGradient', 'plotPdop', 'plotHdop', 'slopeAspect', 'maximumElevation', 'plotSize',
+              'subtype', 'referencePointPosition', 'plotType', 'siteID', 'easting','northing' ,'utmZone',
+              'elevation','decimalLatitude', 'decimalLongitude','coordinateUncertainty', 'elevationUncertainty',
+              'nlcdClass','plotDimensions','soilTypeOrder', 'subtypeSpecification', 'county', 'stateProvince', 'country')
   
   # Fill unused fields with NA
-  plotInfo[, paste(allTerms[!allTerms %in% (names(plotInfo))])] <- NA
+  plotInfo[,allTerms[!allTerms %in% (names(plotInfo))]] <- NA
   
-  #add blank column if all values are invalid
+  # add blank column if all values are invalid
+  # ADD: need something like this, but not this column name. What happens if all locations invalid?
   if (!'data.locationName'%in%names(plotInfo)){
     plotInfo$data.locationName<-NA
   }
@@ -145,13 +158,13 @@ getLocByName <- function(
   utils::setTxtProgressBar(pb, length(unique(data[,locCol])))
   close(pb)
 
-  # Return a data frame of the named locations and geolocations
-  # removing anything that was previously in the data itself
+  # Return the original data with location data added
+  # Only add columns that weren't already in the data
+  # ADD: check that values match in the columns that were already in the data
   if (!locOnly){
-    # removed this line Dec 2018, had begun making tests fail.
-    #plotInfo <- plotInfo[which(is.na(plotInfo$error.status)),]
     data$row.index <- 1:nrow(data)
-    allInfo <- merge(data,plotInfo, by.x=locCol, by.y='data.locationName', all.x=T)
+    plotInfo <- plotInfo[,!names(plotInfo) %in% names(data)]
+    allInfo <- merge(data, plotInfo, by.x=locCol, by.y='data.locationName', all.x=T)
     allInfo <- allInfo[order(allInfo$row.index),]
     allInfo <- allInfo[,!names(allInfo)%in%'row.index']
   } else { 
