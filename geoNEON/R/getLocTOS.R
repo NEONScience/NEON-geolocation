@@ -178,7 +178,7 @@ getLocTOS <- function(
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol="points"
     point.loc <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
-    names(point.loc)[names(point.loc)=='data.locationName']<-locCol
+    names(point.loc)[names(point.loc)=='locationName']<-locCol
 
     #add additional coordinateUncertainty
     point.loc$additionalUncertainty<-NA
@@ -308,7 +308,7 @@ getLocTOS <- function(
     data$easting<-NA
     data$utmZone<-NA
     data$namedLocation<-as.character(data$namedLocation)
-    pointSpatialData$namedLocation<-as.character(pointSpatialData$data.locationName)
+    pointSpatialData$namedLocation<-as.character(pointSpatialData$locationName)
 
     for (i in 1:nrow(data)){
       if (!is.na(data$referencePoint_tempA[i])&
@@ -416,7 +416,7 @@ getLocTOS <- function(
     # Don't bother looking up any of the 'X' traps - those have uncertain geolocations
     locCol <- "points"
     point.loc <- getLocByName(data[!grepl('X', data$points),], locCol=locCol, locOnly=T)
-    names(point.loc)[names(point.loc)=='data.locationName']<-locCol
+    names(point.loc)[names(point.loc)=='locationName']<-locCol
     point.loc$adjCoordinateUncertainty<-as.numeric(point.loc$coordinateUncertainty)
     
     #coordinate uncertainty is only provided for select locations per grid that
@@ -469,7 +469,7 @@ getLocTOS <- function(
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol="subplots"
     subplot.loc <- getLocByName(data, locCol=locCol, locOnly=T)
-    names (subplot.loc)[names(subplot.loc)=='data.locationName']<-locCol
+    names(subplot.loc)[names(subplot.loc)=='locationName']<-locCol
     subplot.loc$adjCoordinateUncertainty<-as.numeric(subplot.loc$coordinateUncertainty)
     
     #Increase coordinateUncertainty by an appropriate amount to account for error

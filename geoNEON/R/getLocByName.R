@@ -50,20 +50,20 @@ getLocByName <- function(
   for (j in unique(data[,locCol])) {
     utils::setTxtProgressBar(pb, i)
     i<-i+1
-    k<-1 #k iterates for 100 attempts at curl
-    while(k<100){
+    k<-1 #k iterates for 5 attempts at curl
+    while(k<5){
       # Pull data from API
       tmp<-try(req <- httr::GET(paste("http://data.neonscience.org/api/v0/locations/", j, sep='')))
       k<-k+1 
       if(!class(tmp) == 'try-error'){
-        k<-k+100
+        k<-k+5
       }
     }
     req.content <- httr::content(req, as="parsed")
     
     # Give warnings for missing values & API errors
     if (!is.null(req.content$doc)){
-      warning("The NEON publication server is down, please try again later. 
+      warning("The NEON server is down, or your internet connection is down. 
               Check the NEON data portal for additional service messages.")
     }
     if (!is.null(req.content$error$status)){
@@ -95,6 +95,8 @@ getLocByName <- function(
   plotInfo <- plyr::rbind.fill(outList)
   
   # Simplify names from the database names
+  # there are some database names still persisting - possibly only populated at the site level
+  names (plotInfo)[names(plotInfo)=='data.locationName'] <- 'locationName'
   names (plotInfo)[names(plotInfo)=='data.siteCode'] <- 'siteID'
   names (plotInfo)[names(plotInfo)=='data.domainCode'] <- 'domainID'
   names (plotInfo)[names(plotInfo)=='data.locationUtmEasting'] <- 'easting'
@@ -139,20 +141,23 @@ getLocByName <- function(
   names (plotInfo)[names(plotInfo)=='data.locationParent'] <- 'locationParent'
   names (plotInfo)[names(plotInfo)=='data.locationParentUrl'] <- 'locationParentUrl'
   
-  
-  allTerms <- c('domainID', 'type', 'description', 'filteredPositions', 'coordinateSource','minimumElevation',
-              'slopeGradient', 'plotPdop', 'plotHdop', 'slopeAspect', 'maximumElevation', 'plotSize',
-              'subtype', 'referencePointPosition', 'plotType', 'siteID', 'easting','northing' ,'utmZone',
-              'elevation','decimalLatitude', 'decimalLongitude','coordinateUncertainty', 'elevationUncertainty',
-              'nlcdClass','plotDimensions','soilTypeOrder', 'subtypeSpecification', 'county', 'stateProvince', 'country')
+  allTerms <- c('domainID', 'type', 'description', 'filteredPositions', 'coordinateSource',
+                'minimumElevation','slopeGradient', 'plotPdop', 'plotHdop', 'slopeAspect', 
+                'maximumElevation', 'plotSize','subtype', 'referencePointPosition', 
+                'plotType', 'siteID', 'easting','northing' ,'utmZone','elevation',
+                'decimalLatitude', 'decimalLongitude','coordinateUncertainty', 
+                'elevationUncertainty','nlcdClass','plotDimensions','soilTypeOrder', 
+                'subtypeSpecification', 'county', 'stateProvince', 'country','plotID',
+                'locationDescription','locationType','utmHemisphere','utmZoneNumber',
+                'alphaOrientation','betaOrientation','gammaOrientation','xOffset',
+                'yOffset','zOffset','locationParent','locationParentUrl','geodeticDatum')
   
   # Fill unused fields with NA
   plotInfo[,allTerms[!allTerms %in% (names(plotInfo))]] <- NA
   
   # add blank column if all values are invalid
-  # ADD: need something like this, but not this column name. What happens if all locations invalid?
-  if (!'data.locationName'%in%names(plotInfo)){
-    plotInfo$data.locationName<-NA
+  if (!'locationName'%in%names(plotInfo)){
+    plotInfo$locationName<-NA
   }
   
   utils::setTxtProgressBar(pb, length(unique(data[,locCol])))
@@ -160,13 +165,29 @@ getLocByName <- function(
 
   # Return the original data with location data added
   # Only add columns that weren't already in the data
-  # ADD: check that values match in the columns that were already in the data
   if (!locOnly){
     data$row.index <- 1:nrow(data)
-    plotInfo <- plotInfo[,!names(plotInfo) %in% names(data)]
-    allInfo <- merge(data, plotInfo, by.x=locCol, by.y='data.locationName', all.x=T)
-    allInfo <- allInfo[order(allInfo$row.index),]
-    allInfo <- allInfo[,!names(allInfo)%in%'row.index']
+    dataRep <- data[,names(data) %in% names(plotInfo)]
+    if(length(dataRep)==0) {
+      allInfo <- merge(data, plotInfo, by.x=locCol, by.y='locationName', all.x=T)
+      allInfo <- allInfo[order(allInfo$row.index),]
+      allInfo <- allInfo[,!names(allInfo) %in% c('row.index','locationName')]
+    } else {
+      for(i in names(dataRep)) {
+        if(all(unique(dataRep[,c(locCol, i)])==plotInfo[,c('locationName',i)])) {
+          next
+        } else {
+          cat(paste('Mismatch between input data and location database for data variable ',
+                    i, '.\nUsually this indicates database has been updated since data were processed. Output data are database values.',
+                    sep=''))
+          data <- data[,names(data)!=i]
+        }
+      }
+      plotInfo <- plotInfo[,!names(plotInfo) %in% names(data)]
+      allInfo <- base::merge(data, plotInfo, by.x=locCol, by.y='locationName', all.x=T)
+      allInfo <- allInfo[order(allInfo$row.index),]
+      allInfo <- allInfo[,!names(allInfo) %in% c('row.index','locationName')]
+    }
   } else { 
     allInfo <- plotInfo
   }
