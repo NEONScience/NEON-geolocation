@@ -96,7 +96,7 @@ getLocByName <- function(
   
   # Simplify names from the database names
   # there are some database names still persisting - possibly only populated at the site level
-  names (plotInfo)[names(plotInfo)=='data.locationName'] <- 'locationName'
+  names (plotInfo)[names(plotInfo)=='data.locationName'] <- 'namedLocation'
   names (plotInfo)[names(plotInfo)=='data.siteCode'] <- 'siteID'
   names (plotInfo)[names(plotInfo)=='data.domainCode'] <- 'domainID'
   names (plotInfo)[names(plotInfo)=='data.locationUtmEasting'] <- 'easting'
@@ -156,8 +156,8 @@ getLocByName <- function(
   plotInfo[,allTerms[!allTerms %in% (names(plotInfo))]] <- NA
   
   # add blank column if all values are invalid
-  if (!'locationName'%in%names(plotInfo)){
-    plotInfo$locationName<-NA
+  if (!'namedLocation'%in%names(plotInfo)){
+    plotInfo$namedLocation<-NA
   }
   
   utils::setTxtProgressBar(pb, length(unique(data[,locCol])))
@@ -169,24 +169,24 @@ getLocByName <- function(
     data$row.index <- 1:nrow(data)
     dataRep <- data[,names(data) %in% names(plotInfo)]
     if(length(dataRep)==0) {
-      allInfo <- merge(data, plotInfo, by.x=locCol, by.y='locationName', all.x=T)
+      allInfo <- merge(data, plotInfo, by.x=locCol, by.y='namedLocation', all.x=T)
       allInfo <- allInfo[order(allInfo$row.index),]
-      allInfo <- allInfo[,!names(allInfo) %in% c('row.index','locationName')]
+      allInfo <- allInfo[,!names(allInfo) %in% c('row.index')]
     } else {
       for(i in names(dataRep)) {
-        if(all(unique(dataRep[,c(locCol, i)])==plotInfo[,c('locationName',i)])) {
+        if(all(order(unique(dataRep[,c(locCol, i)]))==order(plotInfo[,c('namedLocation',i)]))) {
           next
         } else {
-          cat(paste('Mismatch between input data and location database for data variable ',
+          cat(paste('\nMismatch between input data and location database for data variable ',
                     i, '.\nUsually this indicates database has been updated since data were processed. Output data are database values.',
                     sep=''))
           data <- data[,names(data)!=i]
         }
       }
-      plotInfo <- plotInfo[,!names(plotInfo) %in% names(data)]
-      allInfo <- base::merge(data, plotInfo, by.x=locCol, by.y='locationName', all.x=T)
+      plotInfo <- plotInfo[,!names(plotInfo) %in% names(data)[names(data)!='namedLocation']]
+      allInfo <- base::merge(data, plotInfo, by.x=locCol, by.y='namedLocation', all.x=T)
       allInfo <- allInfo[order(allInfo$row.index),]
-      allInfo <- allInfo[,!names(allInfo) %in% c('row.index','locationName')]
+      allInfo <- allInfo[,!names(allInfo) %in% c('row.index')]
     }
   } else { 
     allInfo <- plotInfo
