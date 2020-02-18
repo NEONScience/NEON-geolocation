@@ -174,11 +174,15 @@ getLocByName <- function(
       allInfo <- allInfo[,!names(allInfo) %in% c('row.index')]
     } else {
       for(i in names(dataRep)) {
-        if(all(order(unique(dataRep[,c(locCol, i)]))==order(plotInfo[,c('namedLocation',i)]))) {
+        if(all(unique(dataRep[order(dataRep[,locCol]), c(locCol, i)])==
+               plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)])) {
           next
         } else {
+          locMis <- plotInfo$namedLocation[order(plotInfo$namedLocation)][which(unique(dataRep[order(dataRep[,locCol]), c(locCol, i)])!=
+                            plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)], arr.ind=T)[,1]]
           cat(paste('\nMismatch between input data and location database for data variable ',
-                    i, '.\nUsually this indicates database has been updated since data were processed. Output data are database values.',
+                    i, ' and named locations ', paste0(locMis, collapse=' '),
+                    '\nUsually this indicates database has been updated since data were processed. Output data are database values.',
                     sep=''))
           data <- data[,names(data)!=i]
         }
