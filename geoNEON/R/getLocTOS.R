@@ -103,7 +103,8 @@ getLocTOS <- function(
                                      "northing","easting","coordinateUncertainty",
                                      "decimalLatitude","decimalLongitude",
                                      "elevation","elevationUncertainty")]
-    colnames(subplot.return)[6:10] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
+    colnames(subplot.return)[4:10] <- c("adjNorthing","adjEasting",
+                                        "adjCoordinateUncertainty","adjDecimalLatitude",
                                        "adjDecimalLongitude","adjElevation",
                                        "adjElevationUncertainty")
     
@@ -151,6 +152,8 @@ getLocTOS <- function(
     col.name.list <- gsub('decimalLongitude','adjDecimalLongitude', col.name.list)
     col.name.list <- gsub('elevation','adjElevation', col.name.list)
     col.name.list <- gsub('elevationUncertainty','adjElevationUncertainty', col.name.list)
+    col.name.list <- gsub('northing','adjNorthing', col.name.list)
+    col.name.list <- gsub('easting','adjEasting', col.name.list)
     
     colnames(plot.return) <- col.name.list
     
@@ -204,6 +207,8 @@ getLocTOS <- function(
                                "elevation","elevationUncertainty")]
     
     col.name.list <- names(point.return)
+    col.name.list <- gsub('northing','adjNorthing', col.name.list)
+    col.name.list <- gsub('easting','adjEasting', col.name.list)
     col.name.list <- gsub('decimalLatitude','adjDecimalLatitude', col.name.list)
     col.name.list <- gsub('decimalLongitude','adjDecimalLongitude', col.name.list)
     col.name.list <- gsub('elevation','adjElevation', col.name.list)
@@ -380,6 +385,8 @@ getLocTOS <- function(
     # calculate latitude and longitude from the corrected northing and easting
     data <- def.calc.latlong(data)
     
+    names(data)[names(data)=='easting'] <- 'adjEasting'
+    names(data)[names(data)=='northing'] <- 'adjNorthing'
     names(data)[names(data)=='decimalLatitude'] <- 'adjDecimalLatitude'
     names(data)[names(data)=='decimalLongitude'] <- 'adjDecimalLongitude'
     names(data)[names(data)=='tempLat'] <- 'decimalLatitude'
@@ -447,7 +454,7 @@ getLocTOS <- function(
                                  "northing","easting","tot.unc",
                                  "decimalLatitude","decimalLongitude",
                                  "elevation","elevationUncertainty")]
-    colnames(point.return) <- c("points", "utmZone", "northing", "easting", 
+    colnames(point.return) <- c("points", "utmZone", "adjNorthing", "adjEasting", 
                                 "adjCoordinateUncertainty","adjDecimalLatitude",
                                 "adjDecimalLongitude","adjElevation",
                                 "adjElevationUncertainty")
@@ -493,10 +500,12 @@ getLocTOS <- function(
     subplot.loc$adjDecimalLongitude <- subplot.loc$decimalLongitude
     subplot.loc$adjElevation <- subplot.loc$elevation
     subplot.loc$adjElevationUncertainty <- subplot.loc$elevationUncertainty
+    subplot.loc$adjNorthing <- subplot.loc$northing
+    subplot.loc$adjEasting <- subplot.loc$easting
     
     # Return relevant columns
     subplot.return <- subplot.loc[,c(locCol,"utmZone",
-                                     "northing","easting","adjCoordinateUncertainty",
+                                     "adjNorthing","adjEasting","adjCoordinateUncertainty",
                                      "adjDecimalLatitude","adjDecimalLongitude",
                                      "adjElevation","adjElevationUncertainty")]
     data$row.index<-1:nrow(data)
@@ -519,9 +528,9 @@ getLocTOS <- function(
     
     # Calculate easting and northing for individuals
     options(digits=15)
-    point.loc$easting <- as.numeric(point.loc$easting) + point.loc$stemDistance * 
+    point.loc$adjEasting <- as.numeric(point.loc$easting) + point.loc$stemDistance * 
       sin((point.loc$stemAzimuth * pi) / 180)
-    point.loc$northing <- as.numeric(point.loc$northing) + point.loc$stemDistance * 
+    point.loc$adjNorthing <- as.numeric(point.loc$northing) + point.loc$stemDistance * 
       cos((point.loc$stemAzimuth * pi) / 180)
     
     # Increase coordinate uncertainties
@@ -535,7 +544,7 @@ getLocTOS <- function(
 
     # Return relevant columns
     point.return <- point.loc[,c(locCol,"individualID","utmZone",
-                                 "northing","easting","adjCoordinateUncertainty",
+                                 "adjNorthing","adjEasting","adjCoordinateUncertainty",
                                  "adjDecimalLatitude","adjDecimalLongitude",
                                  "adjElevation","adjElevationUncertainty")]
 
