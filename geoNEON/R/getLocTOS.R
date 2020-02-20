@@ -367,7 +367,7 @@ getLocTOS <- function(
         data$easting[i]<-easting
         data$northing[i]<-northing
         if (!is.na(northing)&&!is.na(easting)){
-          data$utmZone[i]<-pointSpatialData$api.utmZone[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
+          data$utmZone[i]<-pointSpatialData$utmZone[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
                                                       pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]]
         }
       }
