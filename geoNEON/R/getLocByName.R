@@ -105,8 +105,8 @@ getLocByName <- function(
   names (plotInfo)[names(plotInfo)=='data.locationElevation'] <- 'elevation'
   names (plotInfo)[names(plotInfo)=='data.locationDecimalLatitude'] <- 'decimalLatitude'
   names (plotInfo)[names(plotInfo)=='data.locationDecimalLongitude'] <- 'decimalLongitude'
-  names (plotInfo)[names(plotInfo)=='Value.for.Coordinate.uncertainty'] <- 'coordinateUncertainty'
-  names (plotInfo)[names(plotInfo)=='Value.for.Elevation.uncertainty'] <- 'elevationUncertainty'
+  names (plotInfo)[names(plotInfo)=='Value.for.Coordinate.uncertainty'] <- 'namedLocationCoordUncertainty'
+  names (plotInfo)[names(plotInfo)=='Value.for.Elevation.uncertainty'] <- 'namedLocationElevUncertainty'
   names (plotInfo)[names(plotInfo)=='Value.for.National.Land.Cover.Database..2001.'] <- 'nlcdClass'
   names (plotInfo)[names(plotInfo)=='Value.for.Plot.dimensions'] <- 'plotDimensions'
   names (plotInfo)[names(plotInfo)=='Value.for.Soil.type.order'] <- 'soilTypeOrder'
@@ -145,8 +145,8 @@ getLocByName <- function(
                 'minimumElevation','slopeGradient', 'plotPdop', 'plotHdop', 'slopeAspect', 
                 'maximumElevation', 'plotSize','subtype', 'referencePointPosition', 
                 'plotType', 'siteID', 'easting','northing' ,'utmZone','elevation',
-                'decimalLatitude', 'decimalLongitude','coordinateUncertainty', 
-                'elevationUncertainty','nlcdClass','plotDimensions','soilTypeOrder', 
+                'decimalLatitude', 'decimalLongitude','namedLocationCoordUncertainty', 
+                'namedLocationElevUncertainty','nlcdClass','plotDimensions','soilTypeOrder', 
                 'subtypeSpecification', 'county', 'stateProvince', 'country','plotID',
                 'locationDescription','locationType','utmHemisphere','utmZoneNumber',
                 'alphaOrientation','betaOrientation','gammaOrientation','xOffset',
@@ -163,34 +163,57 @@ getLocByName <- function(
   utils::setTxtProgressBar(pb, length(unique(data[,locCol])))
   close(pb)
 
-  # Return the original data with location data added
+  # Return the original data with location data added, unless locOnly=T
   # Only add columns that weren't already in the data
+  messages <- NA
   if (!locOnly){
     data$row.index <- 1:nrow(data)
     dataRep <- data[,names(data) %in% names(plotInfo)]
+    
+    # if no names are shared, merge and done
     if(length(dataRep)==0) {
       allInfo <- merge(data, plotInfo, by.x=locCol, by.y='namedLocation', all.x=T)
       allInfo <- allInfo[order(allInfo$row.index),]
       allInfo <- allInfo[,!names(allInfo) %in% c('row.index')]
     } else {
+      
+      # iterate over shared names
       for(i in names(dataRep)) {
-        if(all(unique(dataRep[order(dataRep[,locCol]), c(locCol, i)])==
-               plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)])) {
+        if(i=='namedLocation') {
           next
         } else {
+          
+          # check whether values in data match values in plotInfo (from API) for matching named locations
+          # this only checks for numeric values with difference > 1
+          # at tolerance < 1, matching character vectors sometimes flag as mismatched
+          if(isTRUE(all.equal(unique(dataRep[order(dataRep[,locCol]), c(locCol, i)]),
+                              plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)],
+                              tolerance=1))) {
+            next
+          } else {
+            
+          # if mismatches are found, make a list of the named locations where values don't match
+          # and drop the variable from the data table - will be replaced by database version in the merge
           locMis <- plotInfo$namedLocation[order(plotInfo$namedLocation)][which(unique(dataRep[order(dataRep[,locCol]), c(locCol, i)])!=
                             plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)], arr.ind=T)[,1]]
-          cat(paste('\nMismatch between input data and location database for data variable ',
-                    i, ' and named locations ', paste0(locMis, collapse=' '),
-                    '\nUsually this indicates database has been updated since data were processed. Output data are database values.',
-                    sep=''))
+          messages <- rbind(messages, cbind(rep(i, length(locMis)), locMis))
           data <- data[,names(data)!=i]
         }
+        }
       }
+      # drop variables from plotInfo that were already in data, and matched
       plotInfo <- plotInfo[,!names(plotInfo) %in% names(data)[names(data)!='namedLocation']]
+      # merge data and plotInfo - no columns besides namedLocation should be in both at this point
       allInfo <- base::merge(data, plotInfo, by.x=locCol, by.y='namedLocation', all.x=T)
       allInfo <- allInfo[order(allInfo$row.index),]
       allInfo <- allInfo[,!names(allInfo) %in% c('row.index')]
+    }
+    # report locations and variables with value mismatches
+    if(!all(is.na(messages))) {
+      colnames(messages) <- c('variable', 'namedLocation')
+      cat('\nMismatch between input data and location database for the following variables and locations:\n')
+      print.table(messages[-1,])
+      cat('\nUsually this indicates database has been updated since data were processed. Output data are database values.')
     }
   } else { 
     allInfo <- plotInfo
