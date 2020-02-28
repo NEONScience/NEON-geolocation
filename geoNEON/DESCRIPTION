@@ -17,6 +17,6 @@ Suggests:
 Imports: plyr,
     httr,
     sp,
-    gtools,
     dplyr,
-    rgdal
+    rgdal,
+    data.table

@@ -375,7 +375,8 @@ getLocTOS <- function(
 
     #don't transform the missing points
     if(length(which(is.na(data$easting)|is.na(data$northing)))>0) {
-      nogeo <- gtools::smartbind(nogeo, data[is.na(data$easting)|is.na(data$northing),])
+      nogeo <- data.table::rbindlist(list(nogeo, data[is.na(data$easting)|is.na(data$northing),]), 
+                                     fill=T)
       data <- data[-which(is.na(data$easting)|is.na(data$northing)),]
     }
 
@@ -394,11 +395,11 @@ getLocTOS <- function(
     
     # merge with other data
     if (nrow(nogeo)>0){
-      data<-gtools::smartbind(data, nogeo)
+      data <- data.table::rbindlist(list(data, nogeo), fill=T)
     }
 
     if (nrow(phenocamRows)>0){
-      data<-gtools::smartbind(data, phenocamRows)
+      data <- data.table::rbindlist(list(data, phenocamRows), fill=T)
     }
 
     #cleanup
