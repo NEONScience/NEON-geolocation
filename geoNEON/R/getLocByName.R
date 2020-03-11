@@ -65,10 +65,12 @@ getLocByName <- function(
     if (!is.null(req.content$doc)){
       warning("The NEON server is down, or your internet connection is down. 
               Check the NEON data portal for additional service messages.")
+      next
     }
     if (!is.null(req.content$error$status)){
       warning(paste("WARNING: the following namedLocation was not found:",
                     j, sep=" "))
+      next
     }
     
     # Extract location properties from JSON
@@ -168,7 +170,8 @@ getLocByName <- function(
   messages <- NA
   if (!locOnly){
     data$row.index <- 1:nrow(data)
-    dataRep <- data[,names(data) %in% names(plotInfo)]
+    dataRep <- data[data[,locCol] %in% plotInfo$namedLocation,
+                    names(data) %in% names(plotInfo)]
     
     # if no names are shared, merge and done
     if(length(dataRep)==0) {
@@ -176,6 +179,13 @@ getLocByName <- function(
       allInfo <- allInfo[order(allInfo$row.index),]
       allInfo <- allInfo[,!names(allInfo) %in% c('row.index')]
     } else {
+      
+      # make sure to include location column
+      if(!locCol %in% names(dataRep)) {
+        dataRep <- cbind(dataRep, 
+                         d=data[data[,locCol] %in% plotInfo$namedLocation,locCol])
+        names(dataRep)[which(names(dataRep)=='d')] <- locCol
+      }
       
       # iterate over shared names
       for(i in names(dataRep)) {
@@ -186,15 +196,26 @@ getLocByName <- function(
           # check whether values in data match values in plotInfo (from API) for matching named locations
           # this only checks for numeric values with difference > 1
           # at tolerance < 1, matching character vectors sometimes flag as mismatched
+          if(class(dataRep[,i])=='character') {
+            eqVec <- unique(dataRep[order(dataRep[,locCol]), c(locCol, i)])==
+              plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)]
+          } else {
+            if(class(dataRep[,i])=='numeric') {
+              eqVec <- all.equal(unique(dataRep[order(dataRep[,locCol]), c(locCol, i)]),
+                plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)], 
+                tolerance=0.5, check.names=F, check.attributes=F)
+            }
+          }
           if(isTRUE(all.equal(unique(dataRep[order(dataRep[,locCol]), c(locCol, i)]),
                               plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)],
-                              tolerance=1))) {
+                              tolerance=1, check.names=F, check.attributes=F))) {
             next
           } else {
             
           # if mismatches are found, make a list of the named locations where values don't match
           # and drop the variable from the data table - will be replaced by database version in the merge
-          locMis <- plotInfo$namedLocation[order(plotInfo$namedLocation)][which(unique(dataRep[order(dataRep[,locCol]), c(locCol, i)])!=
+          locMis <- plotInfo$namedLocation[order(plotInfo$namedLocation)][which(unique(dataRep[order(dataRep[,locCol]), 
+                                                                                               c(locCol, i)])!=
                             plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)], arr.ind=T)[,1]]
           messages <- rbind(messages, cbind(rep(i, length(locMis)), locMis))
           data <- data[,names(data)!=i]

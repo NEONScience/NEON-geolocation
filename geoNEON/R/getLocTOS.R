@@ -524,7 +524,7 @@ getLocTOS <- function(
     data <- cbind(data, points)
     
     # Use the getLocByName function to pull the subplot geolocations from the API
-    locCol="points"
+    locCol <- "points"
     point.loc <- geoNEON::getLocByName(data, locCol=locCol, locOnly=F)
     
     # Calculate easting and northing for individuals
