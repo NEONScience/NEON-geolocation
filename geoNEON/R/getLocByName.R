@@ -189,39 +189,35 @@ getLocByName <- function(
       
       # iterate over shared names
       for(i in names(dataRep)) {
-        if(i=='namedLocation') {
+        if(i=='namedLocation' | i==locCol) {
           next
         } else {
           
           # check whether values in data match values in plotInfo (from API) for matching named locations
-          # this only checks for numeric values with difference > 1
-          # at tolerance < 1, matching character vectors sometimes flag as mismatched
+          # have to handle character and numeric separately - all.equal behaves strangely, so better to split
+          dataRepUniq <- unique(dataRep[order(dataRep[,locCol]), c(locCol, i)])
+          plotInfoUniq <- plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)]
           if(class(dataRep[,i])=='character') {
-            eqVec <- unique(dataRep[order(dataRep[,locCol]), c(locCol, i)])==
-              plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)]
+            eqVec <- dataRepUniq==plotInfoUniq
+            if(!all(eqVec)) {locMatch <- FALSE}
           } else {
             if(class(dataRep[,i])=='numeric') {
-              eqVec <- all.equal(unique(dataRep[order(dataRep[,locCol]), c(locCol, i)]),
-                plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)], 
-                tolerance=0.5, check.names=F, check.attributes=F)
+              eqVec <- abs(dataRepUniq[,i] - plotInfoUniq[,i])
+              eqVec <- eqVec <= 0.5
+              if(!all(eqVec)) {locMatch <- FALSE}
+            } else {
+              next
             }
           }
-          if(isTRUE(all.equal(unique(dataRep[order(dataRep[,locCol]), c(locCol, i)]),
-                              plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)],
-                              tolerance=1, check.names=F, check.attributes=F))) {
-            next
-          } else {
-            
           # if mismatches are found, make a list of the named locations where values don't match
           # and drop the variable from the data table - will be replaced by database version in the merge
-          locMis <- plotInfo$namedLocation[order(plotInfo$namedLocation)][which(unique(dataRep[order(dataRep[,locCol]), 
-                                                                                               c(locCol, i)])!=
-                            plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)], arr.ind=T)[,1]]
-          messages <- rbind(messages, cbind(rep(i, length(locMis)), locMis))
-          data <- data[,names(data)!=i]
+          if(!locMatch) {
+            locMis <- plotInfo$namedLocation[order(plotInfo$namedLocation)][which(!eqVec)]
+            messages <- rbind(messages, cbind(rep(i, length(locMis)), locMis))
+            data <- data[,names(data)!=i]
+          }
         }
         }
-      }
       # drop variables from plotInfo that were already in data, and matched
       plotInfo <- plotInfo[,!names(plotInfo) %in% names(data)[names(data)!='namedLocation']]
       # merge data and plotInfo - no columns besides namedLocation should be in both at this point
