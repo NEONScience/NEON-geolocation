@@ -197,16 +197,18 @@ getLocByName <- function(
           # have to handle character and numeric separately - all.equal behaves strangely, so better to split
           dataRepUniq <- unique(dataRep[order(dataRep[,locCol]), c(locCol, i)])
           plotInfoUniq <- plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)]
+          locMatch <- TRUE
+          eqVec <- !logical(length(dataRepUniq[,i]))
           if(class(dataRep[,i])=='character') {
-            eqVec <- dataRepUniq==plotInfoUniq
-            if(!all(eqVec)) {locMatch <- FALSE}
+            eqVec <- dataRepUniq[,i]==plotInfoUniq[,i]
+            if(!all(eqVec, na.rm=T)) {locMatch <- FALSE}
           } else {
             if(class(dataRep[,i])=='numeric') {
               eqVec <- abs(dataRepUniq[,i] - plotInfoUniq[,i])
               eqVec <- eqVec <= 0.5
-              if(!all(eqVec)) {locMatch <- FALSE}
+              if(!all(eqVec, na.rm=T)) {locMatch <- FALSE}
             } else {
-              next
+              eqVec <- eqVec
             }
           }
           # if mismatches are found, make a list of the named locations where values don't match

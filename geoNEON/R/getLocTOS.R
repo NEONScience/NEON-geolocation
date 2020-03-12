@@ -529,9 +529,9 @@ getLocTOS <- function(
     
     # Calculate easting and northing for individuals
     options(digits=15)
-    point.loc$adjEasting <- as.numeric(point.loc$easting) + point.loc$stemDistance * 
+    point.loc$easting <- as.numeric(point.loc$easting) + point.loc$stemDistance * 
       sin((point.loc$stemAzimuth * pi) / 180)
-    point.loc$adjNorthing <- as.numeric(point.loc$northing) + point.loc$stemDistance * 
+    point.loc$northing <- as.numeric(point.loc$northing) + point.loc$stemDistance * 
       cos((point.loc$stemAzimuth * pi) / 180)
     
     # Increase coordinate uncertainties
@@ -542,15 +542,19 @@ getLocTOS <- function(
     
     # calculate latitude and longitude from the corrected northing and easting
     point.loc <- def.calc.latlong(point.loc)
-
+    
     # Return relevant columns
     point.return <- point.loc[,c(locCol,"individualID","utmZone",
-                                 "adjNorthing","adjEasting","adjCoordinateUncertainty",
-                                 "adjDecimalLatitude","adjDecimalLongitude",
-                                 "adjElevation","adjElevationUncertainty")]
+                                 "northing","easting","adjCoordinateUncertainty",
+                                 "decimalLatitude","decimalLongitude",
+                                 "elevation","adjElevationUncertainty")]
+    names(point.return) <- c(locCol,"individualID","utmZone",
+                             "adjNorthing","adjEasting","adjCoordinateUncertainty",
+                             "adjDecimalLatitude","adjDecimalLongitude",
+                             "adjElevation","adjElevationUncertainty")
 
     data$row.index <- 1:nrow(data)
-    all.return <- merge(data, point.return, by=c("points","individualID"))
+    all.return <- merge(data, point.return, by=c("points","individualID"), all.x=T)
     all.return <- all.return[order(all.return$row.index),]
     all.return <- all.return[,!names(all.return) %in% 'row.index']
     return(all.return)
