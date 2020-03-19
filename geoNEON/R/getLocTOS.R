@@ -518,6 +518,11 @@ getLocTOS <- function(
   
   if(dataProd=="vst_mappingandtagging"){
     
+    # Pull out data with no pointID
+    data$rowid <- 1:nrow(data)
+    dataN <- data[which(is.na(data$pointID)),]
+    data <- data[which(!is.na(data$pointID)),]
+    
     # Concatenate the named location (the plot) and point IDs to get the 
     #      point named locations
     points <- paste(data$namedLocation, data$pointID, sep=".")
@@ -553,10 +558,14 @@ getLocTOS <- function(
                              "adjDecimalLatitude","adjDecimalLongitude",
                              "adjElevation","adjElevationUncertainty")
 
-    data$row.index <- 1:nrow(data)
-    all.return <- merge(data, point.return, by=c("points","individualID"), all.x=T)
-    all.return <- all.return[order(all.return$row.index),]
-    all.return <- all.return[,!names(all.return) %in% 'row.index']
+    # merge location data with original data
+    all.pts.return <- merge(data, point.return, by=c("points","individualID"), all.x=T)
+    
+    # add back in individuals that weren't mapped
+    all.return <- plyr::rbind.fill(all.pts.return, dataN)
+    all.return <- all.return[order(all.return$rowid),]
+    all.return <- all.return[,-which(colnames(all.return)=='rowid')]
+    
     return(all.return)
     
   }
