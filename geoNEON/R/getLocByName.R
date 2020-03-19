@@ -93,6 +93,10 @@ getLocByName <- function(
     outList[[length(outList)+1]]<-data.frame(lapply(vals, as.character), stringsAsFactors=FALSE)
   }
   
+  if(length(outList)==0) {
+    stop('\nNone of the input named locations were found.')
+  }
+  
   # Make data frame of locations to return
   plotInfo <- plyr::rbind.fill(outList)
   
@@ -174,7 +178,7 @@ getLocByName <- function(
                     names(data) %in% names(plotInfo)]
     
     # if no names are shared, merge and done
-    if(length(dataRep)==0) {
+    if(length(dataRep)==0 | is.null(dim(dataRep))) {
       allInfo <- merge(data, plotInfo, by.x=locCol, by.y='namedLocation', all.x=T)
       allInfo <- allInfo[order(allInfo$row.index),]
       allInfo <- allInfo[,!names(allInfo) %in% c('row.index')]
