@@ -574,7 +574,77 @@ getLocTOS <- function(
     
     # concatenate the named location with the trapID
     traps <- paste(data$namedLocation, data$trapID, sep=".")
+    data <- cbind(data, traps)
     
+    # Use the getLocByName function to pull the subplot geolocations from the API
+    locCol <- "traps"
+    trap.loc <- geoNEON::getLocByName(data, locCol=locCol, locOnly=F)
+    
+    # increase coordinate uncertainty: traps may be moved up to 2 meters to avoid obstacles
+    trap.loc$adjCoordinateUncertainty <- as.numeric(trap.loc$namedLocationCoordUncertainty) + 2
+    trap.loc$adjElevationUncertainty <- as.numeric(trap.loc$namedLocationElevUncertainty) + 1
+    
+    # return relevant columns
+    trap.return <- trap.loc[,c(names(data), "utmZone",
+                                 "northing","easting","adjCoordinateUncertainty",
+                                 "decimalLatitude","decimalLongitude",
+                                 "elevation","adjElevationUncertainty")]
+    names(trap.return) <- c(names(data),"utmZone",
+                             "adjNorthing","adjEasting","adjCoordinateUncertainty",
+                             "adjDecimalLatitude","adjDecimalLongitude",
+                             "adjElevation","adjElevationUncertainty")
+    
+    return(trap.return)
+    
+  }
+  
+  if(dataProd=="mos_trapping") {
+    cat('Mosquito trapping location is flexible within the plot; locations provided in downloaded data are accurate.')
+  }
+  
+  if(dataProd=='dhp_perimagefile') {
+    
+    # plot spatial data are in the dhp_perplot table, so need to download
+    plot.loc <- geoNEON::getLocByName(data, locCol='namedLocation', locOnly=F)
+    
+    # adjust northing and easting using point offsets
+    plot.loc$easting <- as.numeric(plot.loc$easting)
+    plot.loc$northing <- as.numeric(plot.loc$northing)
+    for(i in unique(plot.loc$pointID)) {
+      eastOff.i <- dhpOffsets$eastOff[which(dhpOffsets$pointID==i)]
+      northOff.i <- dhpOffsets$northOff[which(dhpOffsets$pointID==i)]
+      
+      # if point in data doesn't match any point in DHP offsets, skip and delete location data
+      if(length(eastOff.i)==0 | length(northOff.i)==0) {
+        cat(paste('Point ', i, ' not found in DHP points. Locations not calculated.', sep=''))
+        plot.loc$easting[which(plot.loc$pointID==i)] <- NA
+        plot.loc$northing[which(plot.loc$pointID==i)] <- NA
+        next
+      }
+      
+      # apply offsets
+      plot.loc$easting[which(plot.loc$pointID==i)] <- plot.loc$easting[which(plot.loc$pointID==i)] + eastOff.i
+      plot.loc$northing[which(plot.loc$pointID==i)] <- plot.loc$northing[which(plot.loc$pointID==i)] + northOff.i
+    }
+    
+    # calculate latitude and longitude from the corrected northing and easting
+    plot.loc <- def.calc.latlong(plot.loc)
+    
+    # increase coordinate uncertainty: flexibility in camera placement
+    plot.loc$adjCoordinateUncertainty <- as.numeric(plot.loc$namedLocationCoordUncertainty) + 2
+    plot.loc$adjElevationUncertainty <- as.numeric(plot.loc$namedLocationElevUncertainty) + 2
+    
+    # return relevant columns
+    plot.return <- plot.loc[,c(names(data), "utmZone",
+                               "northing","easting","adjCoordinateUncertainty",
+                               "decimalLatitude","decimalLongitude",
+                               "elevation","adjElevationUncertainty")]
+    names(plot.return) <- c(names(data),"utmZone",
+                            "adjNorthing","adjEasting","adjCoordinateUncertainty",
+                            "adjDecimalLatitude","adjDecimalLongitude",
+                            "adjElevation","adjElevationUncertainty")
+    
+    return(plot.return)
   }
   
   else {

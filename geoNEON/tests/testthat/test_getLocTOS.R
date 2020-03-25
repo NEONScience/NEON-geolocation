@@ -75,3 +75,15 @@ test_that("Select woody veg named locations are correct", {
   expect_equal(as.numeric(out$adjNorthing), c(4433200.50143, NA, 4432708.48699), tolerance=0.1)
 })
 
+test_that('Select beetle locations are correct', {
+  df <- data.frame(namedLocation=c('TALL_007.basePlot.bet','TALL_013.basePlot.bet'),
+                   trapID=c('N','S'))
+  out <- getLocTOS(df, 'bet_fielddata')
+  expect_equal(as.numeric(out$adjCoordinateUncertainty), c(4.3,4.13))
+})
+
+test_that('Mosquitoes correctly returns only a message', {
+  df <- NA
+  expect_output(getLocTOS(df, 'mos_trapping'), 'Mosquito trapping location is flexible within the plot; locations provided in downloaded data are accurate.')
+})
+

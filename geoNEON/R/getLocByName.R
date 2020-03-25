@@ -208,7 +208,7 @@ getLocByName <- function(
             if(!all(eqVec, na.rm=T)) {locMatch <- FALSE}
           } else {
             if(class(dataRep[,i])=='numeric') {
-              eqVec <- abs(dataRepUniq[,i] - plotInfoUniq[,i])
+              eqVec <- abs(dataRepUniq[,i] - as.numeric(plotInfoUniq[,i]))
               eqVec <- eqVec <= 0.5
               if(!all(eqVec, na.rm=T)) {locMatch <- FALSE}
             } else {
