@@ -87,3 +87,10 @@ test_that('Mosquitoes correctly returns only a message', {
   expect_output(getLocTOS(df, 'mos_trapping'), 'Mosquito trapping location is flexible within the plot; locations provided in downloaded data are accurate.')
 })
 
+test_that('Select DHP locations are correct', {
+  df <- data.frame(namedLocation=c('SJER_055.basePlot.dhp','SJER_057.basePlot.dhp'),
+                   pointID=c('W10','S2'))
+  out <- getLocTOS(df, 'dhp_perimagefile')
+  expect_equal(as.numeric(out$adjNorthing), c(4111210,4110846), tolerance=1)
+})
+

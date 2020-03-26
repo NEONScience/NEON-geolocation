@@ -38,7 +38,8 @@ getLocTOS <- function(
   data <- data.frame(data)
   
     #Litter trap and herb clip location calculations:
-    if(dataProd=="ltr_pertrap" | dataProd=="hbp_perbout" | dataProd=="cfc_fieldData"){
+    if(dataProd=="ltr_pertrap" | dataProd=="hbp_perbout" | dataProd=="cfc_fieldData" | 
+       dataProd=="bbc_percore"){
     
     # Concatenate the named location (the plot) and subplot IDs to get the 
     #      subplot named locations
@@ -60,7 +61,7 @@ getLocTOS <- function(
       cellID <- data$trapID
       data$cellID <- cellID
     } else {
-      if(dataProd=="hbp_perbout" | dataProd=="cfc_fieldData") {
+      if(dataProd=="hbp_perbout" | dataProd=="cfc_fieldData" | dataProd=="bbc_percore") {
         cellID <- data$clipID
         data$cellID <- cellID
       }
@@ -89,7 +90,7 @@ getLocTOS <- function(
     }
     
     # Adjust the easting and northing values by the offset amounts found
-    options(digits=15)
+    options(digits=15) # FIX
     subplot.loc$easting <- as.numeric(subplot.loc$easting) + subplot.loc$eastOff
     subplot.loc$northing <- as.numeric(subplot.loc$northing) + subplot.loc$northOff
     subplot.loc$adjCoordinateUncertainty <- 
@@ -114,7 +115,7 @@ getLocTOS <- function(
       print("Please note locations have been calculated only for herbaceous clip samples. Woody vegetation sample locations can be calculated using the woody vegetation structure data product.")
     } else {
       data$row.index <- 1:nrow(data)
-      all.return <- base::merge(data, subplot.return, by=c(locCol, "cellID"))
+      all.return <- base::merge(data, subplot.return, by=c(locCol, "cellID"), all.x=T)
     }
     all.return <- all.return[order(all.return$row.index),]
     all.return <- all.return[,!names(all.return) %in% c('row.index','cellID')]
@@ -600,6 +601,10 @@ getLocTOS <- function(
   
   if(dataProd=="mos_trapping") {
     cat('Mosquito trapping location is flexible within the plot; locations provided in downloaded data are accurate.')
+  }
+
+  if(dataProd=="tck_fielddata") {
+    cat('Ticks are sampled around the entire perimeter of the plot; locations provided in downloaded data are accurate.')
   }
   
   if(dataProd=='dhp_perimagefile') {
