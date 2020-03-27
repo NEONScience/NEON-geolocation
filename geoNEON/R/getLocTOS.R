@@ -108,18 +108,20 @@ getLocTOS <- function(
       as.numeric(subplot.loc$adjCoordinateUncertainty) + 1
     
     # calculate latitude and longitude from the corrected northing and easting
-    subplot.loc <- def.calc.latlong(subplot.loc)
+    adjLatLong <- geoNEON::calcLatLong(easting=subplot.loc$adjEasting, 
+                                       northing=subplot.loc$adjNorthing,
+                                       utmZone=subplot.loc$utmZone)
+    subplot.loc$adjDecimalLatitude <- adjLatLong$decimalLatitude
+    subplot.loc$adjDecimalLongitude <- adjLatLong$decimalLongitude
 
     if(dataProd=="cfc_fieldData") {
-      sub.return <- base::merge(data, subplot.return, by=c(locCol, "cellID"))
-      all.return <- plyr::rbind.fill(sub.return, dataN)
+      all.return <- plyr::rbind.fill(subplot.loc, dataN)
       print("Please note locations have been calculated only for herbaceous clip samples. Woody vegetation sample locations can be calculated using the woody vegetation structure data product.")
     } else {
-      data$row.index <- 1:nrow(data)
-      all.return <- base::merge(data, subplot.return, by=c(locCol, "cellID"), all.x=T)
+      all.return <- subplot.loc
     }
-    all.return <- all.return[order(all.return$row.index),]
-    all.return <- all.return[,!names(all.return) %in% c('row.index','cellID')]
+    all.return <- all.return[order(all.return$rowid),]
+    all.return <- all.return[,!names(all.return) %in% c('rowid','cellID')]
     return(all.return)
   }
   

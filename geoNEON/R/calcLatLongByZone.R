@@ -5,13 +5,13 @@
 #' Claire Lunch \email{clunch@battelleecology.org}
 
 #' @description 
-#' Conversion Function. Given vectors of easting, northing, and UTM zone, return corresponding decimalLatitude and decimalLongitude.
+#' Conversion Function. Given vectors of easting and northing, and a UTM zone, return corresponding decimalLatitude and decimalLongitude.
 #' 
 #' @param easting Easting UTM coordinates [numeric] 
 #' @param northing Northing UTM coordinates [numeric]
-#' @param utmZone utmZone of each coordinate pair in form "17N" [character]
+#' @param utmZone A single utmZone in form "17N" [character]
 
-#' @return A data frame with 3 columns: decimalLatitude, decimalLongitude, and utmZone.
+#' @return A data frame with 2 columns: decimalLatitude, decimalLongitude
 
 #' @references
 #' License: GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007
@@ -19,10 +19,7 @@
 #' @keywords Currently none
 
 #' @examples
-#' d <- data.frame(northing=c(4308017.75), easting=c(747725.21))
-#' def.calc.latlong.by.zone(d, '17N')
-
-#' @seealso Currently none
+#' calcLatLongByZone(easting=747725.21, northing=4308017.75, '17N')
 
 #' @export
 
@@ -35,27 +32,40 @@
 
 calcLatLongByZone <- function(easting, northing, utmZone) {
 
-  if(length(easting)!=length(northing) | length(easting)!=length(utmZone)) {
+  if(length(easting)!=length(northing)) {
     stop('Variables must be the same length.')
   }
   if (grepl('^-|S$', utmZone)){stop('This function only defined for Northern Hemisphere locations')}
   
     easting <- as.numeric(easting)
     northing <- as.numeric(northing)
+    rowid <- 1:length(easting)
     
-    df <- cbind(easting, northing, utmZone)
+    df <- cbind(easting, northing, rowid)
+    df <- data.frame(df)
+    
+    # remove missing values, sp can't handle
+    dfN <- df[which(is.na(df$easting) | is.na(df$northing)),]
+    df <- df[which(!is.na(df$easting) & !is.na(df$northing)),]
+    
+    # convert coordinates
     sp::coordinates(df) <- c("easting", "northing")
     sp::proj4string(df) <- sp::CRS(paste('+proj=utm +zone=', 
                                      gsub("[^0-9]", "", utmZone), " ellps=WGS84",
                                      sep=''))
     transf <- sp::spTransform(df, sp::CRS('+proj=longlat'))
-    latLong<-data.frame(sp::coordinates(transf))
-    names (latLong)<-c('decimalLongitude', 'decimalLatitude')
-    res <- cbind(data.frame(df), latLong)
-    if (nrow (df1)>0){
-      res<-suppressWarnings(data.table::rbindlist(list(res, df1), fill=T)) #add back in untransformed rows
-    }
+    latLong <- data.frame(cbind(sp::coordinates(transf), transf$rowid))
+    names(latLong) <- c('decimalLongitude', 'decimalLatitude', 'rowid')
+    
+    # merge missing values back in
+    names(dfN)[which(names(dfN) %in% c('easting','northing'))] <- c('decimalLatitude','decimalLongitude')
+    dfN$decimalLatitude[which(is.na(dfN$decimalLongitude))] <- NA
+    dfN$decimalLongitude[which(is.na(dfN$decimalLatitude))] <- NA
+    
+    all.return <- suppressWarnings(data.table::rbindlist(list(latLong, dfN), fill=T))
+    all.return <- all.return[order(all.return$rowid),]
+    
+    return(all.return[,c('decimalLatitude','decimalLongitude')])
+    
   }
-  return(as.data.frame(res))
-}
 
