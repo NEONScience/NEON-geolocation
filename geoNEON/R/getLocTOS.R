@@ -45,16 +45,28 @@ getLocTOS <- function(
     #      subplot named locations
     subplots <- paste(data$namedLocation, data$subplotID, sep=".")
     data <- cbind(data, subplots)
+    data$rowid <- 1:nrow(data)
     
     if(dataProd=="cfc_fieldData") {
-      data$row.index <- 1:nrow(data)
       dataN <- data[which(data$clipID=="" | is.na(data$clipID)),]
       data <- data[which(data$clipID!="" & !is.na(data$clipID)),]
     }
     
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol <- "subplots"
-    subplot.loc <- geoNEON::getLocByName(data, locCol=locCol)
+    subplot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+    
+    # Use relevant columns
+    subplot.merg <- subplot.all[,c("namedLocation","utmZone",
+                                     "northing","easting","namedLocationCoordUncertainty",
+                                     "decimalLatitude","decimalLongitude",
+                                     "elevation","namedLocationElevUncertainty")]
+    colnames(subplot.merg) <- c(locCol, 'utmZone',"adjNorthing","adjEasting",
+                                        "adjCoordinateUncertainty","adjDecimalLatitude",
+                                        "adjDecimalLongitude","adjElevation",
+                                        "adjElevationUncertainty")
+    subplot.loc <- base::merge(data, subplot.merg, by=locCol, all.x=T)
+    subplot.loc <- subplot.loc[order(subplot.loc$rowid),]
     
     # Strip the final 3 digits of trapID to get the clip cell numbers
     if(dataProd=="ltr_pertrap") {
@@ -90,25 +102,14 @@ getLocTOS <- function(
     }
     
     # Adjust the easting and northing values by the offset amounts found
-    options(digits=15) # FIX
-    subplot.loc$easting <- as.numeric(subplot.loc$easting) + subplot.loc$eastOff
-    subplot.loc$northing <- as.numeric(subplot.loc$northing) + subplot.loc$northOff
+    subplot.loc$adjEasting <- as.numeric(subplot.loc$adjEasting) + subplot.loc$eastOff
+    subplot.loc$adjNorthing <- as.numeric(subplot.loc$adjNorthing) + subplot.loc$northOff
     subplot.loc$adjCoordinateUncertainty <- 
-      as.numeric(subplot.loc$namedLocationCoordUncertainty) + 1
+      as.numeric(subplot.loc$adjCoordinateUncertainty) + 1
     
     # calculate latitude and longitude from the corrected northing and easting
     subplot.loc <- def.calc.latlong(subplot.loc)
 
-    # Return relevant columns
-    subplot.return <- subplot.loc[,c(locCol,"cellID","utmZone",
-                                     "northing","easting","adjCoordinateUncertainty",
-                                     "decimalLatitude","decimalLongitude",
-                                     "elevation","namedLocationElevUncertainty")]
-    colnames(subplot.return)[4:10] <- c("adjNorthing","adjEasting",
-                                        "adjCoordinateUncertainty","adjDecimalLatitude",
-                                       "adjDecimalLongitude","adjElevation",
-                                       "adjElevationUncertainty")
-    
     if(dataProd=="cfc_fieldData") {
       sub.return <- base::merge(data, subplot.return, by=c(locCol, "cellID"))
       all.return <- plyr::rbind.fill(sub.return, dataN)
