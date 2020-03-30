@@ -128,40 +128,47 @@ getLocTOS <- function(
   # Soil core location calculations:
   if(dataProd=="sls_soilCoreCollection") {
     
+    data$rowid <- 1:nrow(data)
+    
     # Use the getLocByName function to pull the plot geolocations from the API
-    locCol="namedLocation"
-    plot.loc <- geoNEON::getLocByName(data, locCol=locCol)
+    locCol <- "namedLocation"
+    plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+    
+    # Use relevant columns
+    plot.merg <- plot.all[,c("namedLocation","utmZone",
+                                   "northing","easting","namedLocationCoordUncertainty",
+                                   "decimalLatitude","decimalLongitude",
+                                   "elevation","namedLocationElevUncertainty")]
+    colnames(plot.merg) <- c(locCol, 'utmZone',"adjNorthing","adjEasting",
+                                "adjCoordinateUncertainty","adjDecimalLatitude",
+                                "adjDecimalLongitude","adjElevation",
+                                "adjElevationUncertainty")
+    plot.loc <- base::merge(data, subplot.merg, by=locCol, all.x=T)
+    plot.loc <- subplot.loc[order(subplot.loc$rowid),]
     
     # Subtract 20 meters from the easting and northing values to get the 
     # location of the southwest corner
-    options(digits=15)
-    plot.loc$easting <- as.numeric(plot.loc$easting) - 20
-    plot.loc$northing <- as.numeric(plot.loc$northing) - 20
+    plot.loc$adjEasting <- as.numeric(plot.loc$adjEasting) - 20
+    plot.loc$adjNorthing <- as.numeric(plot.loc$adjNorthing) - 20
     
     # Add coreCoordinateX to the easting value and coreCoordinateY to the northing value
-    plot.loc$easting <- plot.loc$easting + data$coreCoordinateX
-    plot.loc$northing <- plot.loc$northing + data$coreCoordinateY
+    plot.loc$adjEasting <- plot.loc$adjEasting + data$coreCoordinateX
+    plot.loc$adjNorthing <- plot.loc$adjNorthing + data$coreCoordinateY
     
     # Set the coordinate uncertainty to 0.5 meter
     plot.loc$adjCoordinateUncertainty <- 0.5
     
     # calculate latitude and longitude from the corrected northing and easting
-    plot.loc <- geoNEON::def.calc.latlong(plot.loc)
+    adjLatLong <- geoNEON::calcLatLong(easting=plot.loc$adjEasting, 
+                                       northing=plot.loc$adjNorthing,
+                                       utmZone=plot.loc$utmZone)
+    plot.loc$adjDecimalLatitude <- adjLatLong$decimalLatitude
+    plot.loc$adjDecimalLongitude <- adjLatLong$decimalLongitude
     
-    # Return relevant columns
-    plot.return <- plot.loc[,c(names(plot.loc)[which(names(plot.loc) %in% names(data))], 
-                               "utmZone","northing","easting")]
-    col.name.list <- names(plot.return)
-    col.name.list <- gsub('decimalLatitude','adjDecimalLatitude', col.name.list)
-    col.name.list <- gsub('decimalLongitude','adjDecimalLongitude', col.name.list)
-    col.name.list <- gsub('elevation','adjElevation', col.name.list)
-    col.name.list <- gsub('namedLocationElevUncertainty','adjElevationUncertainty', col.name.list)
-    col.name.list <- gsub('northing','adjNorthing', col.name.list)
-    col.name.list <- gsub('easting','adjEasting', col.name.list)
+    # reorder to original order
+    all.return <- plot.loc[order(plot.loc$rowid),]
+    all.return <- all.return[,!names(all.return) %in% c('rowid')]
     
-    colnames(plot.return) <- col.name.list
-    
-    all.return <- plot.return
     return(all.return)
   }
   
@@ -183,7 +190,7 @@ getLocTOS <- function(
     }
     
     # Use the getLocByName function to pull the subplot geolocations from the API
-    locCol="points"
+    locCol <- "points"
     point.loc <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
     names(point.loc)[names(point.loc)=='namedLocation']<-locCol
 
