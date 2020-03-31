@@ -64,6 +64,24 @@ test_that("Select herb clip named locations are correct", {
   expect_equal(as.numeric(out$adjElevation), c(394.88, 394.88, 407.95), tolerance=0.1)
 })
 
+test_that("Select herbaceous cfc named locations are correct", {
+  df<-data.frame(namedLocation=c('WOOD_044.basePlot.cfc', 'SJER_012.basePlot.cfc',
+                                 'SOAP_002.basePlot.cfc'), subplotID=c('31','31', NA),
+                 clipID=c('WOOD_044_067', 'SJER_012_069', NA))
+  out<-getLocTOS(df, 'cfc_fieldData')
+  expect_equal(as.numeric(out$adjEasting), c(481536.1, 258495.2, NA), tolerance=0.1)
+  expect_equal(as.numeric(out$adjElevation), c(586.53, 320.98, NA), tolerance=0.1)
+})
+
+test_that("Select root sampling locations are correct", {
+  df<-data.frame(namedLocation=c('TALL_051.basePlot.bbc', 'TALL_051.basePlot.bbc',
+                                 'TALL_060.basePlot.bbc'), subplotID=c('39','21', '41'),
+                 clipID=c('TALL_051_703', 'TALL_051_041', 'TALL_060_882'))
+  out<-getLocTOS(df, 'bbc_percore')
+  expect_equal(as.numeric(out$adjEasting), c(462857.9, 462848.6, 462729.9), tolerance=0.1)
+  expect_equal(as.numeric(out$adjElevation), c(120.63, 117.93, 128.37), tolerance=0.1)
+})
+
 test_that("Select woody veg named locations are correct", {
   df<-data.frame(namedLocation=c('NIWO_061.basePlot.vst', 'NIWO_064.basePlot.vst',
                                  'NIWO_004.basePlot.vst'), pointID=c('33', NA, '49'),
@@ -92,5 +110,13 @@ test_that('Select DHP locations are correct', {
                    pointID=c('W10','S2'))
   out <- getLocTOS(df, 'dhp_perimagefile')
   expect_equal(as.numeric(out$adjNorthing), c(4111210,4110846), tolerance=1)
+})
+
+test_that('Select CDW tally locations are correct', {
+  df <- data.frame(namedLocation=c('MLBS_018.basePlot.cdw','GUAN_042.basePlot.cdw',
+                                   'SCBI_010.basePlot.cdw'),
+                   lidsAzimuth=c(110,130,350), logDistance=c(NA,1.3,10.1))
+  out <- getLocTOS(df, 'cdw_fieldtally')
+  expect_equal(as.numeric(out$adjNorthing), c(NA,1988245,4307931), tolerance=1)
 })
 
