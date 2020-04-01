@@ -58,7 +58,7 @@ def.calc.latlong.by.zone<-function(df, utmZone){
     names (latLong)<-c('decimalLongitude', 'decimalLatitude')
     res <- cbind(data.frame(df), latLong)
     if (nrow (df1)>0){
-      res<-suppressWarnings(gtools::smartbind(res, df1)) #add back in untransformed rows
+      res<-suppressWarnings(data.table::rbindlist(list(res, df1), fill=T)) #add back in untransformed rows
     }
   }
   return(as.data.frame(res))

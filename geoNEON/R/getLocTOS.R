@@ -37,30 +37,44 @@ getLocTOS <- function(
   # convert format for safety
   data <- data.frame(data)
   
-    #Litter trap and herb clip location calculations:
-    if(dataProd=="ltr_pertrap" | dataProd=="hbp_perbout" | dataProd=="cfc_fieldData"){
+    # Litter trap, herb clip, cfc herb clip, and root sampling location calculations
+    # These are all protocols using clip strips
+    if(dataProd=="ltr_pertrap" | dataProd=="hbp_perbout" | dataProd=="cfc_fieldData" | 
+       dataProd=="bbc_percore"){
     
     # Concatenate the named location (the plot) and subplot IDs to get the 
     #      subplot named locations
     subplots <- paste(data$namedLocation, data$subplotID, sep=".")
     data <- cbind(data, subplots)
+    data$rowid <- 1:nrow(data)
     
     if(dataProd=="cfc_fieldData") {
-      data$row.index <- 1:nrow(data)
       dataN <- data[which(data$clipID=="" | is.na(data$clipID)),]
       data <- data[which(data$clipID!="" & !is.na(data$clipID)),]
     }
     
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol <- "subplots"
-    subplot.loc <- geoNEON::getLocByName(data, locCol=locCol)
+    subplot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+    
+    # Use relevant columns
+    subplot.merg <- subplot.all[,c("namedLocation","utmZone",
+                                     "northing","easting","namedLocationCoordUncertainty",
+                                     "decimalLatitude","decimalLongitude",
+                                     "elevation","namedLocationElevUncertainty")]
+    colnames(subplot.merg) <- c(locCol, 'utmZone',"adjNorthing","adjEasting",
+                                        "adjCoordinateUncertainty","adjDecimalLatitude",
+                                        "adjDecimalLongitude","adjElevation",
+                                        "adjElevationUncertainty")
+    subplot.loc <- base::merge(data, subplot.merg, by=locCol, all.x=T)
+    subplot.loc <- subplot.loc[order(subplot.loc$rowid),]
     
     # Strip the final 3 digits of trapID to get the clip cell numbers
     if(dataProd=="ltr_pertrap") {
       cellID <- data$trapID
       data$cellID <- cellID
     } else {
-      if(dataProd=="hbp_perbout" | dataProd=="cfc_fieldData") {
+      if(dataProd=="hbp_perbout" | dataProd=="cfc_fieldData" | dataProd=="bbc_percore") {
         cellID <- data$clipID
         data$cellID <- cellID
       }
@@ -89,76 +103,73 @@ getLocTOS <- function(
     }
     
     # Adjust the easting and northing values by the offset amounts found
-    options(digits=15)
-    subplot.loc$easting <- as.numeric(subplot.loc$api.easting) + subplot.loc$eastOff
-    subplot.loc$northing <- as.numeric(subplot.loc$api.northing) + subplot.loc$northOff
-    subplot.loc$api.coordinateUncertainty <- 
-      as.numeric(subplot.loc$api.coordinateUncertainty) + 1
+    subplot.loc$adjEasting <- as.numeric(subplot.loc$adjEasting) + subplot.loc$eastOff
+    subplot.loc$adjNorthing <- as.numeric(subplot.loc$adjNorthing) + subplot.loc$northOff
+    subplot.loc$adjCoordinateUncertainty <- 
+      as.numeric(subplot.loc$adjCoordinateUncertainty) + 1
     
     # calculate latitude and longitude from the corrected northing and easting
-    names(subplot.loc)[names(subplot.loc)=='api.utmZone'] <- 'utmZone'
-    subplot.loc <- def.calc.latlong(subplot.loc)
-    names(subplot.loc)[names(subplot.loc)=='utmZone'] <- 'api.utmZone'
-    
-    # Return relevant columns
-    subplot.return <- subplot.loc[,c(locCol,"cellID","api.utmZone",
-                                     "northing","easting","api.coordinateUncertainty",
-                                     "decimalLatitude","decimalLongitude",
-                                     "api.elevation","api.elevationUncertainty")]
-    colnames(subplot.return)[6:10] <- c("adjCoordinateUncertainty","adjDecimalLatitude",
-                                       "adjDecimalLongitude","adjElevation",
-                                       "adjElevationUncertainty")
-    
+    adjLatLong <- geoNEON::calcLatLong(easting=subplot.loc$adjEasting, 
+                                       northing=subplot.loc$adjNorthing,
+                                       utmZone=subplot.loc$utmZone)
+    subplot.loc$adjDecimalLatitude <- adjLatLong$decimalLatitude
+    subplot.loc$adjDecimalLongitude <- adjLatLong$decimalLongitude
+
     if(dataProd=="cfc_fieldData") {
-      sub.return <- base::merge(data, subplot.return, by=c(locCol, "cellID"))
-      all.return <- plyr::rbind.fill(sub.return, dataN)
+      all.return <- plyr::rbind.fill(subplot.loc, dataN)
       print("Please note locations have been calculated only for herbaceous clip samples. Woody vegetation sample locations can be calculated using the woody vegetation structure data product.")
     } else {
-      data$row.index <- 1:nrow(data)
-      all.return <- base::merge(data, subplot.return, by=c(locCol, "cellID"))
+      all.return <- subplot.loc
     }
-    all.return <- all.return[order(all.return$row.index),]
-    all.return <- all.return[,!names(all.return) %in% c('row.index','cellID')]
+    all.return <- all.return[order(all.return$rowid),]
+    all.return <- all.return[,!names(all.return) %in% c('rowid','cellID')]
     return(all.return)
   }
   
   # Soil core location calculations:
   if(dataProd=="sls_soilCoreCollection") {
     
+    data$rowid <- 1:nrow(data)
+    
     # Use the getLocByName function to pull the plot geolocations from the API
-    locCol="namedLocation"
-    plot.loc <- geoNEON::getLocByName(data, locCol=locCol)
+    locCol <- "namedLocation"
+    plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+    
+    # Use relevant columns
+    plot.merg <- plot.all[,c("namedLocation","utmZone",
+                                   "northing","easting","namedLocationCoordUncertainty",
+                                   "decimalLatitude","decimalLongitude",
+                                   "elevation","namedLocationElevUncertainty")]
+    colnames(plot.merg) <- c(locCol, 'utmZone',"adjNorthing","adjEasting",
+                                "adjCoordinateUncertainty","adjDecimalLatitude",
+                                "adjDecimalLongitude","adjElevation",
+                                "adjElevationUncertainty")
+    plot.loc <- base::merge(data, subplot.merg, by=locCol, all.x=T)
+    plot.loc <- subplot.loc[order(subplot.loc$rowid),]
     
     # Subtract 20 meters from the easting and northing values to get the 
     # location of the southwest corner
-    options(digits=15)
-    plot.loc$easting <- as.numeric(plot.loc$api.easting) - 20
-    plot.loc$northing <- as.numeric(plot.loc$api.northing) - 20
+    plot.loc$adjEasting <- as.numeric(plot.loc$adjEasting) - 20
+    plot.loc$adjNorthing <- as.numeric(plot.loc$adjNorthing) - 20
     
     # Add coreCoordinateX to the easting value and coreCoordinateY to the northing value
-    plot.loc$easting <- plot.loc$easting + data$coreCoordinateX
-    plot.loc$northing <- plot.loc$northing + data$coreCoordinateY
+    plot.loc$adjEasting <- plot.loc$adjEasting + data$coreCoordinateX
+    plot.loc$adjNorthing <- plot.loc$adjNorthing + data$coreCoordinateY
     
     # Set the coordinate uncertainty to 0.5 meter
-    plot.loc$coordinateUncertainty <- 0.5
+    plot.loc$adjCoordinateUncertainty <- 0.5
     
     # calculate latitude and longitude from the corrected northing and easting
-    plot.loc$utmZone <- plot.loc$api.utmZone
-    plot.loc <- geoNEON::def.calc.latlong(plot.loc)
+    adjLatLong <- geoNEON::calcLatLong(easting=plot.loc$adjEasting, 
+                                       northing=plot.loc$adjNorthing,
+                                       utmZone=plot.loc$utmZone)
+    plot.loc$adjDecimalLatitude <- adjLatLong$decimalLatitude
+    plot.loc$adjDecimalLongitude <- adjLatLong$decimalLongitude
     
-    # Return relevant columns
-    plot.return <- plot.loc[,c(names(plot.loc)[which(names(plot.loc) %in% names(data))], 
-                               "utmZone","northing","easting")]
-    col.name.list <- names(plot.return)
-    col.name.list <- gsub('coordinateUncertainty','adjCoordinateUncertainty', col.name.list)
-    col.name.list <- gsub('decimalLatitude','adjDecimalLatitude', col.name.list)
-    col.name.list <- gsub('decimalLongitude','adjDecimalLongitude', col.name.list)
-    col.name.list <- gsub('elevation','adjElevation', col.name.list)
-    col.name.list <- gsub('elevationUncertainty','adjElevationUncertainty', col.name.list)
+    # reorder to original order
+    all.return <- plot.loc[order(plot.loc$rowid),]
+    all.return <- all.return[,!names(all.return) %in% c('rowid')]
     
-    colnames(plot.return) <- col.name.list
-    
-    all.return <- plot.return
     return(all.return)
   }
   
@@ -180,9 +191,9 @@ getLocTOS <- function(
     }
     
     # Use the getLocByName function to pull the subplot geolocations from the API
-    locCol="points"
+    locCol <- "points"
     point.loc <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
-    names(point.loc)[names(point.loc)=='data.locationName']<-locCol
+    names(point.loc)[names(point.loc)=='namedLocation']<-locCol
 
     #add additional coordinateUncertainty
     point.loc$additionalUncertainty<-NA
@@ -192,29 +203,28 @@ getLocTOS <- function(
     point.loc$additionalUncertainty[grepl('\\.B2$', point.loc[[locCol]])]<-0
     
     #sum uncertainties
-    point.loc$coordinateUncertainty <- as.numeric(point.loc$api.coordinateUncertainty) + point.loc$additionalUncertainty
+    point.loc$adjCoordinateUncertainty <- as.numeric(point.loc$namedLocationCoordUncertainty) + point.loc$additionalUncertainty
     #rest navigated to with recreational GPS, uncertainty of ~15m, not provided in spatial data
-    point.loc$coordinateUncertainty[!grepl('\\.21$|\\.B2$',point.loc[[locCol]])] <- 15
+    point.loc$adjCoordinateUncertainty[!grepl('\\.21$|\\.B2$',point.loc[[locCol]])] <- 15
     
     #88 points uncertainty unknown, all that's being provided is the site (aka tower) location
-    point.loc$coordinateUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
-    point.loc$api.elevationUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
+    point.loc$adjCoordinateUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
+    point.loc$namedLocationElevUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
     
     # Return relevant columns
     point.return <- point.loc[,c(locCol, 
-                               "api.utmZone","api.northing","api.easting",
-                               "coordinateUncertainty",
-                               "api.decimalLatitude","api.decimalLongitude",
-                               "api.elevation","api.elevationUncertainty")]
+                               "utmZone","northing","easting",
+                               "adjCoordinateUncertainty",
+                               "decimalLatitude","decimalLongitude",
+                               "elevation","namedLocationElevUncertainty")]
     
     col.name.list <- names(point.return)
-    col.name.list <- gsub('coordinateUncertainty','adjCoordinateUncertainty', col.name.list)
-    col.name.list <- gsub('api.decimalLatitude','adjDecimalLatitude', col.name.list)
-    col.name.list <- gsub('api.decimalLongitude','adjDecimalLongitude', col.name.list)
-    col.name.list <- gsub('api.elevation','adjElevation', col.name.list)
-    col.name.list <- gsub('api.northing','northing', col.name.list)
-    col.name.list <- gsub('api.easting','easting', col.name.list)
-    col.name.list <- gsub('api.elevationUncertainty','adjElevationUncertainty', col.name.list)
+    col.name.list <- gsub('northing','adjNorthing', col.name.list)
+    col.name.list <- gsub('easting','adjEasting', col.name.list)
+    col.name.list <- gsub('decimalLatitude','adjDecimalLatitude', col.name.list)
+    col.name.list <- gsub('decimalLongitude','adjDecimalLongitude', col.name.list)
+    col.name.list <- gsub('elevation','adjElevation', col.name.list)
+    col.name.list <- gsub('namedLocationElevUncertainty','adjElevationUncertainty', col.name.list)
     colnames(point.return) <- col.name.list
     
     data$row.index <- 1:nrow(data)
@@ -315,31 +325,31 @@ getLocTOS <- function(
     data$easting<-NA
     data$utmZone<-NA
     data$namedLocation<-as.character(data$namedLocation)
-    pointSpatialData$namedLocation<-as.character(pointSpatialData$data.locationName)
+    pointSpatialData$namedLocation<-as.character(pointSpatialData$namedLocation)
 
     for (i in 1:nrow(data)){
       if (!is.na(data$referencePoint_tempA[i])&
           !is.na(data$referencePoint_tempB[i])){
-        northingA<-as.numeric(pointSpatialData$api.northing[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
+        northingA<-as.numeric(pointSpatialData$northing[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
                                                           pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]])
-        northingB<-as.numeric(pointSpatialData$api.northing[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
+        northingB<-as.numeric(pointSpatialData$northing[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
                                                           pointSpatialData$Value.for.Point.ID==data$referencePoint_tempB[i]])
-        eastingA<-as.numeric(pointSpatialData$api.easting[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
+        eastingA<-as.numeric(pointSpatialData$easting[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
                                                         pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]])
-        eastingB<-as.numeric(pointSpatialData$api.easting[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
+        eastingB<-as.numeric(pointSpatialData$easting[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
                                                         pointSpatialData$Value.for.Point.ID==data$referencePoint_tempB[i]])
 
-        elevationA<-as.numeric(pointSpatialData$api.elevation[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
+        elevationA<-as.numeric(pointSpatialData$elevation[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
                                                             pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]])
-        elevationB<-as.numeric(pointSpatialData$api.elevation[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
+        elevationB<-as.numeric(pointSpatialData$elevation[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
                                                             pointSpatialData$Value.for.Point.ID==data$referencePoint_tempB[i]])
         wt<-c(100-data$distFromLastPoint[i],data$distFromLastPoint[i])
         if (length(c(northingA, northingB, eastingA, eastingB))==4){#make sure all elements known
           northing <- stats::weighted.mean(c(northingA,northingB), wt)
           easting <- stats::weighted.mean(c(eastingA,eastingB), wt)
-          data$adjCoordinateUncertainty[i]<-max (as.numeric(pointSpatialData$api.coordinateUncertainty[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
+          data$adjCoordinateUncertainty[i]<-max (as.numeric(pointSpatialData$namedLocationCoordUncertainty[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
                                                                                                      pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]]),
-                                                 as.numeric(pointSpatialData$api.coordinateUncertainty[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
+                                                 as.numeric(pointSpatialData$namedLocationCoordUncertainty[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
                                                                                                      pointSpatialData$Value.for.Point.ID==data$referencePoint_tempB[i]]))+2
         }else{
           northing<-NA
@@ -369,7 +379,7 @@ getLocTOS <- function(
         data$easting[i]<-easting
         data$northing[i]<-northing
         if (!is.na(northing)&&!is.na(easting)){
-          data$utmZone[i]<-pointSpatialData$api.utmZone[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
+          data$utmZone[i]<-pointSpatialData$utmZone[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
                                                       pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]]
         }
       }
@@ -377,7 +387,8 @@ getLocTOS <- function(
 
     #don't transform the missing points
     if(length(which(is.na(data$easting)|is.na(data$northing)))>0) {
-      nogeo <- gtools::smartbind(nogeo, data[is.na(data$easting)|is.na(data$northing),])
+      nogeo <- data.table::rbindlist(list(nogeo, data[is.na(data$easting)|is.na(data$northing),]), 
+                                     fill=T)
       data <- data[-which(is.na(data$easting)|is.na(data$northing)),]
     }
 
@@ -387,6 +398,8 @@ getLocTOS <- function(
     # calculate latitude and longitude from the corrected northing and easting
     data <- def.calc.latlong(data)
     
+    names(data)[names(data)=='easting'] <- 'adjEasting'
+    names(data)[names(data)=='northing'] <- 'adjNorthing'
     names(data)[names(data)=='decimalLatitude'] <- 'adjDecimalLatitude'
     names(data)[names(data)=='decimalLongitude'] <- 'adjDecimalLongitude'
     names(data)[names(data)=='tempLat'] <- 'decimalLatitude'
@@ -394,11 +407,11 @@ getLocTOS <- function(
     
     # merge with other data
     if (nrow(nogeo)>0){
-      data<-gtools::smartbind(data, nogeo)
+      data <- data.table::rbindlist(list(data, nogeo), fill=T)
     }
 
     if (nrow(phenocamRows)>0){
-      data<-gtools::smartbind(data, phenocamRows)
+      data <- data.table::rbindlist(list(data, phenocamRows), fill=T)
     }
 
     #cleanup
@@ -423,15 +436,15 @@ getLocTOS <- function(
     # Don't bother looking up any of the 'X' traps - those have uncertain geolocations
     locCol <- "points"
     point.loc <- getLocByName(data[!grepl('X', data$points),], locCol=locCol, locOnly=T)
-    names(point.loc)[names(point.loc)=='data.locationName']<-locCol
-    point.loc$api.coordinateUncertainty<-as.numeric(point.loc$api.coordinateUncertainty)
+    names(point.loc)[names(point.loc)=='namedLocation']<-locCol
+    point.loc$adjCoordinateUncertainty<-as.numeric(point.loc$namedLocationCoordUncertainty)
     
     #coordinate uncertainty is only provided for select locations per grid that
     # are monumented; assume since the rest of the grid is set up relative
     # to those monumented points, that the max per monumented point applies
     # to the rest of the points
     
-    maxUncPerGrid<-data.frame(tapply(point.loc$api.coordinateUncertainty, point.loc$points, FUN=function(x) if(all(is.na(x))){NA} else {max(x, na.rm=T)}))
+    maxUncPerGrid<-data.frame(tapply(point.loc$adjCoordinateUncertainty, point.loc$points, FUN=function(x) if(all(is.na(x))){NA} else {max(x, na.rm=T)}))
     maxUncPerGrid$points<-row.names(maxUncPerGrid)
     names(maxUncPerGrid)[1]<-'maxUncertainty'
     
@@ -440,24 +453,21 @@ getLocTOS <- function(
     #add additional coordinateUncertainty 3m for nonmonumented, 1m otherwise
     
     #monumented corners, no additional uncertainty, GPS readings from here
-    tot.unc <- function(api.coordinateUncertainty,maxUncertainty){
-      if (is.na(api.coordinateUncertainty)){unc=maxUncertainty+3}else{unc=api.coordinateUncertainty+1}
+    tot.unc <- function(adjCoordinateUncertainty,maxUncertainty){
+      if (is.na(adjCoordinateUncertainty)){unc=maxUncertainty+3}else{unc=adjCoordinateUncertainty+1}
       return(unc)
     }
-    point.loc$tot.unc <- mapply(tot.unc, point.loc$api.coordinateUncertainty, point.loc$maxUncertainty)
+    point.loc$tot.unc <- mapply(tot.unc, point.loc$adjCoordinateUncertainty, point.loc$maxUncertainty)
     
     # calculate latitude and longitude from the corrected northing and easting
-    point.loc$utmZone <- point.loc$api.utmZone
-    point.loc$easting <- point.loc$api.easting
-    point.loc$northing <- point.loc$api.northing
     point.loc <- def.calc.latlong(point.loc)
     
     # Return relevant columns
     point.return <- point.loc[,c(locCol,"utmZone",
                                  "northing","easting","tot.unc",
                                  "decimalLatitude","decimalLongitude",
-                                 "api.elevation","api.elevationUncertainty")]
-    colnames(point.return) <- c("points", "utmZone", "northing", "easting", 
+                                 "elevation","namedLocationElevUncertainty")]
+    colnames(point.return) <- c("points", "utmZone", "adjNorthing", "adjEasting", 
                                 "adjCoordinateUncertainty","adjDecimalLatitude",
                                 "adjDecimalLongitude","adjElevation",
                                 "adjElevationUncertainty")
@@ -479,8 +489,8 @@ getLocTOS <- function(
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol="subplots"
     subplot.loc <- getLocByName(data, locCol=locCol, locOnly=T)
-    names (subplot.loc)[names(subplot.loc)=='data.locationName']<-locCol
-    subplot.loc$api.coordinateUncertainty<-as.numeric(subplot.loc$api.coordinateUncertainty)
+    names(subplot.loc)[names(subplot.loc)=='namedLocation']<-locCol
+    subplot.loc$adjCoordinateUncertainty<-as.numeric(subplot.loc$namedLocationCoordUncertainty)
     
     #Increase coordinateUncertainty by an appropriate amount to account for error
     # introduced by navigating within plots. Additional error may be introduced due to
@@ -490,23 +500,27 @@ getLocTOS <- function(
     # 1.0m for 10m2 subplot centroids
     # 2.0m for 100m2 subplot centroids
     
-    subplot.loc$api.coordinateUncertainty[grepl('\\.1$', subplot.loc$subplotID)]<-
-      subplot.loc$api.coordinateUncertainty[grepl('\\.1$', subplot.loc$subplotID)]+0.25
+    subplot.loc$adjCoordinateUncertainty[grepl('\\.1$', subplot.loc$subplotID)]<-
+      subplot.loc$adjCoordinateUncertainty[grepl('\\.1$', subplot.loc$subplotID)]+0.25
     
-    subplot.loc$api.coordinateUncertainty[grepl('\\.10$', subplot.loc$subplotID)]<-
-      subplot.loc$api.coordinateUncertainty[grepl('\\.10$', subplot.loc$subplotID)]+0.1
+    subplot.loc$adjCoordinateUncertainty[grepl('\\.10$', subplot.loc$subplotID)]<-
+      subplot.loc$adjCoordinateUncertainty[grepl('\\.10$', subplot.loc$subplotID)]+0.1
     
-    subplot.loc$api.coordinateUncertainty[!grepl('\\.10$|\\.1$', subplot.loc$subplotID)]<-
-      subplot.loc$api.coordinateUncertainty[!grepl('\\.10$|\\.1$', subplot.loc$subplotID)]+2
+    subplot.loc$adjCoordinateUncertainty[!grepl('\\.10$|\\.1$', subplot.loc$subplotID)]<-
+      subplot.loc$adjCoordinateUncertainty[!grepl('\\.10$|\\.1$', subplot.loc$subplotID)]+2
+    
+    subplot.loc$adjDecimalLatitude <- subplot.loc$decimalLatitude
+    subplot.loc$adjDecimalLongitude <- subplot.loc$decimalLongitude
+    subplot.loc$adjElevation <- subplot.loc$elevation
+    subplot.loc$adjElevationUncertainty <- subplot.loc$namedLocationElevUncertainty
+    subplot.loc$adjNorthing <- subplot.loc$northing
+    subplot.loc$adjEasting <- subplot.loc$easting
     
     # Return relevant columns
-    subplot.return <- subplot.loc[,c(locCol,"api.utmZone",
-                                     "api.northing","api.easting","api.coordinateUncertainty",
-                                     "api.decimalLatitude","api.decimalLongitude",
-                                     "api.elevation","api.elevationUncertainty")]
-    colnames(subplot.return) <- c(locCol, "utmZone", "adjNorthing", "adjEasting", "adjCoordinateUncertainty","adjDecimalLatitude",
-                                  "adjDecimalLongitude","adjElevation",
-                                  "adjElevationUncertainty")
+    subplot.return <- subplot.loc[,c(locCol,"utmZone",
+                                     "adjNorthing","adjEasting","adjCoordinateUncertainty",
+                                     "adjDecimalLatitude","adjDecimalLongitude",
+                                     "adjElevation","adjElevationUncertainty")]
     data$row.index<-1:nrow(data)
     all.return <- merge(data, subplot.return, by=locCol, all.x=T)
     all.return<-all.return[order(all.return$row.index),]
@@ -514,7 +528,13 @@ getLocTOS <- function(
     return(all.return)
   }
   
-  if(dataProd=="vst_mappingandtagging"){
+  # woody vegetation structure locations of individuals
+  if(dataProd=='vst_mappingandtagging'){
+    
+    # Pull out data with no pointID
+    data$rowid <- 1:nrow(data)
+    dataN <- data[which(is.na(data$pointID)),]
+    data <- data[which(!is.na(data$pointID)),]
     
     # Concatenate the named location (the plot) and point IDs to get the 
     #      point named locations
@@ -522,49 +542,282 @@ getLocTOS <- function(
     data <- cbind(data, points)
     
     # Use the getLocByName function to pull the subplot geolocations from the API
-    locCol="points"
-    point.loc <- geoNEON::getLocByName(data, locCol=locCol, locOnly=F)
+    locCol <- "points"
+    point.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+    
+    # Use relevant columns
+    point.all <- point.all[,c("namedLocation","utmZone",
+                                 "northing","easting","namedLocationCoordUncertainty",
+                                 "decimalLatitude","decimalLongitude",
+                                 "elevation","namedLocationElevUncertainty")]
+    names(point.all) <- c(locCol,"utmZone",
+                             "adjNorthing","adjEasting","adjCoordinateUncertainty",
+                             "adjDecimalLatitude","adjDecimalLongitude",
+                             "adjElevation","adjElevationUncertainty")
+    
+    # merge location data with original data
+    point.loc <- merge(data, point.all, by="points", all.x=T)
     
     # Calculate easting and northing for individuals
-    options(digits=15)
-    point.loc$easting <- as.numeric(point.loc$api.easting) + point.loc$stemDistance * 
+    point.loc$adjEasting <- as.numeric(point.loc$adjEasting) + point.loc$stemDistance * 
       sin((point.loc$stemAzimuth * pi) / 180)
-    point.loc$northing <- as.numeric(point.loc$api.northing) + point.loc$stemDistance * 
+    point.loc$adjNorthing <- as.numeric(point.loc$adjNorthing) + point.loc$stemDistance * 
       cos((point.loc$stemAzimuth * pi) / 180)
     
     # Increase coordinate uncertainties
     point.loc$adjCoordinateUncertainty <- 
-      as.numeric(point.loc$api.coordinateUncertainty) + 0.6
+      as.numeric(point.loc$adjCoordinateUncertainty) + 0.6
     point.loc$adjElevationUncertainty <- 
-      as.numeric(point.loc$api.elevationUncertainty) + 1
+      as.numeric(point.loc$adjElevationUncertainty) + 1
     
     # calculate latitude and longitude from the corrected northing and easting
-    names(point.loc)[names(point.loc)=='api.utmZone'] <- 'utmZone'
-    point.loc <- def.calc.latlong(point.loc)
-    names(point.loc)[names(point.loc)=='utmZone'] <- 'api.utmZone'
+    adjLatLong <- geoNEON::calcLatLong(easting=point.loc$adjEasting, 
+                                       northing=point.loc$adjNorthing,
+                                       utmZone=point.loc$utmZone)
+    point.loc$adjDecimalLatitude <- adjLatLong$decimalLatitude
+    point.loc$adjDecimalLongitude <- adjLatLong$decimalLongitude
     
-    # Return relevant columns
-    point.return <- point.loc[,c(locCol,"individualID","api.utmZone",
-                                 "northing","easting","adjCoordinateUncertainty",
-                                 "api.decimalLatitude","api.decimalLongitude",
-                                 "api.elevation","adjElevationUncertainty")]
-    colnames(point.return)[4:8] <- c("adjNorthing","adjEasting",
-                                     "adjCoordinateUncertainty",
-                                     "adjDecimalLatitude","adjDecimalLongitude")
+    # add back in individuals that weren't mapped
+    all.return <- plyr::rbind.fill(point.loc, dataN)
+    all.return <- all.return[order(all.return$rowid),]
+    all.return <- all.return[,-which(colnames(all.return)=='rowid')]
     
-    data$row.index <- 1:nrow(data)
-    all.return <- merge(data, point.return, by=c("points","individualID"))
-    all.return <- all.return[order(all.return$row.index),]
-    all.return <- all.return[,!names(all.return) %in% 'row.index']
     return(all.return)
     
   }
   
+  if(dataProd=='cdw_fieldtally') {
+    
+    # Pull out data with no distance or azimuth
+    data$rowid <- 1:nrow(data)
+    dataN <- data[which(is.na(data$logDistance) | is.na(data$lidsAzimuth)),]
+    data <- data[which(!is.na(data$logDistance) & !is.na(data$lidsAzimuth)),]
+    
+    # Use the getLocByName function to pull the subplot geolocations from the API
+    locCol <- "namedLocation"
+    plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+    
+    # Use relevant columns
+    plot.all <- plot.all[,c("namedLocation","utmZone",
+                              "northing","easting","namedLocationCoordUncertainty",
+                              "decimalLatitude","decimalLongitude",
+                              "elevation","namedLocationElevUncertainty")]
+    names(plot.all) <- c(locCol,"utmZone",
+                          "adjNorthing","adjEasting","adjCoordinateUncertainty",
+                          "adjDecimalLatitude","adjDecimalLongitude",
+                          "adjElevation","adjElevationUncertainty")
+    
+    # merge location data with original data
+    plot.loc <- merge(data, plot.all, by="namedLocation", all.x=T)
+    
+    # Calculate easting and northing from distance and azimuth,
+    # adding 3 to distance because transects start at a 3 meter radius from plot centroid
+    plot.loc$adjEasting <- as.numeric(plot.loc$adjEasting) + (plot.loc$logDistance + 3) * 
+      sin((plot.loc$lidsAzimuth * pi) / 180)
+    plot.loc$adjNorthing <- as.numeric(plot.loc$adjNorthing) + (plot.loc$logDistance + 3) * 
+      cos((plot.loc$lidsAzimuth * pi) / 180)
+    
+    # Increase coordinate uncertainties by reasonable estimate for navigation error
+    plot.loc$adjCoordinateUncertainty <- 
+      as.numeric(plot.loc$adjCoordinateUncertainty) + 1
+    plot.loc$adjElevationUncertainty <- 
+      as.numeric(plot.loc$adjElevationUncertainty) + 2
+    
+    # calculate latitude and longitude from the corrected northing and easting
+    adjLatLong <- geoNEON::calcLatLong(easting=plot.loc$adjEasting, 
+                                       northing=plot.loc$adjNorthing,
+                                       utmZone=plot.loc$utmZone)
+    plot.loc$adjDecimalLatitude <- adjLatLong$decimalLatitude
+    plot.loc$adjDecimalLongitude <- adjLatLong$decimalLongitude
+    
+    # add back in individuals that weren't mapped
+    all.return <- plyr::rbind.fill(plot.loc, dataN)
+    all.return <- all.return[order(all.return$rowid),]
+    all.return <- all.return[,-which(colnames(all.return)=='rowid')]
+    
+    return(all.return)
+    
+  }
+
+  # if(dataProd=='cdw_densitylog') {
+  #   
+  #   # Pull out data with no distance or azimuth or pointID
+  #   # Remaining data should be 'Relative' mappingMethod points
+  #   data$rowid <- 1:nrow(data)
+  #   dataN <- data[which(is.na(data$logDistance) | is.na(data$logAzimuth) | is.na(data$pointID)),]
+  #   data <- data[which(!is.na(data$logDistance) & !is.na(data$logAzimuth) & !is.na(data$pointID)),]
+  #   
+  #   # Concatenate the named location (the plot) and point IDs to get the 
+  #   #      point named locations
+  #   points <- paste(data$namedLocation, data$pointID, sep=".")
+  #   data <- cbind(data, points)
+  #   
+  #   # Use the getLocByName function to pull the subplot geolocations from the API
+  #   locCol <- "points"
+  #   point.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+  #   
+  #   # Use relevant columns
+  #   point.all <- point.all[,c("namedLocation","utmZone",
+  #                           "northing","easting","namedLocationCoordUncertainty",
+  #                           "decimalLatitude","decimalLongitude",
+  #                           "elevation","namedLocationElevUncertainty")]
+  #   names(point.all) <- c(locCol,"utmZone",
+  #                        "adjNorthing","adjEasting","adjCoordinateUncertainty",
+  #                        "adjDecimalLatitude","adjDecimalLongitude",
+  #                        "adjElevation","adjElevationUncertainty")
+  #   
+  #   # merge location data with original data
+  #   point.loc <- merge(data, point.all, by="points", all.x=T)
+  #   
+  #   # Calculate easting and northing from distance and azimuth
+  #   point.loc$adjEasting <- as.numeric(point.loc$adjEasting) + point.loc$logDistance * 
+  #     sin((point.loc$logAzimuth * pi) / 180)
+  #   point.loc$adjNorthing <- as.numeric(point.loc$adjNorthing) + point.loc$logDistance * 
+  #     cos((point.loc$logAzimuth * pi) / 180)
+  #   
+  #   # Increase coordinate uncertainties by reasonable estimate for navigation error
+  #   point.loc$adjCoordinateUncertainty <- 
+  #     as.numeric(point.loc$adjCoordinateUncertainty) + 1
+  #   point.loc$adjElevationUncertainty <- 
+  #     as.numeric(point.loc$adjElevationUncertainty) + 2
+  #   
+  #   # calculate latitude and longitude from the corrected northing and easting
+  #   adjLatLong <- geoNEON::calcLatLong(easting=point.loc$adjEasting, 
+  #                                      northing=point.loc$adjNorthing,
+  #                                      utmZone=point.loc$utmZone)
+  #   point.loc$adjDecimalLatitude <- adjLatLong$decimalLatitude
+  #   point.loc$adjDecimalLongitude <- adjLatLong$decimalLongitude
+  #   
+  #   # Get utmZone for unmapped locations
+  #   unm.all <- geoNEON::getLocByName(dataN, locCol='namedLocation', locOnly=T)
+  #   unm.all <- unm.all[,c("namedLocation","utmZone")]
+  #   dataN <- merge(dataN, unm.all, by='namedLocation', all.x=T)
+  # 
+  #   # Subset data without distance and azimuth to calculate GPS points
+  #   dataG <- dataN[which(!is.na(dataN$sampleEasting) & !is.na(dataN$sampleNorthing)),]
+  #   dataN <- dataN[which(is.na(dataN$sampleEasting) | is.na(dataN$sampleNorthing)),]
+  #   
+  #   # calculate latitude and longitude from GPS easting and northing
+  #   adjLatLongGPS <- geoNEON::calcLatLong(easting=dataG$sampleEasting, 
+  #                                         northing=dataG$sampleNorthing,
+  #                                         utmZone=dataG$utmZone)
+  #   dataG$adjDecimalLatitude <- adjLatLongGPS$decimalLatitude
+  #   dataG$adjDecimalLongitude <- adjLatLongGPS$decimalLongitude
+  #   dataG$adjCoordinateUncertainty <- 10
+  #   
+  #   # add back in individuals that weren't mapped
+  #   all.return <- plyr::rbind.fill(point.loc, dataG)
+  #   all.return <- plyr::rbind.fill(all.return, dataN)
+  #   all.return <- all.return[order(all.return$rowid),]
+  #   all.return <- all.return[,-which(colnames(all.return)=='rowid')]
+  #   
+  #   return(all.return)
+  #   
+  # }
+  
+    
   if(dataProd=="bet_fielddata") {
+    
+    data$rowid <- 1:nrow(data)
     
     # concatenate the named location with the trapID
     traps <- paste(data$namedLocation, data$trapID, sep=".")
+    data <- cbind(data, traps)
     
+    # Use the getLocByName function to pull the subplot geolocations from the API
+    locCol <- "traps"
+    trap.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+    
+    # Use relevant columns
+    trap.all <- trap.all[,c("namedLocation","utmZone",
+                              "northing","easting","namedLocationCoordUncertainty",
+                              "decimalLatitude","decimalLongitude",
+                              "elevation","namedLocationElevUncertainty")]
+    names(trap.all) <- c(locCol,"utmZone",
+                          "adjNorthing","adjEasting","adjCoordinateUncertainty",
+                          "adjDecimalLatitude","adjDecimalLongitude",
+                          "adjElevation","adjElevationUncertainty")
+    
+    # merge location data with original data
+    trap.loc <- merge(data, trap.all, by="traps", all.x=T)
+    
+    # increase coordinate uncertainty: traps may be moved up to 2 meters to avoid obstacles
+    trap.loc$adjCoordinateUncertainty <- as.numeric(trap.loc$adjCoordinateUncertainty) + 2
+    trap.loc$adjElevationUncertainty <- as.numeric(trap.loc$adjElevationUncertainty) + 1
+    
+    # sort to original order
+    trap.return <- trap.loc[order(trap.loc$rowid),]
+    trap.return <- trap.return[,-which(colnames(trap.return)=='rowid')]
+    
+    return(trap.return)
+    
+  }
+  
+  if(dataProd=="mos_trapping") {
+    cat('Mosquito trapping location is flexible within the plot; locations provided in downloaded data are accurate.')
+  }
+
+  if(dataProd=="tck_fielddata") {
+    cat('Ticks are sampled around the entire perimeter of the plot; locations provided in downloaded data are accurate.')
+  }
+  
+  if(dataProd=='dhp_perimagefile') {
+    
+    data$rowid <- 1:nrow(data)
+    
+    # plot spatial data are in the dhp_perplot table, so need to download
+    locCol <- 'namedLocation'
+    plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+    
+    # Use relevant columns
+    plot.all <- plot.all[,c("namedLocation","utmZone",
+                            "northing","easting","namedLocationCoordUncertainty",
+                            "decimalLatitude","decimalLongitude",
+                            "elevation","namedLocationElevUncertainty")]
+    names(plot.all) <- c(locCol,"utmZone",
+                         "adjNorthing","adjEasting","adjCoordinateUncertainty",
+                         "adjDecimalLatitude","adjDecimalLongitude",
+                         "adjElevation","adjElevationUncertainty")
+    
+    # merge location data with original data
+    plot.loc <- merge(data, plot.all, by="namedLocation", all.x=T)
+    
+    # adjust northing and easting using point offsets
+    plot.loc$adjEasting <- as.numeric(plot.loc$adjEasting)
+    plot.loc$adjNorthing <- as.numeric(plot.loc$adjNorthing)
+    for(i in unique(plot.loc$pointID)) {
+      eastOff.i <- dhpOffsets$eastOff[which(dhpOffsets$pointID==i)]
+      northOff.i <- dhpOffsets$northOff[which(dhpOffsets$pointID==i)]
+      
+      # if point in data doesn't match any point in DHP offsets, skip and delete location data
+      if(length(eastOff.i)==0 | length(northOff.i)==0) {
+        cat(paste('Point ', i, ' not found in DHP points. Locations not calculated.', sep=''))
+        plot.loc$easting[which(plot.loc$pointID==i)] <- NA
+        plot.loc$northing[which(plot.loc$pointID==i)] <- NA
+        next
+      }
+      
+      # apply offsets
+      plot.loc$adjEasting[which(plot.loc$pointID==i)] <- plot.loc$adjEasting[which(plot.loc$pointID==i)] + eastOff.i
+      plot.loc$adjNorthing[which(plot.loc$pointID==i)] <- plot.loc$adjNorthing[which(plot.loc$pointID==i)] + northOff.i
+    }
+    
+    # calculate latitude and longitude from the corrected northing and easting
+    adjLatLong <- geoNEON::calcLatLong(easting=plot.loc$adjEasting, 
+                                       northing=plot.loc$adjNorthing,
+                                       utmZone=plot.loc$utmZone)
+    plot.loc$adjDecimalLatitude <- adjLatLong$decimalLatitude
+    plot.loc$adjDecimalLongitude <- adjLatLong$decimalLongitude
+    
+    # increase coordinate uncertainty: flexibility in camera placement
+    plot.loc$adjCoordinateUncertainty <- as.numeric(plot.loc$adjCoordinateUncertainty) + 2
+    plot.loc$adjElevationUncertainty <- as.numeric(plot.loc$adjElevationUncertainty) + 2
+    
+    # sort to original order
+    plot.return <- plot.loc[order(plot.loc$rowid),]
+    plot.return <- plot.return[,-which(colnames(plot.return)=='rowid')]
+    
+    return(plot.return)
   }
   
   else {
