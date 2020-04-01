@@ -1,13 +1,16 @@
 Package: geoNEON
 Title: Geolocation Data Access for NEON Data
-Version: 0.0.1
-Date: 2020-02-04
+Version: 1.0.0
+Date: 2020-04-01
 Authors@R: c(person("National Ecological Observatory Network", role="aut"), person("Claire", "Lunch", email = "clunch@battelleecology.org", role = c("ctb", "cre")), person("Sarah", "Elmendorf", role="ctb"))
-Description: Contains basic shared functions for acquisition and calculation of
-    geolocation data applicable to National Ecological Observatory Network (NEON)
-    data products.
+Description: NEON spatial data are provided in a variety of ways: spatial data are present in data tables 
+    in observational data products, and in the sensor_positions files provided with instrumented data products, 
+    while airborne data are inherently spatially explicit. In addition, the NEON location database is accessible 
+    via the public API. The geoNEON package contains basic shared functions for accessing spatial data via the 
+    API, and for calculating more precise locations for terrestrial observational data than are provided in the 
+    data tables.
 Depends:
-    R (>= 3.3.1)
+    R (>= 3.5.0)
 License: AGPL-3
 Encoding: UTF-8
 LazyData: true
