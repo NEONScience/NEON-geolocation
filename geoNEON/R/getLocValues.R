@@ -21,8 +21,15 @@
 
 getLocValues <- function(locJSON) {
   
-  loc.values <- locJSON$data[intersect(grep('Parent', names(locJSON$data), invert=T), 
-                                   grep('Child', names(locJSON$data), invert=T))]
+  loc.values <- locJSON$data[intersect(intersect(grep('Parent', names(locJSON$data), invert=T), 
+                                   grep('Child', names(locJSON$data), invert=T)),
+                                   grep('Properties', names(locJSON$data), invert=T))]
+  loc.props.mat <- locJSON$data$locationProperties
+  loc.props <- loc.props.mat$locationPropertyValue
+  names(loc.props) <- loc.props.mat$locationPropertyName
   
+  loc.all <- unlist(c(loc.values, loc.props), use.names=T)
+  
+  return(loc.all)
   
 }

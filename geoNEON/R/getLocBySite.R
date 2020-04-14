@@ -8,7 +8,7 @@
 #' Query the API for location data by site. Return all available locations; options for subset to IS or OS locations.
 #'
 #' @param site The four-letter code of a single NEON site, e.g. 'CLBJ'.
-#' @param type One of 'IS', 'OS', or 'all', indicating instrumented (IS), observational (OS), or all locations. Defaults to IS.
+#' @param type One of 'site', 'IS', 'OS', or 'all', indicating instrumented (IS), observational (OS), site only, or all locations. Defaults to IS.
 
 #' @return A data frame of location data.
 
@@ -37,6 +37,8 @@ getLocBySite <- function(site, type='IS') {
   
   loc <- jsonlite::fromJSON(httr::content(req, as='text', encoding='UTF-8'))
   loc.values <- getLocValues(loc)
+  
+  
   
   if(types=='IS') {
     loc <- loc$data$locationChildrenUrls[which(substring(loc$data$locationChildren, 1, 4)!=site)]
