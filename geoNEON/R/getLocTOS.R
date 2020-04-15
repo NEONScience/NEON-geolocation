@@ -580,7 +580,7 @@ getLocTOS <- function(
     # add back in individuals that weren't mapped
     all.return <- plyr::rbind.fill(point.loc, dataN)
     all.return <- all.return[order(all.return$rowid),]
-    all.return <- all.return[,!names(all.return) %in% c('rowid','points'))]
+    all.return <- all.return[,!names(all.return) %in% c('rowid','points')]
     
     return(all.return)
     
