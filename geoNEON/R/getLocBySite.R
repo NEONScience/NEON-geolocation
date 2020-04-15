@@ -36,12 +36,24 @@ getLocBySite <- function(site, type='IS') {
   }
   
   loc <- jsonlite::fromJSON(httr::content(req, as='text', encoding='UTF-8'))
-  loc.values <- getLocValues(loc)
   
+  if(type=='site') {
+    loc.values <- getLocValues(loc)
+    # rename and reshape
+  }
   
+  if(type=='OS') {
+    if(loc$data$locationProperties$locationPropertyValue
+       [which(loc$data$locationProperties$locationPropertyName=='Value for HABITAT')]
+       =='Terrestrial') {
+      cat('Warning: using getLocBySite() to access OS locations at terrestrial sites is very slow.\nMost terrestrial sites have 5000+ OS locations. A more targeted approach is recommended, such as using getLocTOS().')
+    }
+    loc <- loc$data$locationChildren[which(substring(loc$data$locationChildren, 1, 4)==site)]
+  }
   
-  if(types=='IS') {
-    loc <- loc$data$locationChildrenUrls[which(substring(loc$data$locationChildren, 1, 4)!=site)]
+  if(type=='IS') {
+    loc <- loc$data$locationChildren[which(substring(loc$data$locationChildren, 1, 4)!=site)]
+    loc.des <- unlist(lapply(loc, getLocChildren))
   }
   
 }
