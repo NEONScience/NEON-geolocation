@@ -22,4 +22,5 @@ Imports: plyr,
     sp,
     dplyr,
     rgdal,
-    data.table
+    data.table,
+    jsonlite

@@ -31,15 +31,28 @@ getLocBySite <- function(site, type='IS') {
     stop("The NEON server is down, or your internet connection is down. 
               Check the NEON data portal for additional service messages.")
   }
+  
   if(!is.null(req.content$error$status)) {
     stop(paste(site, ' is not a valid NEON site code.', sep=''))
+  }
+  
+  if(!type %in% c('IS','OS','all','site')) {
+    stop('Type must be one of: IS, OS, all, or site.')
   }
   
   loc <- jsonlite::fromJSON(httr::content(req, as='text', encoding='UTF-8'))
   
   if(type=='site') {
-    loc.values <- getLocValues(loc)
-    # rename and reshape
+    loc.des <- getLocValues(loc)
+  }
+  
+  if(type=='all') {
+    if(loc$data$locationProperties$locationPropertyValue
+       [which(loc$data$locationProperties$locationPropertyName=='Value for HABITAT')]
+       =='Terrestrial') {
+      cat('Warning: using getLocBySite() to access OS locations at terrestrial sites is very slow.\nMost terrestrial sites have 5000+ OS locations. A more targeted approach is recommended, such as using getLocTOS().')
+    }
+    loc.des <- data.table::rbindlist(lapply(loc, getLocChildren), fill=T)
   }
   
   if(type=='OS') {
@@ -49,12 +62,14 @@ getLocBySite <- function(site, type='IS') {
       cat('Warning: using getLocBySite() to access OS locations at terrestrial sites is very slow.\nMost terrestrial sites have 5000+ OS locations. A more targeted approach is recommended, such as using getLocTOS().')
     }
     loc <- loc$data$locationChildren[which(substring(loc$data$locationChildren, 1, 4)==site)]
+    loc.des <- data.table::rbindlist(lapply(loc, getLocChildren), fill=T)
   }
   
   if(type=='IS') {
     loc <- loc$data$locationChildren[which(substring(loc$data$locationChildren, 1, 4)!=site)]
-    loc.des <- unlist(lapply(loc, getLocChildren))
+    loc.des <- data.table::rbindlist(lapply(loc, getLocChildren), fill=T)
   }
   
+  return(loc.des)
+  
 }
-

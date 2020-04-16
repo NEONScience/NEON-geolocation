@@ -25,17 +25,16 @@ getLocChildren <- function(namedLocation) {
   loc <- jsonlite::fromJSON(httr::content(req, as='text', encoding='UTF-8'))
 
   loc.children <- loc$data[base::grep('Child', base::names(loc$data))]$locationChildren
+  loc.values <- getLocValues(loc)
   
-  cat('Finding children of', namedLocation, rep('', 50), '\r')
-  flush.console()
+  cat('Finding spatial data for', namedLocation, rep('', 50), '\r')
+  utils::flush.console()
   
   if(length(loc.children)==0) {
-    return()
+    loc.all <- getLocValues(loc)
+    return(loc.all)
   } else {
-    loc.next <- unlist(lapply(loc.children, getLocChildren))
-    loc.all <- c(loc.children, loc.next)
-    
+    loc.all <- plyr::rbind.fill(loc.values, data.table::rbindlist(lapply(loc.children, getLocChildren), fill=T))
     return(loc.all)
   }
-  
 }
