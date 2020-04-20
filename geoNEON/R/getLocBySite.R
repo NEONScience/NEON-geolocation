@@ -52,7 +52,7 @@ getLocBySite <- function(site, type='IS') {
        =='Terrestrial') {
       cat('Warning: using getLocBySite() to access OS locations at terrestrial sites is very slow.\nMost terrestrial sites have 5000+ OS locations. A more targeted approach is recommended, such as using getLocTOS().')
     }
-    loc.des <- data.table::rbindlist(lapply(loc, getLocChildren), fill=T)
+    loc.des <- getLocChildren(site)
   }
   
   if(type=='OS') {
@@ -61,13 +61,17 @@ getLocBySite <- function(site, type='IS') {
        =='Terrestrial') {
       cat('Warning: using getLocBySite() to access OS locations at terrestrial sites is very slow.\nMost terrestrial sites have 5000+ OS locations. A more targeted approach is recommended, such as using getLocTOS().')
     }
+    loc.site <- getLocValues(loc)
     loc <- loc$data$locationChildren[which(substring(loc$data$locationChildren, 1, 4)==site)]
     loc.des <- data.table::rbindlist(lapply(loc, getLocChildren), fill=T)
+    loc.des <- data.table::rbindlist(list(loc.site, loc.des), fill=T)
   }
   
   if(type=='IS') {
+    loc.site <- getLocValues(loc)
     loc <- loc$data$locationChildren[which(substring(loc$data$locationChildren, 1, 4)!=site)]
     loc.des <- data.table::rbindlist(lapply(loc, getLocChildren), fill=T)
+    loc.des <- data.table::rbindlist(list(loc.site, loc.des), fill=T)
   }
   
   return(loc.des)
