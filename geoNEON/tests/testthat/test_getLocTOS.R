@@ -26,6 +26,14 @@ test_that("Select plant pres named locations are correct", {
   expect_equal(as.numeric(out$adjCoordinateUncertainty), c(NA, NA, 2.29), tolerance=0.01)
 })
 
+test_that("Select soil locations are correct", {
+  df<-data.frame(namedLocation=c('UNDE_017.basePlot.bgc', 'UNDE_013.basePlot.bgc'), 
+                 coreCoordinateX=c(15,18), coreCoordinateY=c(33,37))
+  out<-getLocTOS(df, 'sls_soilCoreCollection')
+  expect_equal(as.numeric(out$adjNorthing), c(5123529, 5122515), tolerance=1)
+  expect_equal(as.numeric(out$adjCoordinateUncertainty), c(0.5,0.5), tolerance=0.1)
+})
+
 test_that("Select litter trap named locations are correct", {
   df<-data.frame(namedLocation=c('WREF_088.basePlot.ltr', 'WREF_088.basePlot.ltr',
                                  'WREF_075.basePlot.ltr'), subplotID=c('39','41', '23'),

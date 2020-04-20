@@ -144,8 +144,8 @@ getLocTOS <- function(
                                 "adjCoordinateUncertainty","adjDecimalLatitude",
                                 "adjDecimalLongitude","adjElevation",
                                 "adjElevationUncertainty")
-    plot.loc <- base::merge(data, subplot.merg, by=locCol, all.x=T)
-    plot.loc <- subplot.loc[order(subplot.loc$rowid),]
+    plot.loc <- base::merge(data, plot.merg, by=locCol, all.x=T)
+    plot.loc <- plot.loc[order(plot.loc$rowid),]
     
     # Subtract 20 meters from the easting and northing values to get the 
     # location of the southwest corner
