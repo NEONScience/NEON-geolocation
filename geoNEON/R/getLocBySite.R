@@ -8,7 +8,8 @@
 #' Query the API for location data by site. Return all available locations; options for subset to IS or OS locations.
 #'
 #' @param site The four-letter code of a single NEON site, e.g. 'CLBJ'.
-#' @param type One of 'site', 'IS', 'OS', or 'all', indicating instrumented (IS), observational (OS), site only, or all locations. Defaults to IS.
+#' @param type One of 'site', 'TIS', 'TOS', 'AQU', or 'all', indicating terrestrial instrument locations (TIS), terrestrial observational locations (TOS), aquatic locations (AQU), site-level only, or all available locations. Defaults to site.
+#' @param history Should the location history be included in the query? T or F, defaults to F.
 
 #' @return A data frame of location data.
 
@@ -22,9 +23,16 @@
 
 ##############################################################################################
 
-getLocBySite <- function(site, type='IS') {
+getLocBySite <- function(site, type='site', history=F) {
   
-  req <- httr::GET(paste('http://data.neonscience.org/api/v0/locations/', site, sep=''))
+  if(!history) {
+    req <- httr::GET(paste('http://data.neonscience.org/api/v0/locations/', site, sep=''))
+  }
+  if(history) {
+    req <- httr::GET(paste('http://data.neonscience.org/api/v0/locations/', site, 
+                           '?history=true', sep=''))
+  }
+  
   req.content <- httr::content(req, as='parsed')
 
   if(!is.null(req.content$doc)) {
@@ -36,41 +44,41 @@ getLocBySite <- function(site, type='IS') {
     stop(paste(site, ' is not a valid NEON site code.', sep=''))
   }
   
-  if(!type %in% c('IS','OS','all','site')) {
-    stop('Type must be one of: IS, OS, all, or site.')
+  if(!type %in% c('TIS','TOS','AQU','all','site')) {
+    stop('Type must be one of: TIS, TOS, AQU, all, or site.')
   }
   
   loc <- jsonlite::fromJSON(httr::content(req, as='text', encoding='UTF-8'))
   
   if(type=='site') {
-    loc.des <- getLocValues(loc)
+    loc.des <- getLocValues(loc, history)
   }
   
-  if(type=='all') {
+  if(type=='all' | type=='AQU') {
     if(loc$data$locationProperties$locationPropertyValue
        [which(loc$data$locationProperties$locationPropertyName=='Value for HABITAT')]
        =='Terrestrial') {
       cat('Warning: using getLocBySite() to access OS locations at terrestrial sites is very slow.\nMost terrestrial sites have 5000+ OS locations. A more targeted approach is recommended, such as using getLocTOS().')
     }
-    loc.des <- getLocChildren(site)
+    loc.des <- getLocChildren(site, history)
   }
   
-  if(type=='OS') {
+  if(type=='TOS') {
     if(loc$data$locationProperties$locationPropertyValue
        [which(loc$data$locationProperties$locationPropertyName=='Value for HABITAT')]
        =='Terrestrial') {
       cat('Warning: using getLocBySite() to access OS locations at terrestrial sites is very slow.\nMost terrestrial sites have 5000+ OS locations. A more targeted approach is recommended, such as using getLocTOS().')
     }
-    loc.site <- getLocValues(loc)
+    loc.site <- getLocValues(loc, history)
     loc <- loc$data$locationChildren[which(substring(loc$data$locationChildren, 1, 4)==site)]
-    loc.des <- data.table::rbindlist(lapply(loc, getLocChildren), fill=T)
+    loc.des <- data.table::rbindlist(lapply(loc, getLocChildren, history=history), fill=T)
     loc.des <- data.table::rbindlist(list(loc.site, loc.des), fill=T)
   }
   
-  if(type=='IS') {
-    loc.site <- getLocValues(loc)
+  if(type=='TIS') {
+    loc.site <- getLocValues(loc, history)
     loc <- loc$data$locationChildren[which(substring(loc$data$locationChildren, 1, 4)!=site)]
-    loc.des <- data.table::rbindlist(lapply(loc, getLocChildren), fill=T)
+    loc.des <- data.table::rbindlist(lapply(loc, getLocChildren, history=history), fill=T)
     loc.des <- data.table::rbindlist(list(loc.site, loc.des), fill=T)
   }
   

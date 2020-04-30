@@ -4,10 +4,12 @@
 \alias{getLocValues}
 \title{Extract location values from the JSON returned by the NEON API}
 \usage{
-getLocValues(locJSON)
+getLocValues(locJSON, history = F)
 }
 \arguments{
 \item{locJSON}{A JSON object returned by the locations endpoint of the NEON API.}
+
+\item{history}{Does locJSON include the location history? T or F, defaults to F.}
 }
 \value{
 A data frame of location data.

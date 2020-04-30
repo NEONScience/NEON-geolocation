@@ -4,12 +4,14 @@
 \alias{getLocBySite}
 \title{Download all location data for a given NEON site}
 \usage{
-getLocBySite(site, type = "IS")
+getLocBySite(site, type = "site", history = F)
 }
 \arguments{
 \item{site}{The four-letter code of a single NEON site, e.g. 'CLBJ'.}
 
-\item{type}{One of 'site', 'IS', 'OS', or 'all', indicating instrumented (IS), observational (OS), site only, or all locations. Defaults to IS.}
+\item{type}{One of 'site', 'TIS', 'TOS', 'AQU', or 'all', indicating terrestrial instrument locations (TIS), terrestrial observational locations (TOS), aquatic locations (AQU), site-level only, or all available locations. Defaults to site.}
+
+\item{history}{Should the location history be included in the query? T or F, defaults to F.}
 }
 \value{
 A data frame of location data.

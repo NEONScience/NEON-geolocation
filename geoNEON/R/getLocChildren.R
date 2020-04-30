@@ -8,6 +8,7 @@
 #' Find all descendent named locations of a given named location; return all names.
 #'
 #' @param namedLocation A NEON named location name.
+#' @param history Should the location history be included in the query? T or F, defaults to F.
 
 #' @return A vector of named location names of all descendents of the input named location.
 
@@ -19,22 +20,38 @@
 
 ##############################################################################################
 
-getLocChildren <- function(namedLocation) {
+getLocChildren <- function(namedLocation, history=F) {
   
-  req <- httr::GET(paste('http://data.neonscience.org/api/v0/locations/', namedLocation, sep=''))
-  loc <- jsonlite::fromJSON(httr::content(req, as='text', encoding='UTF-8'))
-
-  loc.children <- loc$data[base::grep('Child', base::names(loc$data))]$locationChildren
-  loc.values <- getLocValues(loc)
-  
-  cat('Finding spatial data for', namedLocation, rep('', 50), '\r')
-  utils::flush.console()
-  
-  if(length(loc.children)==0) {
-    loc.all <- getLocValues(loc)
-    return(loc.all)
-  } else {
-    loc.all <- plyr::rbind.fill(loc.values, data.table::rbindlist(lapply(loc.children, getLocChildren), fill=T))
-    return(loc.all)
+  if(!history) {
+    req <- httr::GET(paste('http://data.neonscience.org/api/v0/locations/', namedLocation, sep=''))
   }
+  if(history) {
+    req <- httr::GET(paste('http://data.neonscience.org/api/v0/locations/', namedLocation, 
+                           '?history=true', sep=''))
+  }
+  
+  req.content <- httr::content(req, as='parsed')
+  if(!is.null(req.content$error$status)) {
+    return()
+  } else {
+    
+    loc <- jsonlite::fromJSON(httr::content(req, as='text', encoding='UTF-8'))
+    
+    loc.children <- loc$data[base::grep('Child', base::names(loc$data))]$locationChildren
+    loc.values <- getLocValues(loc, history)
+    
+    cat('Finding spatial data for', namedLocation, rep('', 50), '\r')
+    utils::flush.console()
+    
+    if(length(loc.children)==0) {
+      loc.all <- getLocValues(loc, history)
+      return(loc.all)
+    } else {
+      loc.all <- plyr::rbind.fill(loc.values, 
+                                  data.table::rbindlist(lapply(loc.children, getLocChildren, history), 
+                                                        fill=T))
+      return(loc.all)
+    }
+  }
+  
 }

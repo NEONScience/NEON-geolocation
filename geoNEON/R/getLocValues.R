@@ -8,6 +8,7 @@
 #' Extract location data and properties from JSON returned by the NEON API; designed to be used iteratively for many locations. Called within getLocBySite(), not exported for independent use.
 #'
 #' @param locJSON A JSON object returned by the locations endpoint of the NEON API.
+#' @param history Does locJSON include the location history? T or F, defaults to F.
 
 #' @return A data frame of location data.
 
@@ -19,17 +20,38 @@
 
 ##############################################################################################
 
-getLocValues <- function(locJSON) {
+getLocValues <- function(locJSON, history=F) {
   
-  loc.values <- locJSON$data[intersect(intersect(grep('ParentUrl', names(locJSON$data), invert=T), 
-                                   grep('Child', names(locJSON$data), invert=T)),
-                                   grep('Properties', names(locJSON$data), invert=T))]
-  loc.props.mat <- locJSON$data$locationProperties
-  loc.props <- loc.props.mat$locationPropertyValue
-  names(loc.props) <- loc.props.mat$locationPropertyName
+  if(!history) {
+    loc.values <- locJSON$data[intersect(intersect(grep('ParentUrl', names(locJSON$data), invert=T), 
+                                                   grep('Child', names(locJSON$data), invert=T)),
+                                         grep('Properties', names(locJSON$data), invert=T))]
+    loc.props.mat <- locJSON$data$locationProperties
+    loc.props <- loc.props.mat$locationPropertyValue
+    names(loc.props) <- loc.props.mat$locationPropertyName
+    
+    loc.all <- unlist(c(loc.values, loc.props), use.names=T)
+    loc.all <- data.frame(t(loc.all))
+  }
   
-  loc.all <- unlist(c(loc.values, loc.props), use.names=T)
-  loc.all <- data.frame(t(loc.all))
+  if(history) {
+    loc.values <- locJSON$data$locationHistory[,-which(names(locJSON$data$locationHistory) %in% 'locationProperties')]
+    locids <- cbind(rep(locJSON$data$locationDescription, nrow(loc.values)), 
+                    rep(locJSON$data$locationName, nrow(loc.values)), 
+                    rep(locJSON$data$domainCode, nrow(loc.values)), 
+                    rep(locJSON$data$siteCode, nrow(loc.values)))
+    names(locids) <- c('locationDescription', 'locationName', 'domainCode', 'siteCode')
+    loc.values <- cbind(locids, loc.values)
+
+    if(length(locJSON$data$locationHistory$locationProperties[[1]])!=0) {
+      loc.props.list <- lapply(locJSON$data$locationHistory$locationProperties, tLocProps)
+      loc.props <- data.table::rbindlist(loc.props.list, fill=T)
+      loc.all <- cbind(loc.values, loc.props)
+    } else {
+      loc.all <- loc.values
+    }
+    
+  }
   
   names(loc.all)[names(loc.all)=='locationName'] <- 'namedLocation'
   names(loc.all)[names(loc.all)=='siteCode'] <- 'siteID'
