@@ -9,6 +9,7 @@
 #'
 #' @param namedLocation A NEON named location name.
 #' @param history Should the location history be included in the query? T or F, defaults to F.
+#' @param token User specific API token (generated within neon.datascience user accounts). Optional.
 
 #' @return A vector of named location names of all descendents of the input named location.
 
@@ -20,14 +21,16 @@
 
 ##############################################################################################
 
-getLocChildren <- function(namedLocation, history=F) {
+getLocChildren <- function(namedLocation, history=F, token=NA_character_) {
   
   if(!history) {
-    req <- httr::GET(paste('http://data.neonscience.org/api/v0/locations/', namedLocation, sep=''))
+    req <- httr::GET(paste('http://data.neonscience.org/api/v0/locations/', namedLocation, sep=''),
+                     httr::add_headers(.headers=c("X-API-Token"=token)))
   }
   if(history) {
     req <- httr::GET(paste('http://data.neonscience.org/api/v0/locations/', namedLocation, 
-                           '?history=true', sep=''))
+                           '?history=true', sep=''),
+                     httr::add_headers(.headers=c("X-API-Token"=token)))
   }
   
   req.content <- httr::content(req, as='parsed')

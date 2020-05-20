@@ -4,7 +4,7 @@
 \alias{getLocBySite}
 \title{Download all location data for a given NEON site}
 \usage{
-getLocBySite(site, type = "site", history = F)
+getLocBySite(site, type = "site", history = F, token = NA_character_)
 }
 \arguments{
 \item{site}{The four-letter code of a single NEON site, e.g. 'CLBJ'.}
@@ -12,6 +12,8 @@ getLocBySite(site, type = "site", history = F)
 \item{type}{One of 'site', 'TIS', 'TOS', 'AQU', or 'all', indicating terrestrial instrument locations (TIS), terrestrial observational locations (TOS), aquatic locations (AQU), site-level only, or all available locations. Defaults to site.}
 
 \item{history}{Should the location history be included in the query? T or F, defaults to F.}
+
+\item{token}{User specific API token (generated within neon.datascience user accounts). Optional.}
 }
 \value{
 A data frame of location data.

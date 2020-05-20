@@ -4,7 +4,12 @@
 \alias{getLocByName}
 \title{Extract geolocation data from NEON API}
 \usage{
-getLocByName(data, locCol = "namedLocation", locOnly = F)
+getLocByName(
+  data,
+  locCol = "namedLocation",
+  locOnly = F,
+  token = NA_character_
+)
 }
 \arguments{
 \item{data}{A data frame in which one column contains the named locations}
@@ -12,6 +17,8 @@ getLocByName(data, locCol = "namedLocation", locOnly = F)
 \item{locCol}{The column name of the column containing the named locations. Defaults to namedLocation}
 
 \item{locOnly}{Boolean whether to return the full input data frame or just the extracted geolocations}
+
+\item{token}{User specific API token (generated within neon.datascience user accounts). Optional.}
 }
 \value{
 A data frame of the geolocation data for the input named locations

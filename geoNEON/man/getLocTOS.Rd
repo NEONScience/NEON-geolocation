@@ -4,12 +4,14 @@
 \alias{getLocTOS}
 \title{Calculate more precise geolocations for specific NEON data products}
 \usage{
-getLocTOS(data, dataProd)
+getLocTOS(data, dataProd, token = NA_character_)
 }
 \arguments{
 \item{data}{A data frame containing NEON named locations and other sampling information. For reliable results, use data tables as downloaded from the NEON data portal or API.}
 
 \item{dataProd}{The table name of the NEON data product table to find locations for. Must be one of: ltr_pertrap, hbp_perbout, sls_soilCoreCollection, brd_perpoint or brd_countdata, mam_pertrapnight, div_1m2Data or div_10m2Data100m2Data, vst_mappingandtagging.}
+
+\item{token}{User specific API token (generated within neon.datascience user accounts). Optional.}
 }
 \value{
 A data frame of geolocations for the input product and data

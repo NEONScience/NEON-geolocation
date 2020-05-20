@@ -4,12 +4,14 @@
 \name{dhpOffsets}
 \alias{dhpOffsets}
 \title{Documentation for dhpOffsets data set}
-\format{A data frame with 12 rows and 3 variables
+\format{
+A data frame with 12 rows and 3 variables
 \describe{
   \item{pointID}{identifier of point within plot}
   \item{eastOff}{offset to be added to easting value of southwest corner of plot}
   \item{northOff}{offset to be added to northing value of southwest corner of plot}
-  }}
+  }
+}
 \usage{
 dhpOffsets
 }

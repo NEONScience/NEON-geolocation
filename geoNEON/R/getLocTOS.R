@@ -9,6 +9,7 @@
 #' 
 #' @param data A data frame containing NEON named locations and other sampling information. For reliable results, use data tables as downloaded from the NEON data portal or API.
 #' @param dataProd The table name of the NEON data product table to find locations for. Must be one of: ltr_pertrap, hbp_perbout, sls_soilCoreCollection, brd_perpoint or brd_countdata, mam_pertrapnight, div_1m2Data or div_10m2Data100m2Data, vst_mappingandtagging.
+#' @param token User specific API token (generated within neon.datascience user accounts). Optional.
 
 #' @return A data frame of geolocations for the input product and data
 
@@ -31,7 +32,8 @@
 ##############################################################################################
 getLocTOS <- function(
   data,
-  dataProd
+  dataProd,
+  token=NA_character_
 ){
   
   # convert format for safety
@@ -55,7 +57,7 @@ getLocTOS <- function(
     
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol <- "subplots"
-    subplot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+    subplot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
     
     # Use relevant columns
     subplot.merg <- subplot.all[,c("namedLocation","utmZone",
@@ -133,7 +135,7 @@ getLocTOS <- function(
     
     # Use the getLocByName function to pull the plot geolocations from the API
     locCol <- "namedLocation"
-    plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+    plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
     
     # Use relevant columns
     plot.merg <- plot.all[,c("namedLocation","utmZone",
@@ -192,7 +194,7 @@ getLocTOS <- function(
     
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol <- "points"
-    point.loc <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+    point.loc <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
     names(point.loc)[names(point.loc)=='namedLocation']<-locCol
 
     #add additional coordinateUncertainty
@@ -255,7 +257,7 @@ getLocTOS <- function(
 
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol="namedLocation"
-    pointSpatialData <- geoNEON::getLocByName(corners, locCol=locCol, locOnly=T)
+    pointSpatialData <- geoNEON::getLocByName(corners, locCol=locCol, locOnly=T, token=token)
 
     #exception handling for missing inputs
     nogeo <- data[which(is.na(data$transectMeter) | is.na(data$directionFromTransect)),]
@@ -435,7 +437,7 @@ getLocTOS <- function(
     # Use the getLocByName function to pull the subplot geolocations from the API
     # Don't bother looking up any of the 'X' traps - those have uncertain geolocations
     locCol <- "points"
-    point.loc <- getLocByName(data[!grepl('X', data$points),], locCol=locCol, locOnly=T)
+    point.loc <- getLocByName(data[!grepl('X', data$points),], locCol=locCol, locOnly=T, token=token)
     names(point.loc)[names(point.loc)=='namedLocation']<-locCol
     point.loc$adjCoordinateUncertainty<-as.numeric(point.loc$namedLocationCoordUncertainty)
     
@@ -488,7 +490,7 @@ getLocTOS <- function(
     
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol="subplots"
-    subplot.loc <- getLocByName(data, locCol=locCol, locOnly=T)
+    subplot.loc <- getLocByName(data, locCol=locCol, locOnly=T, token=token)
     names(subplot.loc)[names(subplot.loc)=='namedLocation']<-locCol
     subplot.loc$adjCoordinateUncertainty<-as.numeric(subplot.loc$namedLocationCoordUncertainty)
     
@@ -543,7 +545,7 @@ getLocTOS <- function(
     
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol <- "points"
-    point.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+    point.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
     
     # Use relevant columns
     point.all <- point.all[,c("namedLocation","utmZone",
@@ -595,7 +597,7 @@ getLocTOS <- function(
     
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol <- "namedLocation"
-    plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+    plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
     
     # Use relevant columns
     plot.all <- plot.all[,c("namedLocation","utmZone",
@@ -654,7 +656,7 @@ getLocTOS <- function(
   #   
   #   # Use the getLocByName function to pull the subplot geolocations from the API
   #   locCol <- "points"
-  #   point.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+  #   point.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
   #   
   #   # Use relevant columns
   #   point.all <- point.all[,c("namedLocation","utmZone",
@@ -689,7 +691,7 @@ getLocTOS <- function(
   #   point.loc$adjDecimalLongitude <- adjLatLong$decimalLongitude
   #   
   #   # Get utmZone for unmapped locations
-  #   unm.all <- geoNEON::getLocByName(dataN, locCol='namedLocation', locOnly=T)
+  #   unm.all <- geoNEON::getLocByName(dataN, locCol='namedLocation', locOnly=T, token=token)
   #   unm.all <- unm.all[,c("namedLocation","utmZone")]
   #   dataN <- merge(dataN, unm.all, by='namedLocation', all.x=T)
   # 
@@ -726,7 +728,7 @@ getLocTOS <- function(
     
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol <- "traps"
-    trap.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+    trap.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
     
     # Use relevant columns
     trap.all <- trap.all[,c("namedLocation","utmZone",
@@ -767,7 +769,7 @@ getLocTOS <- function(
     
     # plot spatial data are in the dhp_perplot table, so need to download
     locCol <- 'namedLocation'
-    plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T)
+    plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
     
     # Use relevant columns
     plot.all <- plot.all[,c("namedLocation","utmZone",

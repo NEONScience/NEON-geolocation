@@ -10,6 +10,7 @@
 #' @param site The four-letter code of a single NEON site, e.g. 'CLBJ'.
 #' @param type One of 'site', 'TIS', 'TOS', 'AQU', or 'all', indicating terrestrial instrument locations (TIS), terrestrial observational locations (TOS), aquatic locations (AQU), site-level only, or all available locations. Defaults to site.
 #' @param history Should the location history be included in the query? T or F, defaults to F.
+#' @param token User specific API token (generated within neon.datascience user accounts). Optional.
 
 #' @return A data frame of location data.
 
@@ -23,14 +24,16 @@
 
 ##############################################################################################
 
-getLocBySite <- function(site, type='site', history=F) {
+getLocBySite <- function(site, type='site', history=F, token=NA_character_) {
   
   if(!history) {
-    req <- httr::GET(paste('http://data.neonscience.org/api/v0/locations/', site, sep=''))
+    req <- httr::GET(paste('http://data.neonscience.org/api/v0/locations/', site, sep=''),
+                     httr::add_headers(.headers=c("X-API-Token"=token)))
   }
   if(history) {
     req <- httr::GET(paste('http://data.neonscience.org/api/v0/locations/', site, 
-                           '?history=true', sep=''))
+                           '?history=true', sep=''),
+                     httr::add_headers(.headers=c("X-API-Token"=token)))
   }
   
   req.content <- httr::content(req, as='parsed')
@@ -47,6 +50,10 @@ getLocBySite <- function(site, type='site', history=F) {
   if(!type %in% c('TIS','TOS','AQU','all','site')) {
     stop('Type must be one of: TIS, TOS, AQU, all, or site.')
   }
+  
+  # if(!is.na(token) & req$headers$`x-ratelimit-limit`=='200') {
+  #   cat('\nAPI token was not recognized. Public rate limit applied.\n')
+  # }
   
   loc <- jsonlite::fromJSON(httr::content(req, as='text', encoding='UTF-8'))
   

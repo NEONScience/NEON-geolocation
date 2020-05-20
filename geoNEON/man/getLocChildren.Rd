@@ -4,12 +4,14 @@
 \alias{getLocChildren}
 \title{Find names of child (and further descendent) named locations from the NEON API.}
 \usage{
-getLocChildren(namedLocation, history = F)
+getLocChildren(namedLocation, history = F, token = NA_character_)
 }
 \arguments{
 \item{namedLocation}{A NEON named location name.}
 
 \item{history}{Should the location history be included in the query? T or F, defaults to F.}
+
+\item{token}{User specific API token (generated within neon.datascience user accounts). Optional.}
 }
 \value{
 A vector of named location names of all descendents of the input named location.
