@@ -538,6 +538,10 @@ getLocTOS <- function(
     dataN <- data[which(is.na(data$pointID)),]
     data <- data[which(!is.na(data$pointID)),]
     
+    if(nrow(data)==0) {
+      stop("There are no mapped individuals in the input data table.")
+    }
+    
     # Concatenate the named location (the plot) and point IDs to get the 
     #      point named locations
     points <- paste(data$namedLocation, data$pointID, sep=".")
