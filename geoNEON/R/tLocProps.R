@@ -22,10 +22,14 @@
 tLocProps <- function(locProps) {
   
   vals <- locProps$locationPropertyValue
-  names(vals) <- locProps$locationPropertyName
-  vals <- t(vals)
-  vals <- data.frame(vals)
-  return(vals)
+  if(is.null(vals)) {
+    return()
+  } else {
+    names(vals) <- locProps$locationPropertyName
+    vals <- t(vals)
+    vals <- data.frame(vals)
+    return(vals)
+  }
     
 }
 
