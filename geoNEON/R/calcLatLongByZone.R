@@ -50,9 +50,18 @@ calcLatLongByZone <- function(easting, northing, utmZone) {
     
     # convert coordinates
     sp::coordinates(df) <- c("easting", "northing")
-    sp::proj4string(df) <- sp::CRS(paste('+proj=utm +zone=', 
-                                     gsub("[^0-9]", "", utmZone), " ellps=WGS84",
-                                     sep=''))
+    
+    # proj4string() is deprecated. Attempting back-compatibility.
+    if(utils::packageVersion('sp')<'1.4.2') {
+      sp::proj4string(df) <- sp::CRS(paste('+proj=utm +zone=', 
+                                           gsub("[^0-9]", "", utmZone), " ellps=WGS84",
+                                           sep=''))
+    } else {
+      epsg.z <- relevantEPSGs$code[grep(paste('+proj=utm +zone=', 
+                                              gsub('[^0-9]', '', utmZone), sep=''), 
+                                        relevantEPSGs$prj4, fixed=T)]
+      raster::crs(df) <- sp::CRS(paste('+init=epsg:', epsg.z, sep=''))
+    }
     transf <- sp::spTransform(df, sp::CRS('+proj=longlat'))
     latLong <- data.frame(cbind(sp::coordinates(transf), transf$rowid))
     names(latLong) <- c('decimalLongitude', 'decimalLatitude', 'rowid')
