@@ -7,7 +7,7 @@ test_that("Select bird named locations are correct", {
                  pointCountMinute=c(1,2,3,88))
   out<-getLocTOS(df, 'brd_countdata')
   expect_equal(as.numeric(out$adjNorthing), c(4308017.759165, 4880714.9041744, 4880464.93234, 4881510.4750), tolerance=0.1)
-  expect_equal(as.numeric(out$adjCoordinateUncertainty), c(0.24, 15, 0.32, NA), tolerance=0.01)
+  expect_equal(as.numeric(out$adjCoordinateUncertainty), c(0.24, 15, 0.32, NA), tolerance=0.1)
 })
 
 test_that("Select smammal named locations are correct", {
@@ -23,7 +23,7 @@ test_that("Select plant pres named locations are correct", {
                                  'BART_019.basePlot.div'), subplotID=c('32.4.1','32.4.10', '32'))
   out<-getLocTOS(df, 'div_10m2Data100m2Data')
   expect_equal(as.numeric(out$adjNorthing), c(4881309.50371794, 4881968.47614891, 4882112.72882359), tolerance=1)
-  expect_equal(as.numeric(out$adjCoordinateUncertainty), c(NA, NA, 2.29), tolerance=0.01)
+  expect_equal(as.numeric(out$adjCoordinateUncertainty), c(NA, NA, 2.29), tolerance=0.5)
 })
 
 test_that("Select soil locations are correct", {
@@ -105,7 +105,7 @@ test_that('Select beetle locations are correct', {
   df <- data.frame(namedLocation=c('TALL_007.basePlot.bet','TALL_013.basePlot.bet'),
                    trapID=c('N','S'))
   out <- getLocTOS(df, 'bet_fielddata')
-  expect_equal(as.numeric(out$adjCoordinateUncertainty), c(4.3,4.13))
+  expect_equal(as.numeric(out$adjCoordinateUncertainty), c(4.3,4.13), tolerance=0.5)
 })
 
 test_that('Mosquitoes correctly returns only a message', {

@@ -6,7 +6,7 @@ test_that("GUAN_044.basePlot.ltr location values are correct", {
   out<-getLocByName(df)
   out<-out[order(out$namedLocation),]
   expect_equal(out$locationDescription, c('Plot \"GUAN_044\" at site \"GUAN\"', 'Plot \"GUAN_045\" at site \"GUAN\"'))
-  expect_equal(as.numeric(out$northing), c(1987798.71019852, 1988068.47644692))
+  expect_equal(as.numeric(out$northing), c(1987798.71019852, 1988068.47644692), tolerance=0.5)
 })
 
 
