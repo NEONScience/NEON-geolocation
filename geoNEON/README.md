@@ -43,16 +43,16 @@ getLocTOS(data, 'ltr_pertrap')
 
 Not just any table from a covered data product can be used, because typically the spatial data details are provided in only one table for a given product. The data product tables covered by `getLocTOS()` are:
 
-+ Litterfall: ltr_pertrap
++ Litterfall and fine woody debris production and chemistry: ltr_pertrap
 + Herbaceous clip harvest: hbp_perbout
-+ Soil physical properties (Distributed periodic): sls_soilCoreCollection
++ Soil physical and chemical properties, periodic: sls_soilCoreCollection
 + Breeding bird point counts: brd_perpoint or brd_countdata
 + Small mammal box trapping: mam_pertrapnight
 + Plant presence and percent cover: div_1m2Data or div_10m2Data100m2Data
 + Plant phenology observation: phe_perindividual
 + Woody vegetation structure: vst_mappingandtagging
-+ Plant foliar physical and chemical properties: cfc_fieldData for herbaceous samples, vst_mappingandtagging for woody plant samples
-+ Root sampling tower plots: bbc_percore
++ Plant foliar traits: cfc_fieldData for herbaceous samples, vst_mappingandtagging for woody plant samples
++ Root biomass and chemistry, periodic: bbc_percore
 + Ground beetles: bet_fielddata
 + Digital hemispherical photos: dhp_perimagefile
 + Coarse downed wood log survey: cdw_fieldtally
