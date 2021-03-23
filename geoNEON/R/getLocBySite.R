@@ -27,13 +27,12 @@
 getLocBySite <- function(site, type='site', history=F, token=NA_character_) {
   
   if(!history) {
-    req <- httr::GET(paste('http://data.neonscience.org/api/v0/locations/', site, sep=''),
-                     httr::add_headers(.headers=c("X-API-Token"=token)))
+    req <- getAPI(paste('http://data.neonscience.org/api/v0/locations/', site, sep=''),
+                     token=token)
   }
   if(history) {
-    req <- httr::GET(paste('http://data.neonscience.org/api/v0/locations/', site, 
-                           '?history=true', sep=''),
-                     httr::add_headers(.headers=c("X-API-Token"=token)))
+    req <- getAPI(paste('http://data.neonscience.org/api/v0/locations/', site, 
+                           '?history=true', sep=''), token=token)
   }
   
   req.content <- httr::content(req, as='parsed')

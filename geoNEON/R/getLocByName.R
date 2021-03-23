@@ -52,19 +52,11 @@ getLocByName <- function(
   for (j in unique(data[,locCol])) {
     utils::setTxtProgressBar(pb, i)
     i<-i+1
-    k<-1 #k iterates for 5 attempts at curl
-    while(k<5){
-      # Pull data from API
-      tmp<-try(req <- httr::GET(paste("http://data.neonscience.org/api/v0/locations/", j, sep=''),
-                                httr::add_headers(.headers=c("X-API-Token"=token))))
-      # if(!is.na(token) & req$headers$`x-ratelimit-limit`=='200') {
-      #   cat('\nAPI token was not recognized. Public rate limit applied.\n')
-      # }
-      k<-k+1 
-      if(!class(tmp) == 'try-error'){
-        k<-k+5
-      }
-    }
+    
+    # Pull data from API
+    req <- getAPI(paste("http://data.neonscience.org/api/v0/locations/", j, sep=''), 
+                    token=token)
+
     req.content <- httr::content(req, as="parsed")
     
     # Give warnings for missing values & API errors
