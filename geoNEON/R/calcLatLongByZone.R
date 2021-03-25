@@ -58,7 +58,7 @@ calcLatLongByZone <- function(easting, northing, utmZone) {
                                            sep=''))
     } else {
       epsg.z <- relevantEPSGs$code[grep(paste('+proj=utm +zone=', 
-                                              gsub('[^0-9]', '', utmZone), sep=''), 
+                                              gsub('[^0-9]', '', utmZone), ' ', sep=''), 
                                         relevantEPSGs$prj4, fixed=T)]
       raster::crs(df) <- sp::CRS(paste('+init=epsg:', epsg.z, sep=''))
     }

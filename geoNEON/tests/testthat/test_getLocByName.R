@@ -12,7 +12,7 @@ test_that("GUAN_044.basePlot.ltr location values are correct", {
 
 test_that("Single nonsense input correctly returns warning message", {
   df<-data.frame(namedLocation=c("nonsense", "GUAN_044.basePlot.ltr"), otherData=c(1,2))
-  expect_warning(getLocByName(df),'WARNING: the following namedLocation was not found: nonsense')
+  expect_message(getLocByName(df),'The following namedLocation was not found: nonsense')
 })
 
 test_that("All nonsense inputs correctly return error", {

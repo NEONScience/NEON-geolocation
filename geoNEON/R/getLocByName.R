@@ -61,12 +61,12 @@ getLocByName <- function(
     
     # Give warnings for missing values & API errors
     if (!is.null(req.content$doc)){
-      warning("The NEON server is down, or your internet connection is down. 
+      message("The NEON server is down, or your internet connection is down. 
               Check the NEON data portal for additional service messages.")
       next
     }
     if (!is.null(req.content$error$status)){
-      warning(paste("WARNING: the following namedLocation was not found:",
+      message(paste("The following namedLocation was not found:",
                     j, sep=" "))
       next
     }

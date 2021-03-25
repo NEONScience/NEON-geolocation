@@ -57,17 +57,27 @@ getLocTOS <- function(
     
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol <- "subplots"
+    
+    # samplingImpractical records have subplotID = NA
+    dataS <- data[which(is.na(data$subplotID)),]
+    data <- data[which(!is.na(data$subplotID)),]
+    
     subplot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+    data <- plyr::rbind.fill(data, dataS)
+    data <- data[order(data$rowid),]
     
     # Use relevant columns
     subplot.merg <- subplot.all[,c("namedLocation","utmZone",
                                      "northing","easting","namedLocationCoordUncertainty",
                                      "decimalLatitude","decimalLongitude",
                                      "elevation","namedLocationElevUncertainty")]
-    colnames(subplot.merg) <- c(locCol, 'utmZone',"adjNorthing","adjEasting",
+    colnames(subplot.merg) <- c(locCol, "utmZone","adjNorthing","adjEasting",
                                         "adjCoordinateUncertainty","adjDecimalLatitude",
                                         "adjDecimalLongitude","adjElevation",
                                         "adjElevationUncertainty")
+    if(!is.null(data$utmZone)) { 
+      subplot.merg <- subplot.merg[,which(colnames(subplot.merg)!="utmZone")]
+      }
     subplot.loc <- base::merge(data, subplot.merg, by=locCol, all.x=T)
     subplot.loc <- subplot.loc[order(subplot.loc$rowid),]
     
@@ -81,7 +91,8 @@ getLocTOS <- function(
         data$cellID <- cellID
       }
     }
-    cellNum <- as.numeric(substr(data$cellID, 10, 12))
+    # clip cell is final 3 digits of cellID, which can be different lengths
+    cellNum <- as.numeric(sapply(data$cellID, function(x) { substr(x, nchar(x)-2, nchar(x)) }))
     eastOff <- numeric(length(cellNum))
     northOff <- numeric(length(cellNum))
     subplot.loc <- cbind(subplot.loc, cellID, cellNum, eastOff, northOff)
@@ -90,6 +101,9 @@ getLocTOS <- function(
     #      check that the clip cell-subplot combination is valid, and find the 
     #      easting and northing offsets
     for(i in 1:nrow(subplot.loc)) {
+      if(is.na(subplot.loc$cellNum[i])) {
+        next
+      }
       clipInd <- which(clipCell$clipCellNumber==subplot.loc$cellNum[i] & 
                          clipCell$pointID==data$subplotID[i])
 

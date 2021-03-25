@@ -57,3 +57,8 @@ Not just any table from a covered data product can be used, because typically th
 + Digital hemispherical photos: dhp_perimagefile
 + Coarse downed wood log survey: cdw_fieldtally
 
+
+
+### Known issues
+
+`getLocTOS()` and `getLocByName()` currently do not support location histories; both functions return the current location values, rather than values matching the time of data collection. This affects a small amount of data, since few NEON sampling locations have moved while retaining the same location name, but the functions will be updated in the future to handle this sitation correctly. `getLocBySite()` does support location histories.
