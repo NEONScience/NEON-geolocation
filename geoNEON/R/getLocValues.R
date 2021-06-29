@@ -40,9 +40,9 @@ getLocValues <- function(locJSON, history=F) {
                     rep(locJSON$data$locationName, nrow(loc.values)), 
                     rep(locJSON$data$domainCode, nrow(loc.values)), 
                     rep(locJSON$data$siteCode, nrow(loc.values)))
-    names(locids) <- c('locationDescription', 'locationName', 'domainCode', 'siteCode')
     loc.values <- cbind(locids, loc.values)
-
+    names(loc.values)[1:4] <- c('locationDescription', 'locationName', 'domainCode', 'siteCode')
+    
     if(length(locJSON$data$locationHistory$locationProperties[[1]])!=0) {
       loc.props.list <- lapply(locJSON$data$locationHistory$locationProperties, tLocProps)
       loc.props <- data.table::rbindlist(loc.props.list, fill=T)
