@@ -579,10 +579,10 @@ getLocTOS <- function(
     point.loc <- merge(data, point.all, by="points", all.x=T)
     
     # Calculate easting and northing for individuals
-    point.loc$adjEasting <- as.numeric(point.loc$adjEasting) + point.loc$stemDistance * 
-      sin((point.loc$stemAzimuth * pi) / 180)
-    point.loc$adjNorthing <- as.numeric(point.loc$adjNorthing) + point.loc$stemDistance * 
-      cos((point.loc$stemAzimuth * pi) / 180)
+    point.loc$adjEasting <- as.numeric(point.loc$adjEasting) + as.numeric(point.loc$stemDistance) * 
+      sin((as.numeric(point.loc$stemAzimuth) * pi) / 180)
+    point.loc$adjNorthing <- as.numeric(point.loc$adjNorthing) + as.numeric(point.loc$stemDistance) * 
+      cos((as.numeric(point.loc$stemAzimuth) * pi) / 180)
     
     # Increase coordinate uncertainties
     point.loc$adjCoordinateUncertainty <- 

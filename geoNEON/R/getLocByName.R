@@ -38,6 +38,9 @@ getLocByName <- function(
   token=NA_character_
 ){
   
+  # ensure data are in data frame
+  data <- as.data.frame(data, stringsAsFactors=F)
+  
   # Define simple function for JSON extraction
   getIndexval <- function(x, indexVal){
     v <- unlist(x)
