@@ -13,12 +13,24 @@ Special cases: A limited subset of terrestrial data are collected outside the TO
 
 ### Instructions
 
-The geoNEON package currently contains two functions, `getLocByName()` and `getLocTOS()`. To load the package, install from [GitHub](https://github.com/NEONScience/NEON-geolocation/tree/master/geoNEON)
+The geoNEON package currently contains three functions, `getLocBySite()`, `getLocByName()` and `getLocTOS()`. To load the package, install from [GitHub](https://github.com/NEONScience/NEON-geolocation/tree/master/geoNEON)
 
 ```
 library(devtools)
 install_github('NEONScience/NEON-geolocation/geoNEON', dependencies=TRUE)
 library(geoNEON)
+```
+
+To find all defined locations at a site, use `getLocBySite()`. By default, it will return the location data for the site itself, but not the many child locations within the site. The `type` parameter is used to specify the child locations returned, and can be "TIS", "TOS", "AQU", "all", or "site" (the default). Use caution in requesting "TOS" or "all"; terrestrial sites typically contain thousands of defined observational sampling locations. Example to get all sensor locations at CPER:
+
+```
+CPER.loc <- getLocBySite("CPER", type="TIS")
+```
+
+Occasionally sensors are moved, for example relocated within the tower infrastructure. By default `getLocBySite()` returns the current location. To get the full location history of each sensor:
+
+```
+CPER.loc <- getLocBySite("CPER", type="TIS", history=T)
 ```
 
 To append geolocation data from the NEON API to an existing data table from an OS data product, use `getLocByName()`. Here, `data` is an OS data table, and `'namedLocation'` is the name of the column in the table where NEON named locations can be found (it's `namedLocation` for nearly all OS data products).
