@@ -32,27 +32,31 @@ getLocChildren <- function(namedLocation, history=F, token=NA_character_) {
                            '?history=true', sep=''), token=token)
   }
   
-  req.content <- httr::content(req, as='parsed')
-  if(!is.null(req.content$error$status)) {
+  if(!inherits(req, 'response')) {
     return()
   } else {
-    
-    loc <- jsonlite::fromJSON(httr::content(req, as='text', encoding='UTF-8'))
-    
-    loc.children <- loc$data[base::grep('Child', base::names(loc$data))]$locationChildren
-    loc.values <- getLocValues(loc, history)
-    
-    cat('Finding spatial data for', namedLocation, rep('', 50), '\r')
-    utils::flush.console()
-    
-    if(length(loc.children)==0) {
-      loc.all <- getLocValues(loc, history)
-      return(loc.all)
+    req.content <- httr::content(req, as='parsed')
+    if(!is.null(req.content$error$status)) {
+      return()
     } else {
-      loc.all <- plyr::rbind.fill(loc.values, 
-                                  data.table::rbindlist(lapply(loc.children, getLocChildren, history), 
-                                                        fill=T))
-      return(loc.all)
+      
+      loc <- jsonlite::fromJSON(httr::content(req, as='text', encoding='UTF-8'))
+      
+      loc.children <- loc$data[base::grep('Child', base::names(loc$data))]$locationChildren
+      loc.values <- getLocValues(loc, history)
+      
+      cat('Finding spatial data for', namedLocation, rep('', 50), '\r')
+      #utils::flush.console()
+      
+      if(length(loc.children)==0) {
+        loc.all <- getLocValues(loc, history)
+        return(loc.all)
+      } else {
+        loc.all <- plyr::rbind.fill(loc.values, 
+                                    data.table::rbindlist(lapply(loc.children, getLocChildren, history), 
+                                                          fill=T))
+        return(loc.all)
+      }
     }
   }
   

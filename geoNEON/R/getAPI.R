@@ -34,7 +34,8 @@ getAPI <- function(apiURL, token=NA){
       
       # check for no response
       if(!identical(class(req), "response")) {
-        message("No response. NEON API may be unavailable, check NEON data portal for outage alerts.")
+        message(paste("No response querying", apiURL, 
+                      "NEON API may be unavailable, check NEON data portal for outage alerts."))
         return(invisible())
       }
       
@@ -69,7 +70,8 @@ getAPI <- function(apiURL, token=NA){
       
       # check for no response
       if(!identical(class(req), "response")) {
-        message("No response. NEON API may be unavailable, check NEON data portal for outage alerts.")
+        message(paste("No response querying", apiURL, 
+                      "NEON API may be unavailable, check NEON data portal for outage alerts."))
         return(invisible())
       }
 
