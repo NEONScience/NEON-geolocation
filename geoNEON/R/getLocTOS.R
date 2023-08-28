@@ -412,12 +412,14 @@ getLocTOS <- function(
     data$adjElevationUncertainty<-NA
 
     # calculate latitude and longitude from the corrected northing and easting
-    data <- def.calc.latlong(data)
+    adjLatLong <- calcLatLong(easting=data$easting, 
+                              northing=data$northing,
+                              utmZone=data$utmZone)
+    data$adjDecimalLatitude <- adjLatLong$decimalLatitude
+    data$adjDecimalLongitude <- adjLatLong$decimalLongitude
     
     names(data)[names(data)=='easting'] <- 'adjEasting'
     names(data)[names(data)=='northing'] <- 'adjNorthing'
-    names(data)[names(data)=='decimalLatitude'] <- 'adjDecimalLatitude'
-    names(data)[names(data)=='decimalLongitude'] <- 'adjDecimalLongitude'
     names(data)[names(data)=='tempLat'] <- 'decimalLatitude'
     names(data)[names(data)=='tempLong'] <- 'decimalLongitude'
     
@@ -476,7 +478,11 @@ getLocTOS <- function(
     point.loc$tot.unc <- mapply(tot.unc, point.loc$adjCoordinateUncertainty, point.loc$maxUncertainty)
     
     # calculate latitude and longitude from the corrected northing and easting
-    point.loc <- def.calc.latlong(point.loc)
+    adjLatLong <- calcLatLong(easting=point.loc$easting, 
+                              northing=point.loc$northing,
+                              utmZone=point.loc$utmZone)
+    point.loc$decimalLatitude <- adjLatLong$decimalLatitude
+    point.loc$decimalLongitude <- adjLatLong$decimalLongitude
     
     # Return relevant columns
     point.return <- point.loc[,c(locCol,"utmZone",

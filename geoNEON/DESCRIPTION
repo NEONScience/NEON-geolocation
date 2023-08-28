@@ -1,7 +1,7 @@
 Package: geoNEON
 Title: Geolocation Data Access for NEON Data
-Version: 1.0.0.9200
-Date: 2023-03-23
+Version: 1.0.0.9300
+Date: 2023-08-28
 Authors@R: c(person("Claire", "Lunch", email = "clunch@battelleecology.org", role = c("ctb", "cre")), person("Sarah", "Elmendorf", role="ctb"), person("National Ecological Observatory Network", role="aut"))
 Description: NEON spatial data are provided in a variety of ways: spatial data are present in data tables 
     in observational data products, and in the sensor_positions files provided with instrumented data products, 
@@ -14,13 +14,12 @@ Depends:
 License: AGPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Suggests:
     testthat
 Imports: plyr,
     httr,
     curl,
-    sp,
-    raster,
+    terra,
     data.table,
     jsonlite

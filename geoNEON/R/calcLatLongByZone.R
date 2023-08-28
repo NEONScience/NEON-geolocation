@@ -27,6 +27,7 @@
 #   Claire Lunch (2020-03-26)
 #     adapted from
 #   Sarah Elmendorf (2017-05-05)
+#   Claire Lunch (2023-08-28): Modified to use terra package for conversion
 ##############################################################################################
 
 
@@ -39,42 +40,23 @@ calcLatLongByZone <- function(easting, northing, utmZone) {
   
     easting <- as.numeric(easting)
     northing <- as.numeric(northing)
-    rowid <- 1:length(easting)
-    
-    df <- cbind(easting, northing, rowid)
+
+    df <- cbind(easting, northing)
     df <- data.frame(df)
     
-    # remove missing values, sp can't handle
-    dfN <- df[which(is.na(df$easting) | is.na(df$northing)),]
-    df <- df[which(!is.na(df$easting) & !is.na(df$northing)),]
-    
     # convert coordinates
-    sp::coordinates(df) <- c("easting", "northing")
+    colnames(df) <- c("easting","northing")
     
-    # proj4string() is deprecated. Attempting back-compatibility.
-    if(utils::packageVersion('sp')<'1.4.2') {
-      sp::proj4string(df) <- sp::CRS(paste('+proj=utm +zone=', 
-                                           gsub("[^0-9]", "", utmZone), " ellps=WGS84",
-                                           sep=''))
-    } else {
-      epsg.z <- relevantEPSGs$code[grep(paste('+proj=utm +zone=', 
-                                              gsub('[^0-9]', '', utmZone), ' ', sep=''), 
-                                        relevantEPSGs$prj4, fixed=T)]
-      raster::crs(df) <- sp::CRS(paste('+init=epsg:', epsg.z, sep=''))
-    }
-    transf <- sp::spTransform(df, sp::CRS('+proj=longlat'))
-    latLong <- data.frame(cbind(sp::coordinates(transf), transf$rowid))
-    names(latLong) <- c('decimalLongitude', 'decimalLatitude', 'rowid')
+    df <- terra::vect(df, geom=c("easting","northing"), 
+                      crs=paste("+proj=utm +zone=", gsub("[^0-9]", "", utmZone), sep=""))
     
-    # merge missing values back in
-    names(dfN)[which(names(dfN) %in% c('easting','northing'))] <- c('decimalLatitude','decimalLongitude')
-    dfN$decimalLatitude[which(is.na(dfN$decimalLongitude))] <- NA
-    dfN$decimalLongitude[which(is.na(dfN$decimalLatitude))] <- NA
+    dfconv <- terra::project(df, y="+proj=longlat")
+    latLong <- terra::geom(dfconv, df=TRUE)
     
-    all.return <- suppressWarnings(data.table::rbindlist(list(latLong, dfN), fill=T))
-    all.return <- all.return[order(all.return$rowid),]
+    names(latLong)[which(names(latLong)=="x")] <- "decimalLongitude"
+    names(latLong)[which(names(latLong)=="y")] <- "decimalLatitude"
     
-    return(all.return[,c('decimalLatitude','decimalLongitude')])
+    return(latLong[,c("decimalLatitude","decimalLongitude")])
     
   }
 

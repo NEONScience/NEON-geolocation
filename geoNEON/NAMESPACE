@@ -2,10 +2,6 @@
 
 export(calcLatLong)
 export(calcLatLongByZone)
-export(def.calc.geo.os)
-export(def.calc.latlong)
-export(def.calc.latlong.by.zone)
-export(def.extr.geo.os)
 export(getLocByName)
 export(getLocBySite)
 export(getLocTOS)

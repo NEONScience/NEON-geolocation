@@ -204,11 +204,11 @@ getLocByName <- function(
           plotInfoUniq <- plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)]
           locMatch <- TRUE
           eqVec <- !logical(length(dataRepUniq[,i]))
-          if(class(dataRep[,i])=='character') {
+          if(inherits(dataRep[,i],'character')) {
             eqVec <- dataRepUniq[,i]==plotInfoUniq[,i]
             if(!all(eqVec, na.rm=T)) {locMatch <- FALSE}
           } else {
-            if(class(dataRep[,i])=='numeric') {
+            if(inherits(dataRep[,i],'numeric')) {
               eqVec <- abs(dataRepUniq[,i] - as.numeric(plotInfoUniq[,i]))
               eqVec <- eqVec <= 0.5
               if(!all(eqVec, na.rm=T)) {locMatch <- FALSE}
