@@ -40,6 +40,8 @@ getLocByName <- function(
   
   # ensure data are in data frame
   data <- as.data.frame(data, stringsAsFactors=F)
+  invLoc <- data.frame(matrix(data=NA, nrow=0, ncol=3))
+  colnames(invLoc) <- c("table","namedLocation","clipCell")
   
   # Define simple function for JSON extraction
   getIndexval <- function(x, indexVal){
@@ -71,6 +73,7 @@ getLocByName <- function(
     if (!is.null(req.content$error$status)){
       message(paste("The following namedLocation was not found:",
                     j, sep=" "))
+      invLoc <- rbind(invLoc, c(NA, j, NA))
       next
     }
     
@@ -242,5 +245,5 @@ getLocByName <- function(
   } else { 
     allInfo <- plotInfo
   }
-  return(allInfo)
+  return(list(allInfo, invLoc))
 }

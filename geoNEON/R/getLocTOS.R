@@ -38,6 +38,8 @@ getLocTOS <- function(
   
   # convert format for safety
   data <- data.frame(data)
+  invLoc <- data.frame(matrix(data=NA, nrow=0, ncol=3))
+  colnames(invLoc) <- c("table","namedLocation","clipCell")
   
     # Litter trap, herb clip, cfc herb clip, and root sampling location calculations
     # These are all protocols using clip strips
@@ -63,6 +65,8 @@ getLocTOS <- function(
     data <- data[which(!is.na(data$subplotID)),]
     
     subplot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+    invLoc <- rbind(invLoc, subplot.all[[2]])
+    subplot.all <- subplot.all[[1]]
     data <- plyr::rbind.fill(data, dataS)
     data <- data[order(data$rowid),]
     
@@ -115,6 +119,7 @@ getLocTOS <- function(
       if(length(clipInd)==0) {
         print(paste("Subplot ", data$subplotID[i], " and clip cell ", 
                     subplot.loc$cellNum[i], " is not a valid location", sep=""))
+        invLoc <- rbind(invLoc, c(dataProd, data$subplots[i], subplot.loc$cellNum[i]))
         subplot.loc$eastOff[i] <- NA
         subplot.loc$northOff[i] <- NA
       } else {
@@ -144,7 +149,7 @@ getLocTOS <- function(
     }
     all.return <- all.return[order(all.return$rowid),]
     all.return <- all.return[,!names(all.return) %in% c('rowid','cellID')]
-    return(all.return)
+    return(list(all.return, invLoc))
   }
   
   # Soil core location calculations:
@@ -155,6 +160,8 @@ getLocTOS <- function(
     # Use the getLocByName function to pull the plot geolocations from the API
     locCol <- "namedLocation"
     plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+    invLoc <- rbind(invLoc, plot.all[[2]])
+    plot.all <- plot.all[[1]]
     
     # Use relevant columns
     plot.merg <- plot.all[,c("namedLocation","utmZone",
@@ -191,7 +198,7 @@ getLocTOS <- function(
     all.return <- plot.loc[order(plot.loc$rowid),]
     all.return <- all.return[,!names(all.return) %in% c('rowid')]
     
-    return(all.return)
+    return(list(all.return, invLoc))
   }
   
   # Bird point calculations:
@@ -214,6 +221,8 @@ getLocTOS <- function(
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol <- "points"
     point.loc <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+    invLoc <- rbind(invLoc, point.loc[[2]])
+    point.loc <- point.loc[[1]]
     names(point.loc)[names(point.loc)=='namedLocation']<-locCol
 
     #add additional coordinateUncertainty
@@ -252,7 +261,7 @@ getLocTOS <- function(
     all.return <- merge(data, point.return, by=locCol)
     all.return <- all.return[order(all.return$row.index),]
     all.return <- all.return[,!names(all.return) %in% 'row.index']
-    return(all.return)
+    return(list(all.return, invLoc))
   }
   
   #Plant phenology individual location calculations:
@@ -277,6 +286,8 @@ getLocTOS <- function(
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol="namedLocation"
     pointSpatialData <- geoNEON::getLocByName(corners, locCol=locCol, locOnly=T, token=token)
+    invLoc <- rbind(invLoc, pointSpatialData[[2]])
+    pointSpatialData <- pointSpatialData[[1]]
 
     #exception handling for missing inputs
     nogeo <- data[which(is.na(data$transectMeter) | is.na(data$directionFromTransect)),]
@@ -441,7 +452,7 @@ getLocTOS <- function(
     data<-data[order(data$row.index),]
     data<-data[,!names(data) %in% c('row.index','referencePoint_tempA', 'referencePoint_tempB',
                        'offset_sign', 'distFromLastPoint', 'tempLat', 'tempLong')]
-    return(data)
+    return(list(data, invLoc))
   }
 
   
@@ -459,6 +470,8 @@ getLocTOS <- function(
     # Don't bother looking up any of the 'X' traps - those have uncertain geolocations
     locCol <- "points"
     point.loc <- getLocByName(data[!grepl('X', data$points),], locCol=locCol, locOnly=T, token=token)
+    invLoc <- rbind(invLoc, point.loc[[2]])
+    point.loc <- point.loc[[1]]
     names(point.loc)[names(point.loc)=='namedLocation']<-locCol
     point.loc$adjCoordinateUncertainty<-as.numeric(point.loc$namedLocationCoordUncertainty)
     
@@ -502,7 +515,7 @@ getLocTOS <- function(
     all.return <- merge(data,point.return, by=locCol, all.x=T)
     all.return<-all.return[order(all.return$row.index),]
     all.return<-all.return[,!names(all.return)%in%'row.index']
-    return(all.return)
+    return(list(all.return, invLoc))
   }
   
   #Plant present and percent cover subplot centroids:
@@ -516,6 +529,8 @@ getLocTOS <- function(
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol="subplots"
     subplot.loc <- getLocByName(data, locCol=locCol, locOnly=T, token=token)
+    invLoc <- rbind(invLoc, subplot.loc[[2]])
+    subplot.loc <- subplot.loc[[1]]
     names(subplot.loc)[names(subplot.loc)=='namedLocation']<-locCol
     subplot.loc$adjCoordinateUncertainty<-as.numeric(subplot.loc$namedLocationCoordUncertainty)
     
@@ -552,7 +567,7 @@ getLocTOS <- function(
     all.return <- merge(data, subplot.return, by=locCol, all.x=T)
     all.return<-all.return[order(all.return$row.index),]
     all.return<-all.return[,!names(all.return)%in%'row.index']
-    return(all.return)
+    return(list(all.return, invLoc))
   }
   
   # woody vegetation structure locations of individuals
@@ -575,6 +590,8 @@ getLocTOS <- function(
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol <- "points"
     point.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+    invLoc <- rbind(invLoc, point.all[[2]])
+    point.all <- point.all[[1]]
     
     # Use relevant columns
     point.all <- point.all[,c("namedLocation","utmZone",
@@ -613,7 +630,7 @@ getLocTOS <- function(
     all.return <- all.return[order(all.return$rowid),]
     all.return <- all.return[,!names(all.return) %in% c('rowid','points')]
     
-    return(all.return)
+    return(list(all.return, invLoc))
     
   }
   
@@ -627,6 +644,8 @@ getLocTOS <- function(
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol <- "namedLocation"
     plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+    invLoc <- rbind(invLoc, plot.all[[2]])
+    plot.all <- plot.all[[1]]
     
     # Use relevant columns
     plot.all <- plot.all[,c("namedLocation","utmZone",
@@ -666,7 +685,7 @@ getLocTOS <- function(
     all.return <- all.return[order(all.return$rowid),]
     all.return <- all.return[,-which(colnames(all.return)=='rowid')]
     
-    return(all.return)
+    return(list(all.return, invLoc))
     
   }
 
@@ -758,6 +777,8 @@ getLocTOS <- function(
     # Use the getLocByName function to pull the subplot geolocations from the API
     locCol <- "traps"
     trap.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+    invLoc <- rbind(invLoc, trap.all[[2]])
+    trap.all <- trap.all[[1]]
     
     # Use relevant columns
     trap.all <- trap.all[,c("namedLocation","utmZone",
@@ -780,7 +801,7 @@ getLocTOS <- function(
     trap.return <- trap.loc[order(trap.loc$rowid),]
     trap.return <- trap.return[,-which(colnames(trap.return)=='rowid')]
     
-    return(trap.return)
+    return(list(trap.return, invLoc))
     
   }
   
@@ -799,6 +820,8 @@ getLocTOS <- function(
     # plot spatial data are in the dhp_perplot table, so need to download
     locCol <- 'namedLocation'
     plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+    invLoc <- rbind(invLoc, plot.all[[2]])
+    plot.all <- plot.all[[1]]
     
     # Use relevant columns
     plot.all <- plot.all[,c("namedLocation","utmZone",
@@ -848,7 +871,7 @@ getLocTOS <- function(
     plot.return <- plot.loc[order(plot.loc$rowid),]
     plot.return <- plot.return[,-which(colnames(plot.return)=='rowid')]
     
-    return(plot.return)
+    return(list(plot.return, invLoc))
   }
   
   else {
