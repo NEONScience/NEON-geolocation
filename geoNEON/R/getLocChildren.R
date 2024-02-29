@@ -52,9 +52,9 @@ getLocChildren <- function(namedLocation, history=F, token=NA_character_) {
         loc.all <- getLocValues(loc, history)
         return(loc.all)
       } else {
-        loc.all <- plyr::rbind.fill(loc.values, 
+        loc.all <- data.table::rbindlist(list(loc.values, 
                                     data.table::rbindlist(lapply(loc.children, getLocChildren, history), 
-                                                          fill=T))
+                                                          fill=T)), fill=T)
         return(loc.all)
       }
     }

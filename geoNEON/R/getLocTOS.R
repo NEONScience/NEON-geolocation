@@ -104,12 +104,17 @@ getLocTOS <- function(
       if(is.na(subplot.loc$cellNum[i])) {
         next
       }
-      clipInd <- which(clipCell$clipCellNumber==subplot.loc$cellNum[i] & 
-                         clipCell$pointID==data$subplotID[i])
-
-        if(length(clipInd)==0) {
+      if(any(grepl(pattern="_400", x=data$subplotID[i], fixed=TRUE))) {
+        clipInd <- which(clipCell$clipCellNumber==subplot.loc$cellNum[i] & 
+                           clipCell$subplotID==data$subplotID[i])
+      } else {
+        clipInd <- which(clipCell$clipCellNumber==subplot.loc$cellNum[i] & 
+                           clipCell$pointID==data$subplotID[i])
+      }
+      
+      if(length(clipInd)==0) {
         print(paste("Subplot ", data$subplotID[i], " and clip cell ", 
-                     subplot.loc$cellNum[i], " is not a valid location", sep=""))
+                    subplot.loc$cellNum[i], " is not a valid location", sep=""))
         subplot.loc$eastOff[i] <- NA
         subplot.loc$northOff[i] <- NA
       } else {
