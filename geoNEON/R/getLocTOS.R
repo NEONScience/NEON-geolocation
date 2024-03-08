@@ -563,6 +563,8 @@ getLocTOS <- function(
     dataN <- data[which(is.na(data$pointID)),]
     data <- data[which(!is.na(data$pointID)),]
     
+    print("Please note locations will be calculated only for mapped woody individuals. To find subplot locations for unmapped individuals, use this function with the vst_apparentindividual, vst_non-woody, and/or vst_shrubgroup tables.")
+    
     if(nrow(data)==0) {
       stop("There are no mapped individuals in the input data table.")
     }
@@ -617,6 +619,41 @@ getLocTOS <- function(
     
   }
   
+  
+  # vegetation structure locations of subplots for unmapped individuals
+  if(dataProd=="vst_apparentindividual" | 
+     dataProd=="vst_non-woody" | 
+     dataProd=="vst_shrubgroup") {
+    
+    print("Please note locations will be calculated for all subplots. For mapped individuals, it is possible to calculate more precise locations by using this function with the vst_mappingandtagging table.")
+    
+    # Concatenate the named location (the plot) and subplot IDs to get the 
+    #      subplot named locations
+    subplots <- paste(data$namedLocation, data$subplotID, sep=".")
+    data <- cbind(data, subplots)
+    
+    # Use the getLocByName function to pull the subplot geolocations from the API
+    locCol <- "subplots"
+    subplot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+    
+    # increase coordinate uncertainty by Value for Subplot size / 2 ???
+    
+    # Use relevant columns
+    subplot.all <- subplot.all[,c("namedLocation","utmZone",
+                              "northing","easting","namedLocationCoordUncertainty",
+                              "decimalLatitude","decimalLongitude",
+                              "elevation","namedLocationElevUncertainty")]
+    names(subplot.all) <- c(locCol,"utmZone",
+                          "adjNorthing","adjEasting","adjCoordinateUncertainty",
+                          "adjDecimalLatitude","adjDecimalLongitude",
+                          "adjElevation","adjElevationUncertainty")
+    
+    # merge location data with original data
+    subplot.loc <- merge(data, subplot.all, by="subplots", all.x=T)
+    
+  }
+  
+    
   if(dataProd=='cdw_fieldtally') {
     
     # Pull out data with no distance or azimuth
