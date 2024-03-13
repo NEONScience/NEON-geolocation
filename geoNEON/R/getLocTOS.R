@@ -578,6 +578,8 @@ getLocTOS <- function(
     dataN <- data[which(is.na(data$pointID)),]
     data <- data[which(!is.na(data$pointID)),]
     
+    print("Please note locations will be calculated only for mapped woody individuals. To find subplot locations for unmapped individuals, use this function with the vst_apparentindividual, vst_non-woody, and/or vst_shrubgroup tables.")
+    
     if(nrow(data)==0) {
       stop("There are no mapped individuals in the input data table.")
     }
@@ -631,6 +633,53 @@ getLocTOS <- function(
     all.return <- all.return[,!names(all.return) %in% c('rowid','points')]
     
     return(list(all.return, invLoc))
+    
+  }
+  
+  # vegetation structure locations of subplots for unmapped individuals
+  if(dataProd=="vst_apparentindividual" | 
+     dataProd=="vst_non-woody" | 
+     dataProd=="vst_shrubgroup") {
+    
+    print("Please note locations will be calculated for all subplots. For mapped individuals, it is possible to calculate more precise locations by using this function with the vst_mappingandtagging table.")
+    
+    # Concatenate the named location (the plot) and subplot IDs to get the 
+    #      subplot named locations
+    subplots <- paste(data$namedLocation, data$subplotID, sep=".")
+    data <- cbind(data, subplots)
+    
+    # Use the getLocByName function to pull the subplot geolocations from the API
+    locCol <- "subplots"
+    subplot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+    invLoc <- rbind(invLoc, subplot.all[[2]])
+    subplot.all <- subplot.all[[1]]
+    
+    # increase coordinate uncertainty by Value for Subplot size / 2
+    subplot.all$namedLocationCoordUncertainty <- 
+      as.numeric(subplot.all$namedLocationCoordUncertainty) + 
+      as.numeric(subplot.all$Value.for.Subplot.size)/2
+    
+    subplot.all$northing <- as.numeric(subplot.all$northing)
+    subplot.all$easting <- as.numeric(subplot.all$easting)
+    subplot.all$decimalLatitude <- as.numeric(subplot.all$decimalLatitude)
+    subplot.all$decimalLongitude <- as.numeric(subplot.all$decimalLongitude)
+    subplot.all$elevation <- as.numeric(subplot.all$elevation)
+    subplot.all$namedLocationElevUncertainty <- as.numeric(subplot.all$namedLocationElevUncertainty)
+    
+    # Use relevant columns
+    subplot.all <- subplot.all[,c("namedLocation","utmZone",
+                                  "northing","easting","namedLocationCoordUncertainty",
+                                  "decimalLatitude","decimalLongitude",
+                                  "elevation","namedLocationElevUncertainty")]
+    names(subplot.all) <- c(locCol,"utmZone",
+                            "adjNorthing","adjEasting","adjCoordinateUncertainty",
+                            "adjDecimalLatitude","adjDecimalLongitude",
+                            "adjElevation","adjElevationUncertainty")
+    
+    # merge location data with original data
+    subplot.loc <- merge(data, subplot.all, by="subplots", all.x=T)
+    
+    return(list(subplot.loc, invLoc))
     
   }
   
