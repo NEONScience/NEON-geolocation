@@ -636,7 +636,17 @@ getLocTOS <- function(
     locCol <- "subplots"
     subplot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
     
-    # increase coordinate uncertainty by Value for Subplot size / 2 ???
+    # increase coordinate uncertainty by Value for Subplot size / 2
+    subplot.all$namedLocationCoordUncertainty <- 
+      as.numeric(subplot.all$namedLocationCoordUncertainty) + 
+      as.numeric(subplot.all$Value.for.Subplot.size)/2
+    
+    subplot.all$northing <- as.numeric(subplot.all$northing)
+    subplot.all$easting <- as.numeric(subplot.all$easting)
+    subplot.all$decimalLatitude <- as.numeric(subplot.all$decimalLatitude)
+    subplot.all$decimalLongitude <- as.numeric(subplot.all$decimalLongitude)
+    subplot.all$elevation <- as.numeric(subplot.all$elevation)
+    subplot.all$namedLocationElevUncertainty <- as.numeric(subplot.all$namedLocationElevUncertainty)
     
     # Use relevant columns
     subplot.all <- subplot.all[,c("namedLocation","utmZone",
@@ -650,6 +660,8 @@ getLocTOS <- function(
     
     # merge location data with original data
     subplot.loc <- merge(data, subplot.all, by="subplots", all.x=T)
+    
+    return(subplot.loc)
     
   }
   
