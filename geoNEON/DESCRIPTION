@@ -1,6 +1,6 @@
 Package: geoNEON
 Title: Geolocation Data Access for NEON Data
-Version: 1.0.0.9300
+Version: 1.0.0.9400
 Date: 2023-08-28
 Authors@R: c(person("Claire", "Lunch", email = "clunch@battelleecology.org", role = c("ctb", "cre")), person("Sarah", "Elmendorf", role="ctb"), person("National Ecological Observatory Network", role="aut"))
 Description: NEON spatial data are provided in a variety of ways: spatial data are present in data tables 
