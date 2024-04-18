@@ -15,6 +15,7 @@
 #' A data frame with 1080 rows and 4 variables
 #' \describe{
 #'   \item{pointID}{identifier of point within plot}
+#'   \item{subplotID}{identifier of subplot within plot}
 #'   \item{clipCellNumber}{identifier of clip cell within point}
 #'   \item{offsetEasting}{offset to be added to easting value of southwest corner of plot}
 #'   \item{offsetNorthing}{offset to be added to northing value of southwest corner of plot}
