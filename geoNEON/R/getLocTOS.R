@@ -900,6 +900,96 @@ getLocTOS <- function(
     return(plot.return)
   }
   
+  if(dataProd=='spc_perplot') {
+    
+    data$rowid <- 1:nrow(data)
+    
+    # get easting/northing
+    locCol <- 'namedLocation'
+    plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+    
+    # Use relevant columns
+    plot.all <- plot.all[,c("namedLocation","utmZone",
+                            "northing","easting","namedLocationCoordUncertainty",
+                            "decimalLatitude","decimalLongitude",
+                            "elevation","namedLocationElevUncertainty")]
+    names(plot.all) <- c(locCol,"utmZone",
+                         "adjNorthing","adjEasting","adjCoordinateUncertainty",
+                         "adjDecimalLatitude","adjDecimalLongitude",
+                         "adjElevation","adjElevationUncertainty")
+    
+    # merge location data with original data
+    plot.loc <- merge(data, plot.all, by="namedLocation", all.x=T)
+    
+    # adjust northing and easting using point offsets
+    plot.loc$adjEasting <- as.numeric(plot.loc$adjEasting)
+    plot.loc$adjNorthing <- as.numeric(plot.loc$adjNorthing)
+    
+    # get easting and northing of reference corner
+    refCornerEasting <- plot.loc$adjEasting
+    refCornerNorthing <- plot.loc$adjNorthing
+    refCornerEasting[which(plot.loc$referenceCorner=="SW20")] <- 
+      plot.loc$adjEasting[which(plot.loc$referenceCorner=="SW20")] - 10
+    refCornerNorthing[which(plot.loc$referenceCorner=="SW20")] <- 
+      plot.loc$adjNorthing[which(plot.loc$referenceCorner=="SW20")] - 10
+    refCornerEasting[which(plot.loc$referenceCorner=="SW40")] <- 
+      plot.loc$adjEasting[which(plot.loc$referenceCorner=="SW40")] - 20
+    refCornerNorthing[which(plot.loc$referenceCorner=="SW40")] <- 
+      plot.loc$adjNorthing[which(plot.loc$referenceCorner=="SW40")] - 20
+    refCornerEasting[which(plot.loc$referenceCorner=="SE20")] <- 
+      plot.loc$adjEasting[which(plot.loc$referenceCorner=="SE20")] + 10
+    refCornerNorthing[which(plot.loc$referenceCorner=="SE20")] <- 
+      plot.loc$adjNorthing[which(plot.loc$referenceCorner=="SE20")] - 10
+    refCornerEasting[which(plot.loc$referenceCorner=="SE40")] <- 
+      plot.loc$adjEasting[which(plot.loc$referenceCorner=="SE40")] + 20
+    refCornerNorthing[which(plot.loc$referenceCorner=="SE40")] <- 
+      plot.loc$adjNorthing[which(plot.loc$referenceCorner=="SE40")] - 20
+    refCornerEasting[which(plot.loc$referenceCorner=="NE20")] <- 
+      plot.loc$adjEasting[which(plot.loc$referenceCorner=="NE20")] + 10
+    refCornerNorthing[which(plot.loc$referenceCorner=="NE20")] <- 
+      plot.loc$adjNorthing[which(plot.loc$referenceCorner=="NE20")] + 10
+    refCornerEasting[which(plot.loc$referenceCorner=="NE40")] <- 
+      plot.loc$adjEasting[which(plot.loc$referenceCorner=="NE40")] + 20
+    refCornerNorthing[which(plot.loc$referenceCorner=="NE40")] <- 
+      plot.loc$adjNorthing[which(plot.loc$referenceCorner=="NE40")] + 20
+    refCornerEasting[which(plot.loc$referenceCorner=="NW20")] <- 
+      plot.loc$adjEasting[which(plot.loc$referenceCorner=="NW20")] - 10
+    refCornerNorthing[which(plot.loc$referenceCorner=="NW20")] <- 
+      plot.loc$adjNorthing[which(plot.loc$referenceCorner=="NW20")] + 10
+    refCornerEasting[which(plot.loc$referenceCorner=="NW40")] <- 
+      plot.loc$adjEasting[which(plot.loc$referenceCorner=="NW40")] - 20
+    refCornerNorthing[which(plot.loc$referenceCorner=="NW40")] <- 
+      plot.loc$adjNorthing[which(plot.loc$referenceCorner=="NW40")] + 20
+    
+    bearing <- plot.loc$sampleBearing
+    bearing[which(plot.loc$sampleBearing<90)] <- 
+      90 - plot.loc$sampleBearing[which(plot.loc$sampleBearing<90)]
+    bearing[which(plot.loc$sampleBearing>=90)] <- 
+      450 - plot.loc$sampleBearing[which(plot.loc$sampleBearing>=90)]
+    
+    plot.loc$adjEasting <- refCornerEasting + 
+      plot.loc$sampleDistance * cos(bearing*pi/180)
+    plot.loc$adjNorthing <- refCornerNorthing + 
+      plot.loc$sampleDistance * sin(bearing*pi/180)
+    
+    # calculate latitude and longitude from the corrected northing and easting
+    adjLatLong <- geoNEON::calcLatLong(easting=plot.loc$adjEasting, 
+                                       northing=plot.loc$adjNorthing,
+                                       utmZone=plot.loc$utmZone)
+    plot.loc$adjDecimalLatitude <- adjLatLong$decimalLatitude
+    plot.loc$adjDecimalLongitude <- adjLatLong$decimalLongitude
+    
+    # increase coordinate uncertainty: navigation within plot
+    plot.loc$adjCoordinateUncertainty <- as.numeric(plot.loc$adjCoordinateUncertainty) + 1
+    plot.loc$adjElevationUncertainty <- as.numeric(plot.loc$adjElevationUncertainty) + 1
+    
+    # sort to original order
+    plot.return <- plot.loc[order(plot.loc$rowid),]
+    plot.return <- plot.return[,-which(colnames(plot.return)=='rowid')]
+    
+    return(plot.return)
+  }
+  
   else {
     print(paste("This function has not been configured for data product table ", 
                  dataProd, sep=""))
