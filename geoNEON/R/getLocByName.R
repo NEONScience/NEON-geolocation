@@ -60,11 +60,11 @@ getLocByName <- function(
     
     # Pull data from API
     if(history) {
-      req <- getAPI(paste("http://data.neonscience.org/api/v0/locations/", j, 
+      req <- getAPI(paste("https://data.neonscience.org/api/v0/locations/", j, 
                           "?history=true", sep=""), 
                     token=token)
     } else {
-      req <- getAPI(paste("http://data.neonscience.org/api/v0/locations/", j, sep=""), 
+      req <- getAPI(paste("https://data.neonscience.org/api/v0/locations/", j, sep=""), 
                     token=token)
     }
 

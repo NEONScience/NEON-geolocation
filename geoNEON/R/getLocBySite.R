@@ -27,11 +27,11 @@
 getLocBySite <- function(site, type='site', history=F, token=NA_character_) {
   
   if(!history) {
-    req <- getAPI(paste('http://data.neonscience.org/api/v0/locations/', site, sep=''),
+    req <- getAPI(paste('https://data.neonscience.org/api/v0/locations/', site, sep=''),
                      token=token)
   }
   if(history) {
-    req <- getAPI(paste('http://data.neonscience.org/api/v0/locations/', site, 
+    req <- getAPI(paste('https://data.neonscience.org/api/v0/locations/', site, 
                            '?history=true', sep=''), token=token)
   }
   
