@@ -961,16 +961,10 @@ getLocTOS <- function(
     refCornerNorthing[which(plot.loc$referenceCorner=="NW40")] <- 
       plot.loc$adjNorthing[which(plot.loc$referenceCorner=="NW40")] + 20
     
-    bearing <- plot.loc$sampleBearing
-    bearing[which(plot.loc$sampleBearing<90)] <- 
-      90 - plot.loc$sampleBearing[which(plot.loc$sampleBearing<90)]
-    bearing[which(plot.loc$sampleBearing>=90)] <- 
-      450 - plot.loc$sampleBearing[which(plot.loc$sampleBearing>=90)]
-    
     plot.loc$adjEasting <- refCornerEasting + 
-      plot.loc$sampleDistance * cos(bearing*pi/180)
+      plot.loc$sampleDistance * sin(plot.loc$sampleBearing*pi/180)
     plot.loc$adjNorthing <- refCornerNorthing + 
-      plot.loc$sampleDistance * sin(bearing*pi/180)
+      plot.loc$sampleDistance * cos(plot.loc$sampleBearing*pi/180)
     
     # calculate latitude and longitude from the corrected northing and easting
     adjLatLong <- geoNEON::calcLatLong(easting=plot.loc$adjEasting, 
