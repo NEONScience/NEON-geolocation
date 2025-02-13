@@ -110,7 +110,7 @@ test_that('Select beetle locations are correct', {
 
 test_that('Mosquitoes correctly returns only a message', {
   df <- NA
-  expect_output(getLocTOS(df, 'mos_trapping'), 'Mosquito trapping location is flexible within the plot; locations provided in downloaded data are accurate.')
+  expect_output(getLocTOS(df, 'mos_trapping'), 'Mosquito trapping location is flexible within the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
 })
 
 test_that('Select DHP locations are correct', {

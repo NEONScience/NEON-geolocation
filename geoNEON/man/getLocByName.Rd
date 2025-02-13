@@ -8,6 +8,7 @@ getLocByName(
   data,
   locCol = "namedLocation",
   locOnly = F,
+  history = F,
   token = NA_character_
 )
 }
@@ -17,6 +18,8 @@ getLocByName(
 \item{locCol}{The column name of the column containing the named locations. Defaults to namedLocation}
 
 \item{locOnly}{Boolean whether to return the full input data frame or just the extracted geolocations}
+
+\item{history}{Boolean whether to return the current location (FALSE) or the full location history (TRUE)}
 
 \item{token}{User specific API token (generated within neon.datascience user accounts). Optional.}
 }

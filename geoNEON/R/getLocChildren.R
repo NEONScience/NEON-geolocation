@@ -24,11 +24,11 @@
 getLocChildren <- function(namedLocation, history=F, token=NA_character_) {
   
   if(!history) {
-    req <- getAPI(paste('http://data.neonscience.org/api/v0/locations/', namedLocation, sep=''),
+    req <- getAPI(paste('https://data.neonscience.org/api/v0/locations/', namedLocation, sep=''),
                      token=token)
   }
   if(history) {
-    req <- getAPI(paste('http://data.neonscience.org/api/v0/locations/', namedLocation, 
+    req <- getAPI(paste('https://data.neonscience.org/api/v0/locations/', namedLocation, 
                            '?history=true', sep=''), token=token)
   }
   

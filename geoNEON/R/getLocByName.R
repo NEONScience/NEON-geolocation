@@ -10,6 +10,7 @@
 #' @param data A data frame in which one column contains the named locations
 #' @param locCol The column name of the column containing the named locations. Defaults to namedLocation
 #' @param locOnly Boolean whether to return the full input data frame or just the extracted geolocations
+#' @param history Boolean whether to return the current location (FALSE) or the full location history (TRUE)
 #' @param token User specific API token (generated within neon.datascience user accounts). Optional.
 
 #' @return A data frame of the geolocation data for the input named locations
@@ -35,6 +36,7 @@ getLocByName <- function(
   data,
   locCol = "namedLocation",
   locOnly=F,
+  history=F,
   token=NA_character_
 ){
   
@@ -57,8 +59,14 @@ getLocByName <- function(
     i<-i+1
     
     # Pull data from API
-    req <- getAPI(paste("http://data.neonscience.org/api/v0/locations/", j, sep=''), 
+    if(history) {
+      req <- getAPI(paste("https://data.neonscience.org/api/v0/locations/", j, 
+                          "?history=true", sep=""), 
                     token=token)
+    } else {
+      req <- getAPI(paste("https://data.neonscience.org/api/v0/locations/", j, sep=""), 
+                    token=token)
+    }
 
     req.content <- httr::content(req, as="parsed")
     
