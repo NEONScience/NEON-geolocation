@@ -40,9 +40,10 @@ getLocChildren <- function(namedLocation, history=F, token=NA_character_) {
       return()
     } else {
       
-      loc <- jsonlite::fromJSON(httr::content(req, as='text', encoding='UTF-8'))
+      #loc <- jsonlite::fromJSON(httr::content(req, as='text', encoding='UTF-8'))
+      loc <- req.content
       
-      loc.children <- loc$data[base::grep('Child', base::names(loc$data))]$locationChildren
+      loc.children <- loc$data$locationChildren
       loc.values <- getLocValues(loc, history)
       
       cat('Finding spatial data for', namedLocation, rep('', 50), '\r')

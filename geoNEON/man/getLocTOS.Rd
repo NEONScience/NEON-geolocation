@@ -11,7 +11,7 @@ getLocTOS(data, dataProd, token = NA_character_)
 
 \item{dataProd}{The table name of the NEON data product table to find locations for. Refer to package readme for list of possible input data tables.}
 
-\item{token}{User specific API token (generated within neon.datascience user accounts). Optional.}
+\item{token}{User specific API token (generated within data.neonscience.org user accounts). Optional.}
 }
 \value{
 A data frame of geolocations for the input product and data

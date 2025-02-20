@@ -21,7 +21,7 @@ getLocByName(
 
 \item{history}{Boolean whether to return the current location (FALSE) or the full location history (TRUE)}
 
-\item{token}{User specific API token (generated within neon.datascience user accounts). Optional.}
+\item{token}{User specific API token (generated within data.neonscience.org user accounts). Optional.}
 }
 \value{
 A data frame of the geolocation data for the input named locations

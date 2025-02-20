@@ -4,7 +4,7 @@
 \alias{getLocValues}
 \title{Extract location values from the JSON returned by the NEON API}
 \usage{
-getLocValues(locJSON, history = F)
+getLocValues(locJSON, history = FALSE)
 }
 \arguments{
 \item{locJSON}{A JSON object returned by the locations endpoint of the NEON API.}

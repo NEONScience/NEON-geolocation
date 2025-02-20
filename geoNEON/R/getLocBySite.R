@@ -57,7 +57,7 @@ getLocBySite <- function(site, type='site', history=F, token=NA_character_) {
   loc <- jsonlite::fromJSON(httr::content(req, as='text', encoding='UTF-8'))
   
   if(type=='site') {
-    loc.des <- getLocValues(loc, history)
+    loc.des <- getLocValues(req.content, history)
   }
   
   if(type=='all' | type=='AQU') {
@@ -75,15 +75,15 @@ getLocBySite <- function(site, type='site', history=F, token=NA_character_) {
        =='Terrestrial') {
       cat('Warning: using getLocBySite() to access OS locations at terrestrial sites is very slow.\nMost terrestrial sites have 5000+ OS locations. A more targeted approach is recommended, such as using getLocTOS().\n')
     }
-    loc.site <- getLocValues(loc, history)
-    loc <- loc$data$locationChildren[which(substring(loc$data$locationChildren, 1, 4)==site)]
+    loc.site <- getLocValues(req.content, history)
+    loc <- req.content$data$locationChildren[which(substring(req.content$data$locationChildren, 1, 4)==site)]
     loc.des <- data.table::rbindlist(lapply(loc, getLocChildren, history=history), fill=T)
     loc.des <- data.table::rbindlist(list(loc.site, loc.des), fill=T)
   }
   
   if(type=='TIS') {
-    loc.site <- getLocValues(loc, history)
-    loc <- loc$data$locationChildren[which(substring(loc$data$locationChildren, 1, 4)!=site)]
+    loc.site <- getLocValues(req.content, history)
+    loc <- req.content$data$locationChildren[which(substring(req.content$data$locationChildren, 1, 4)!=site)]
     loc.des <- data.table::rbindlist(lapply(loc, getLocChildren, history=history), fill=T)
     loc.des <- data.table::rbindlist(list(loc.site, loc.des), fill=T)
   }
