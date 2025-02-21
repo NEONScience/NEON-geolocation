@@ -10,7 +10,7 @@
 #' @param data A data frame in which one column contains the named locations
 #' @param locCol The column name of the column containing the named locations. Defaults to namedLocation
 #' @param locOnly Boolean whether to return the full input data frame or just the extracted geolocations
-#' @param history Boolean whether to return the current location (FALSE) or the full location history (TRUE)
+#' @param history Boolean whether to retrieve the current location (FALSE) or the full location history (TRUE). If locOnly=FALSE and history=TRUE (the default), returns the location data that were active at the data collection date for each row.
 #' @param token User specific API token (generated within data.neonscience.org user accounts). Optional.
 
 #' @return A data frame of the geolocation data for the input named locations
@@ -35,8 +35,8 @@
 getLocByName <- function(
   data,
   locCol = "namedLocation",
-  locOnly=F,
-  history=F,
+  locOnly=FALSE,
+  history=TRUE,
   token=NA_character_
 ){
   
@@ -115,73 +115,136 @@ getLocByName <- function(
   # Return the original data with location data added, unless locOnly=T
   # Only add columns that weren't already in the data
   messages <- NA
-  if (!locOnly){
-    data$row.index <- 1:nrow(data)
-    dataRep <- data[data[,locCol] %in% plotInfo$namedLocation,
-                    names(data) %in% names(plotInfo)]
-    
-    # if no names are shared, merge and done
-    if(length(dataRep)==0 | is.null(dim(dataRep))) {
-      allInfo <- merge(data, plotInfo, by.x=locCol, by.y='namedLocation', all.x=T)
-      allInfo <- allInfo[order(allInfo$row.index),]
-      allInfo <- allInfo[,!names(allInfo) %in% c('row.index')]
-    } else {
+  if(!locOnly) {
+    # check for locations with history. if there are none, use non-history workflow
+    if(!any(duplicated(plotInfo$namedLocation))) {
+      history <- FALSE
+    }
+    if(!history) {
+      data$row.index <- 1:nrow(data)
+      dataRep <- data[data[,locCol] %in% plotInfo$namedLocation,
+                      names(data) %in% names(plotInfo)]
       
-      # make sure to include location column
-      if(!locCol %in% names(dataRep)) {
-        dataRep <- cbind(dataRep, 
-                         d=data[data[,locCol] %in% plotInfo$namedLocation,locCol])
-        names(dataRep)[which(names(dataRep)=='d')] <- locCol
-      }
-      
-      # iterate over shared names
-      for(i in names(dataRep)) {
-        if(i=='namedLocation' | i==locCol) {
-          next
-        } else {
-          
-          # check whether values in data match values in plotInfo (from API) for matching named locations
-          # have to handle character and numeric separately - all.equal behaves strangely, so better to split
-          dataRepUniq <- unique(dataRep[order(dataRep[,locCol]), c(locCol, i)])
-          plotInfoUniq <- plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)]
-          locMatch <- TRUE
-          eqVec <- !logical(length(dataRepUniq[,i]))
-          if(inherits(dataRep[,i],'character')) {
-            eqVec <- dataRepUniq[,i]==plotInfoUniq[,i]
-            if(!all(eqVec, na.rm=T)) {locMatch <- FALSE}
+      # if no names are shared, merge and done
+      if(length(dataRep)==0 | is.null(dim(dataRep))) {
+        allInfo <- merge(data, plotInfo, by.x=locCol, by.y='namedLocation', all.x=T)
+        allInfo <- allInfo[order(allInfo$row.index),]
+        allInfo <- allInfo[,!names(allInfo) %in% c('row.index')]
+      } else {
+        
+        # make sure to include location column
+        if(!locCol %in% names(dataRep)) {
+          dataRep <- cbind(dataRep, 
+                           d=data[data[,locCol] %in% plotInfo$namedLocation,locCol])
+          names(dataRep)[which(names(dataRep)=='d')] <- locCol
+        }
+        
+        # iterate over shared names
+        for(i in names(dataRep)) {
+          if(i=='namedLocation' | i==locCol) {
+            next
           } else {
-            if(inherits(dataRep[,i],'numeric')) {
-              eqVec <- abs(dataRepUniq[,i] - as.numeric(plotInfoUniq[,i]))
-              eqVec <- eqVec <= 0.5
+            
+            # check whether values in data match values in plotInfo (from API) for matching named locations
+            # have to handle character and numeric separately - all.equal behaves strangely, so better to split
+            dataRepUniq <- unique(dataRep[order(dataRep[,locCol]), c(locCol, i)])
+            plotInfoUniq <- plotInfo[order(plotInfo$namedLocation), c('namedLocation',i)]
+            locMatch <- TRUE
+            eqVec <- !logical(length(dataRepUniq[,i]))
+            if(inherits(dataRep[,i],'character')) {
+              eqVec <- dataRepUniq[,i]==plotInfoUniq[,i]
               if(!all(eqVec, na.rm=T)) {locMatch <- FALSE}
             } else {
-              eqVec <- eqVec
+              if(inherits(dataRep[,i],'numeric')) {
+                eqVec <- abs(dataRepUniq[,i] - as.numeric(plotInfoUniq[,i]))
+                eqVec <- eqVec <= 0.5
+                if(!all(eqVec, na.rm=T)) {locMatch <- FALSE}
+              } else {
+                eqVec <- eqVec
+              }
+            }
+            # if mismatches are found, make a list of the named locations where values don't match
+            # and drop the variable from the data table - will be replaced by database version in the merge
+            if(!locMatch) {
+              locMis <- plotInfo$namedLocation[order(plotInfo$namedLocation)][which(!eqVec)]
+              messages <- rbind(messages, cbind(rep(i, length(locMis)), locMis))
+              data <- data[,names(data)!=i]
             }
           }
-          # if mismatches are found, make a list of the named locations where values don't match
-          # and drop the variable from the data table - will be replaced by database version in the merge
-          if(!locMatch) {
-            locMis <- plotInfo$namedLocation[order(plotInfo$namedLocation)][which(!eqVec)]
-            messages <- rbind(messages, cbind(rep(i, length(locMis)), locMis))
-            data <- data[,names(data)!=i]
-          }
         }
-        }
-      # drop variables from plotInfo that were already in data, and matched
-      plotInfo <- plotInfo[,!names(plotInfo) %in% names(data)[names(data)!='namedLocation']]
+        # drop variables from plotInfo that were already in data, and matched
+        plotInfo <- plotInfo[,!names(plotInfo) %in% names(data)[names(data)!='namedLocation']]
+        # merge data and plotInfo - no columns besides namedLocation should be in both at this point
+        allInfo <- base::merge(data, plotInfo, by.x=locCol, by.y='namedLocation', all.x=T)
+        allInfo <- allInfo[order(allInfo$row.index),]
+        allInfo <- allInfo[,!names(allInfo) %in% c('row.index')]
+      }
+      # report locations and variables with value mismatches
+      if(!all(is.na(messages))) {
+        colnames(messages) <- c('variable', 'namedLocation')
+        cat('\nMismatch between input data and location database for the following variables and locations:\n')
+        print.table(messages[-1,])
+        cat('\nUsually this indicates database has been updated since data were processed. Output data are database values.')
+      }
+    } else {
+      # when history=TRUE
+      # in this case, use database values without checking
+      # match dates to decide which values from the history to keep
+      dataRep <- intersect(names(data), names(plotInfo))
+      if(locCol %in% dataRep) {
+        dataRep <- dataRep[-which(dataRep==locCol)]
+      }
+      if("namedLocation" %in% dataRep) {
+        dataRep <- dataRep[-which(dataRep=="namedLocation")]
+      }
+      
+      # drop columns from data that are available in location data
+      data <- data[,-which(names(data) %in% dataRep)]
+      
       # merge data and plotInfo - no columns besides namedLocation should be in both at this point
-      allInfo <- base::merge(data, plotInfo, by.x=locCol, by.y='namedLocation', all.x=T)
+      allInfo <- base::merge(data, plotInfo, by.x=locCol, by.y="namedLocation", all.x=T)
+      
+      # find locations with history
+      histloc <- unique(allInfo$namedLocation[which(allInfo$current==FALSE)])
+      histind <- which(allInfo$namedLocation %in% histloc)
+      histsub <- allInfo[histind,]
+      
+      # remove the rows with history and add back below
+      allInfo <- allInfo[-histind,]
+      
+      # uids should be duplicated for locations with history. for each uid, figure out which one to keep based on date.
+      for(j in unique(histsub$uid)) {
+        subj <- histsub[which(histsub$uid==j),]
+        
+        # if contents are identical keep the first one - this will probably never happen
+        if(all(duplicated(subj)[2:nrow(subj)])) {
+          allInfo <- rbind(allInfo, subj[1,])
+        } else {
+          datefields <- c("collectDate", "endDate", "date", "startDate", "passEndTime")
+          datefield <- intersect(datefields, names(subj))
+          if(length(datefield)>1) {
+            datefield <- datefield[1]
+          }
+          dates <- subj[,datefield]
+          startind <- which(dates >= subj$locationStartDate)
+          endind <- which(dates < subj$locationEndDate | is.na(subj$locationEndDate))
+          indj <- intersect(startind, endind)
+          if(length(indj==0)) {
+            message(paste(unique(dates), " is outside the valid date range for location ", 
+                          subj$namedLocation[1], 
+                          ". Spatial data returned match most recent valid date.", sep=""))
+            allInfo <- rbind(allInfo, 
+                             subj[which(subj$locationStartDate==max(subj$locationStartDate, na.rm=T)),])
+          }
+          allInfo <- rbind(allInfo, subj[indj,])
+        }
+      }
       allInfo <- allInfo[order(allInfo$row.index),]
       allInfo <- allInfo[,!names(allInfo) %in% c('row.index')]
     }
-    # report locations and variables with value mismatches
-    if(!all(is.na(messages))) {
-      colnames(messages) <- c('variable', 'namedLocation')
-      cat('\nMismatch between input data and location database for the following variables and locations:\n')
-      print.table(messages[-1,])
-      cat('\nUsually this indicates database has been updated since data were processed. Output data are database values.')
-    }
+
   } else { 
+    # when locOnly=TRUE (either value of history)
     allInfo <- plotInfo
   }
   return(allInfo)

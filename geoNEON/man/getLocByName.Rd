@@ -7,8 +7,8 @@
 getLocByName(
   data,
   locCol = "namedLocation",
-  locOnly = F,
-  history = F,
+  locOnly = FALSE,
+  history = TRUE,
   token = NA_character_
 )
 }
@@ -19,7 +19,7 @@ getLocByName(
 
 \item{locOnly}{Boolean whether to return the full input data frame or just the extracted geolocations}
 
-\item{history}{Boolean whether to return the current location (FALSE) or the full location history (TRUE)}
+\item{history}{Boolean whether to retrieve the current location (FALSE) or the full location history (TRUE). If locOnly=FALSE and history=TRUE (the default), returns the location data that were active at the data collection date for each row.}
 
 \item{token}{User specific API token (generated within data.neonscience.org user accounts). Optional.}
 }
