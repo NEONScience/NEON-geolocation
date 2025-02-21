@@ -1,22 +1,20 @@
-# context("Test getLocBySite")
-# library(geoNEON)
-# 
-# test_that("SYCA location values are correct", {
-#   out <- getLocBySite("SYCA", type="all", history=T)
-#   expect_equal(out$locationDescription, c('Plot \"GUAN_044\" at site \"GUAN\"', 'Plot \"GUAN_045\" at site \"GUAN\"'))
-#   expect_equal(as.numeric(out$northing), c(1987798.71019852, 1988068.47644692), tolerance=0.5)
-# })
-# 
-# 
-# test_that("Single nonsense input correctly returns warning message", {
-#   df<-data.frame(namedLocation=c("nonsense", "GUAN_044.basePlot.ltr"), otherData=c(1,2))
-#   expect_message(getLocByName(df),'The following namedLocation was not found: nonsense')
-# })
-# 
-# test_that("All nonsense inputs correctly return error", {
-#   df<-data.frame(namedLocation=c("nonsense", "nonsense"), otherData=c(1,2))
-#   expect_error(suppressWarnings(getLocByName(df)),'None of the input named locations were found.')
-# })
+context("Test getLocBySite")
+library(geoNEON)
+
+test_that("Select SYCA location values and history are correct", {
+  out <- getLocBySite("SYCA", type="all", history=T)
+  expect_true(all(out$current[which(duplicated(out$namedLocation))]==FALSE))
+  expect_identical(min(out$locationStartDate[which(out$namedLocation=="CFGLOC114125")]), 
+               "2021-09-30T00:00:00Z")
+  expect_equal(as.numeric(out$easting[which(out$namedLocation=="S1LOC111007" & out$locationStartDate=="2022-01-25T00:00:00Z")]),
+               453099.49, tolerance=0.1)
+})
+
+test_that("Select ABBY locations without history are correct", {
+  out <- getLocBySite("ABBY", type="TIS", history=F)
+  expect_equal(as.numeric(out$easting[which(out$locationType=="HUT")]), 552091.11, tolerance=0.1)
+})
+
 
 
 

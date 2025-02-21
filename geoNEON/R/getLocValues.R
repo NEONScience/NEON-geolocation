@@ -36,7 +36,7 @@ getLocValues <- function(locJSON, history=FALSE) {
     
     loc.each <- lapply(locJSON$data$locationHistory, FUN=getLocProperties, history=TRUE)
     loc.all <- data.frame(data.table::rbindlist(loc.each, fill=TRUE))
-    loc.all <- cbind(locids, loc.all)
+    loc.all <- cbind(loc.values, loc.all)
   }
   
   names(loc.all)[names(loc.all)=='locationName'] <- 'namedLocation'
