@@ -37,6 +37,11 @@ getLocMAM <- function(
   names(point.loc)[names(point.loc)=='namedLocation']<-locCol
   point.loc$adjCoordinateUncertainty<-as.numeric(point.loc$namedLocationCoordUncertainty)
   
+  # get the correct location from the history
+  if(any(point.loc$locationCurrent=="FALSE")) {
+    point.loc <- findDateMatch(point.loc, recDate="collectDate")
+  }
+  
   #coordinate uncertainty is only provided for select locations per grid that
   # are monumented; assume since the rest of the grid is set up relative
   # to those monumented points, that the max per monumented point applies

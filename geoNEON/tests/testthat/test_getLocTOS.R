@@ -6,7 +6,7 @@ test_that("Select bird named locations are correct", {
                                 'BART_003.birdGrid.brd', 'BART_003.birdGrid.brd'), pointID=c(21,'A1', 'B2', 'B2'),
                  pointCountMinute=c(1,2,3,88))
   out<-getLocTOS(df, 'brd_countdata')
-  expect_equal(as.numeric(out$adjNorthing), c(4308017.759165, 4880714.9041744, 4880464.93234, 4881510.4750), tolerance=0.1)
+  expect_equal(as.numeric(out$adjNorthing), c(4308017.64, 4880714.904, 4880464.93234, 4881512.696), tolerance=0.1)
   expect_equal(as.numeric(out$adjCoordinateUncertainty), c(0.24, 15, 0.32, NA), tolerance=0.1)
 })
 

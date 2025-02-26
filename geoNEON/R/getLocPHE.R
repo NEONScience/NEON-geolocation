@@ -100,7 +100,7 @@ getLocPHE <- function(
     return (distance)
   }
   
-  data$distFromLastPoint<-NA
+  data$distFromLastPoint <- rep(NA, nrow(data))
   
   for (i in 1:nrow(data)){
     if (!is.na(data$transectMeter[i])){
@@ -108,36 +108,36 @@ getLocPHE <- function(
     }
   }
   
-  data$northing<-NA
-  data$easting<-NA
-  data$utmZone<-NA
-  data$namedLocation<-as.character(data$namedLocation)
-  pointSpatialData$namedLocation<-as.character(pointSpatialData$namedLocation)
+  data$northing <- rep(NA, nrow(data))
+  data$easting <- rep(NA, nrow(data))
+  data$utmZone <- rep(NA, nrow(data))
+  data$namedLocation <- as.character(data$namedLocation)
+  pointSpatialData$namedLocation <- as.character(pointSpatialData$namedLocation)
   
   for (i in 1:nrow(data)){
     if (!is.na(data$referencePoint_tempA[i])&
         !is.na(data$referencePoint_tempB[i])){
       northingA<-as.numeric(pointSpatialData$northing[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-                                                        pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]])
+                                                        pointSpatialData$locationPointID==data$referencePoint_tempA[i]])
       northingB<-as.numeric(pointSpatialData$northing[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-                                                        pointSpatialData$Value.for.Point.ID==data$referencePoint_tempB[i]])
+                                                        pointSpatialData$locationPointID==data$referencePoint_tempB[i]])
       eastingA<-as.numeric(pointSpatialData$easting[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-                                                      pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]])
+                                                      pointSpatialData$locationPointID==data$referencePoint_tempA[i]])
       eastingB<-as.numeric(pointSpatialData$easting[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-                                                      pointSpatialData$Value.for.Point.ID==data$referencePoint_tempB[i]])
+                                                      pointSpatialData$locationPointID==data$referencePoint_tempB[i]])
       
       elevationA<-as.numeric(pointSpatialData$elevation[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-                                                          pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]])
+                                                          pointSpatialData$locationPointID==data$referencePoint_tempA[i]])
       elevationB<-as.numeric(pointSpatialData$elevation[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-                                                          pointSpatialData$Value.for.Point.ID==data$referencePoint_tempB[i]])
+                                                          pointSpatialData$locationPointID==data$referencePoint_tempB[i]])
       wt<-c(100-data$distFromLastPoint[i],data$distFromLastPoint[i])
       if (length(c(northingA, northingB, eastingA, eastingB))==4){#make sure all elements known
         northing <- stats::weighted.mean(c(northingA,northingB), wt)
         easting <- stats::weighted.mean(c(eastingA,eastingB), wt)
         data$adjCoordinateUncertainty[i]<-max (as.numeric(pointSpatialData$namedLocationCoordUncertainty[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
-                                                                                                           pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]]),
+                                                                                                           pointSpatialData$locationPointID==data$referencePoint_tempA[i]]),
                                                as.numeric(pointSpatialData$namedLocationCoordUncertainty[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
-                                                                                                           pointSpatialData$Value.for.Point.ID==data$referencePoint_tempB[i]]))+2
+                                                                                                           pointSpatialData$locationPointID==data$referencePoint_tempB[i]]))+2
       }else{
         northing<-NA
         easting<-NA
@@ -167,7 +167,7 @@ getLocPHE <- function(
       data$northing[i]<-northing
       if (!is.na(northing)&&!is.na(easting)){
         data$utmZone[i]<-pointSpatialData$utmZone[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
-                                                    pointSpatialData$Value.for.Point.ID==data$referencePoint_tempA[i]]
+                                                    pointSpatialData$locationPointID==data$referencePoint_tempA[i]]
       }
     }
   }
@@ -180,7 +180,7 @@ getLocPHE <- function(
   }
   
   #elevation uncertainty is really unknowable without knowing the microterrain
-  data$adjElevationUncertainty<-NA
+  data$adjElevationUncertainty <- rep(NA, nrow(data))
   
   # calculate latitude and longitude from the corrected northing and easting
   adjLatLong <- calcLatLong(easting=data$easting, 
@@ -204,9 +204,9 @@ getLocPHE <- function(
   }
   
   #cleanup
-  data<-data[order(data$row.index),]
-  data<-data[,!names(data) %in% c('row.index','referencePoint_tempA', 'referencePoint_tempB',
-                                  'offset_sign', 'distFromLastPoint', 'tempLat', 'tempLong')]
+  data <- data[order(data$row.index),]
+  data <- data[,which(!names(data) %in% c('row.index','referencePoint_tempA', 'referencePoint_tempB',
+                                  'offset_sign', 'distFromLastPoint', 'tempLat', 'tempLong'))]
 
   return(data)
  

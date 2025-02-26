@@ -43,7 +43,8 @@ getLocClip <- function(
   dataS <- data[which(is.na(data$subplotID)),]
   data <- data[which(!is.na(data$subplotID)),]
   
-  subplot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+  subplot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=TRUE, 
+                                       history=TRUE, token=token)
   data <- plyr::rbind.fill(data, dataS)
   data <- data[order(data$rowid),]
   
@@ -51,15 +52,24 @@ getLocClip <- function(
   subplot.merg <- subplot.all[,c("namedLocation","utmZone",
                                  "northing","easting","namedLocationCoordUncertainty",
                                  "decimalLatitude","decimalLongitude",
-                                 "elevation","namedLocationElevUncertainty")]
+                                 "elevation","namedLocationElevUncertainty",
+                                 "current","locationStartDate","locationEndDate")]
   colnames(subplot.merg) <- c(locCol, "utmZone","adjNorthing","adjEasting",
                               "adjCoordinateUncertainty","adjDecimalLatitude",
                               "adjDecimalLongitude","adjElevation",
-                              "adjElevationUncertainty")
+                              "adjElevationUncertainty",
+                              "locationCurrent","locationStartDate","locationEndDate")
   if(!is.null(data$utmZone)) { 
     subplot.merg <- subplot.merg[,which(colnames(subplot.merg)!="utmZone")]
   }
   subplot.loc <- base::merge(data, subplot.merg, by=locCol, all.x=T)
+  if(any(subplot.loc$locationCurrent=="FALSE")) {
+    if(dataProd=="ltr_pertrap") {
+      subplot.loc <- findDateMatch(subplot.loc, recDate="date")
+    } else {
+      subplot.loc <- findDateMatch(subplot.loc, recDate="collectDate")
+    }
+  }
   subplot.loc <- subplot.loc[order(subplot.loc$rowid),]
   
   # Strip the final 3 digits of trapID to get the clip cell numbers

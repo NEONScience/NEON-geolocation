@@ -79,6 +79,7 @@ getLocBySite <- function(site, type='site', history=F, token=NA_character_) {
     loc <- req.content$data$locationChildren[which(substring(req.content$data$locationChildren, 1, 4)==site)]
     loc.des <- data.table::rbindlist(lapply(loc, getLocChildren, history=history), fill=T)
     loc.des <- data.table::rbindlist(list(loc.site, loc.des), fill=T)
+    loc.des <- data.frame(loc.des)
   }
   
   if(type=='TIS') {
@@ -86,6 +87,7 @@ getLocBySite <- function(site, type='site', history=F, token=NA_character_) {
     loc <- req.content$data$locationChildren[which(substring(req.content$data$locationChildren, 1, 4)!=site)]
     loc.des <- data.table::rbindlist(lapply(loc, getLocChildren, history=history), fill=T)
     loc.des <- data.table::rbindlist(list(loc.site, loc.des), fill=T)
+    loc.des <- data.frame(loc.des)
   }
   
   return(loc.des)

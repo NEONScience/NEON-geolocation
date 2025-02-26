@@ -56,6 +56,7 @@ getLocChildren <- function(namedLocation, history=F, token=NA_character_) {
         loc.all <- data.table::rbindlist(list(loc.values, 
                                     data.table::rbindlist(lapply(loc.children, getLocChildren, history), 
                                                           fill=T)), fill=T)
+        loc.all <- data.frame(loc.all)
         return(loc.all)
       }
     }

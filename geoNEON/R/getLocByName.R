@@ -90,16 +90,30 @@ getLocByName <- function(
   # Make data frame of locations to return
   plotInfo <- plyr::rbind.fill(outList)
   
-  allTerms <- c('domainID', 'type', 'description', 'filteredPositions', 'coordinateSource',
-                'minimumElevation','slopeGradient', 'plotPdop', 'plotHdop', 'slopeAspect', 
-                'maximumElevation', 'plotSize','subtype', 'referencePointPosition', 
-                'plotType', 'siteID', 'easting','northing' ,'utmZone','elevation',
-                'decimalLatitude', 'decimalLongitude','namedLocationCoordUncertainty', 
-                'namedLocationElevUncertainty','nlcdClass','plotDimensions','soilTypeOrder', 
-                'subtypeSpecification', 'county', 'stateProvince', 'country','plotID',
-                'locationDescription','locationType','utmHemisphere','utmZoneNumber',
-                'alphaOrientation','betaOrientation','gammaOrientation','xOffset',
-                'yOffset','zOffset','locationParent','locationParentUrl','geodeticDatum')
+  if(history) {
+    allTerms <- c('domainID', 'type', 'description', 'filteredPositions', 'coordinateSource',
+                  'minimumElevation','slopeGradient', 'plotPdop', 'plotHdop', 'slopeAspect', 
+                  'maximumElevation', 'plotSize','subtype', 'referencePointPosition', 
+                  'plotType', 'siteID', 'easting','northing' ,'utmZone','elevation',
+                  'decimalLatitude', 'decimalLongitude','namedLocationCoordUncertainty', 
+                  'namedLocationElevUncertainty','nlcdClass','plotDimensions','soilTypeOrder', 
+                  'subtypeSpecification', 'county', 'stateProvince', 'country','plotID','locationPointID',
+                  'locationDescription','locationType','utmHemisphere','utmZoneNumber',
+                  'alphaOrientation','betaOrientation','gammaOrientation','xOffset',
+                  'yOffset','zOffset','locationParent','locationParentUrl','geodeticDatum',
+                  'current','locationStartDate','locationEndDate')
+  } else {
+    allTerms <- c('domainID', 'type', 'description', 'filteredPositions', 'coordinateSource',
+                  'minimumElevation','slopeGradient', 'plotPdop', 'plotHdop', 'slopeAspect', 
+                  'maximumElevation', 'plotSize','subtype', 'referencePointPosition', 
+                  'plotType', 'siteID', 'easting','northing' ,'utmZone','elevation',
+                  'decimalLatitude', 'decimalLongitude','namedLocationCoordUncertainty', 
+                  'namedLocationElevUncertainty','nlcdClass','plotDimensions','soilTypeOrder', 
+                  'subtypeSpecification', 'county', 'stateProvince', 'country','plotID','locationPointID',
+                  'locationDescription','locationType','utmHemisphere','utmZoneNumber',
+                  'alphaOrientation','betaOrientation','gammaOrientation','xOffset',
+                  'yOffset','zOffset','locationParent','locationParentUrl','geodeticDatum')
+  }
   
   # Fill unused fields with NA
   plotInfo[,allTerms[!allTerms %in% (names(plotInfo))]] <- NA
@@ -116,18 +130,18 @@ getLocByName <- function(
   # Only add columns that weren't already in the data
   messages <- NA
   if(!locOnly) {
+    data$row.index <- 1:nrow(data)
     # check for locations with history. if there are none, use non-history workflow
     if(!any(duplicated(plotInfo$namedLocation))) {
       history <- FALSE
     }
     if(!history) {
-      data$row.index <- 1:nrow(data)
       dataRep <- data[data[,locCol] %in% plotInfo$namedLocation,
                       names(data) %in% names(plotInfo)]
       
       # if no names are shared, merge and done
       if(length(dataRep)==0 | is.null(dim(dataRep))) {
-        allInfo <- merge(data, plotInfo, by.x=locCol, by.y='namedLocation', all.x=T)
+        allInfo <- base::merge(data, plotInfo, by.x=locCol, by.y='namedLocation', all.x=T)
         allInfo <- allInfo[order(allInfo$row.index),]
         allInfo <- allInfo[,!names(allInfo) %in% c('row.index')]
       } else {
@@ -218,25 +232,41 @@ getLocByName <- function(
         
         # if contents are identical keep the first one - this will probably never happen
         if(all(duplicated(subj)[2:nrow(subj)])) {
-          allInfo <- rbind(allInfo, subj[1,])
+          allInfo <- base::rbind(allInfo, subj[1,])
         } else {
-          datefields <- c("collectDate", "endDate", "date", "startDate", "passEndTime")
+          # get date field from data to compare to location dates
+          datefields <- c("collectDate", "endDate", "date", "startDate")
           datefield <- intersect(datefields, names(subj))
           if(length(datefield)>1) {
             datefield <- datefield[1]
           }
-          dates <- subj[,datefield]
-          startind <- which(dates >= subj$locationStartDate)
-          endind <- which(dates < subj$locationEndDate | is.na(subj$locationEndDate))
+          if(length(datefield)==0) {
+            message("Valid dates could not be identified for location ", 
+                          subj$namedLocation[1], 
+                          ". Spatial data returned match most recent valid date.", sep="")
+            allInfo <- base::rbind(allInfo, 
+                             subj[which(subj$locationStartDate==max(subj$locationStartDate, na.rm=T)),])
+          }
+          dates <- unique(subj[,datefield])
+          if(length(dates)>1) {
+            message("Valid dates could not be identified for location ", 
+                    subj$namedLocation[1], 
+                    ". Spatial data returned match most recent valid date.", sep="")
+            allInfo <- base::rbind(allInfo, 
+                             subj[which(subj$locationStartDate==max(subj$locationStartDate, na.rm=T)),])
+          }
+          startind <- which(subj$locationStartDate <= dates)
+          endind <- union(which(subj$locationEndDate > dates), which(is.na(subj$locationEndDate)))
           indj <- intersect(startind, endind)
-          if(length(indj==0)) {
+          if(length(indj)==0) {
             message(paste(unique(dates), " is outside the valid date range for location ", 
                           subj$namedLocation[1], 
                           ". Spatial data returned match most recent valid date.", sep=""))
-            allInfo <- rbind(allInfo, 
+            allInfo <- base::rbind(allInfo, 
                              subj[which(subj$locationStartDate==max(subj$locationStartDate, na.rm=T)),])
+          } else {
+            allInfo <- base::rbind(allInfo, subj[indj,])
           }
-          allInfo <- rbind(allInfo, subj[indj,])
         }
       }
       allInfo <- allInfo[order(allInfo$row.index),]

@@ -34,9 +34,32 @@ getLocValues <- function(locJSON, history=FALSE) {
     loc.values <- data.frame(locids)
     names(loc.values) <- c('locationDescription', 'locationName', 'domainCode', 'siteCode')
     
+    loc.props.mat <- locJSON$data$locationProperties
+    loc.props <- unlist(lapply(loc.props.mat, function(x) {
+      x$locationPropertyValue
+    }))
+    names(loc.props) <- unlist(lapply(loc.props.mat, function(x) { 
+      x$locationPropertyName
+    }))
+    
+    if(length(loc.props)>0) {
+      loc.p <- data.frame(t(unlist(loc.props, use.names=T)))
+    } else {
+      loc.p <- NA
+    }
+    
     loc.each <- lapply(locJSON$data$locationHistory, FUN=getLocProperties, history=TRUE)
-    loc.all <- data.frame(data.table::rbindlist(loc.each, fill=TRUE))
-    loc.all <- cbind(loc.values, loc.all)
+    loc.temp <- data.frame(data.table::rbindlist(loc.each, fill=TRUE))
+    loc.temp <- cbind(loc.values, loc.temp)
+    if(!all(is.na(loc.p))) {
+      loc.all <- try(base::merge(loc.temp, loc.p, all=TRUE), silent=TRUE)
+      if(inherits(loc.all, "try-error")) {
+        loc.all <- loc.temp
+        message("Location properties differ in location history.")
+      }
+    } else {
+      loc.all <- loc.temp
+    }
   }
   
   names(loc.all)[names(loc.all)=='locationName'] <- 'namedLocation'
@@ -101,6 +124,8 @@ getLocValues <- function(locJSON, history=FALSE) {
                                        'Value for Site Timezone')] <- 'siteTimezone'
   names(loc.all)[names(loc.all) %in% c('Value.for.Plot.ID',
                                        'Value for Plot ID')] <- 'plotID'
+  names(loc.all)[names(loc.all) %in% c('Value.for.Point.ID',
+                                       'Value for Point ID')] <- 'locationPointID'
   names(loc.all)[names(loc.all) %in% c('Value.for.Coordinate.source',
                                        'Value for Coordinate source')] <- 'coordinateSource'
   names(loc.all)[names(loc.all)=='locationUtmHemisphere'] <- 'utmHemisphere'
@@ -132,6 +157,13 @@ getLocValues <- function(locJSON, history=FALSE) {
                                                      'Value for Required Asset Management Location ID'))]
   }
 
+  # re-order to get essential columns first
+  coreNames <- c("namedLocation", "locationDescription", "domainID", "siteID",
+                 "current","locationStartDate","locationEndDate","decimalLatitude",
+                 "decimalLongitude","elevation","easting","northing","utmZone",
+                 "namedLocationCoordUncertainty","namedLocationElevUncertainty")
+  coreNamesUsed <- coreNames[which(coreNames %in% names(loc.all))]
+  loc.all <- loc.all[,c(coreNamesUsed, names(loc.all)[which(!names(loc.all) %in% coreNamesUsed)])]
   return(loc.all)
   
 }

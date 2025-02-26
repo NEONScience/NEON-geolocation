@@ -58,8 +58,8 @@ getLocBRD <- function(
   point.loc$adjCoordinateUncertainty[!grepl('\\.21$|\\.B2$',point.loc[[locCol]])] <- 15
   
   #88 points uncertainty unknown, all that's being provided is the site (aka tower) location
-  point.loc$adjCoordinateUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
-  point.loc$namedLocationElevUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
+  point.loc$adjCoordinateUncertainty[nchar(point.loc$points)==4]<-NA
+  point.loc$namedLocationElevUncertainty[nchar(point.loc$points)==4]<-NA
   
   # Return relevant columns
   point.return <- point.loc[,c(locCol, 
