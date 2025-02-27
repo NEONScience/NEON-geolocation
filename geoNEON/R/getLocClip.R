@@ -65,9 +65,9 @@ getLocClip <- function(
   subplot.loc <- base::merge(data, subplot.merg, by=locCol, all.x=T)
   if(any(subplot.loc$locationCurrent=="FALSE")) {
     if(dataProd=="ltr_pertrap") {
-      subplot.loc <- findDateMatch(subplot.loc, recDate="date")
+      subplot.loc <- findDateMatch(subplot.loc, locCol="subplots", recDate="date")
     } else {
-      subplot.loc <- findDateMatch(subplot.loc, recDate="collectDate")
+      subplot.loc <- findDateMatch(subplot.loc, locCol="subplots", recDate="collectDate")
     }
   }
   subplot.loc <- subplot.loc[order(subplot.loc$rowid),]

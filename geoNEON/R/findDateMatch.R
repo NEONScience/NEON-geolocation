@@ -8,6 +8,7 @@
 #' For a NEON location with a history, find the location matching the sampling date for a given sampling event. Used internally in TOS location calculations.
 #' 
 #' @param data A data frame including named locations and sampling dates, with duplicated records for locations with a history. This function identifies the record to keep.
+#' @param locCol The column name of the column containing the named locations
 #' @param recDate The field name of the date field to be used for matching
 
 #' @return The original data frame with the correct location data added
@@ -26,12 +27,13 @@
 ##############################################################################################
 findDateMatch <- function(
   data,
+  locCol,
   recDate
 ){
   
   # find locations with history
-  histloc <- unique(data$namedLocation[which(data$locationCurrent==FALSE)])
-  histind <- which(data$namedLocation %in% histloc)
+  histloc <- unique(data[,locCol][which(data$locationCurrent=="FALSE" | isFALSE(data$locationCurrent))])
+  histind <- which(data[,locCol] %in% histloc)
   histsub <- data[histind,]
   
   # remove the rows with history and add back below

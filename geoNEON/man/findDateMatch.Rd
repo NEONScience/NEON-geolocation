@@ -4,10 +4,12 @@
 \alias{findDateMatch}
 \title{Find the location data matching the sampling date}
 \usage{
-findDateMatch(data, recDate)
+findDateMatch(data, locCol, recDate)
 }
 \arguments{
 \item{data}{A data frame including named locations and sampling dates, with duplicated records for locations with a history. This function identifies the record to keep.}
+
+\item{locCol}{The column name of the column containing the named locations}
 
 \item{recDate}{The field name of the date field to be used for matching}
 }
