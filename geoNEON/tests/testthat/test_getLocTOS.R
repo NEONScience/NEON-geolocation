@@ -12,10 +12,27 @@ test_that("Select bird named locations are correct", {
 
 test_that("Select smammal named locations are correct", {
   df<-data.frame(namedLocation=c('BART_001.mammalGrid.mam', 'BART_001.mammalGrid.mam',
-                                 'BART_084.mammalGrid.mam'), trapCoordinate=c('J9','X1', 'E5'))
+                                 'BART_001.mammalGrid.mam', 'BART_084.mammalGrid.mam'), 
+                 trapCoordinate=c('J9','X1','E5','E5'))
   out<-getLocTOS(df, 'mam_pertrapnight')
-  expect_equal(as.numeric(out$adjNorthing), c(4879827.13675762, NA, 4879827.1367), tolerance=1)
-  expect_equal(as.numeric(out$adjCoordinateUncertainty), c(NA, NA, 1.18), tolerance=0.01)
+  expect_equal(as.numeric(out$adjNorthing), c(4879827.13675762, NA, 4879662.76178, 4879827.1367), 
+               tolerance=1)
+  expect_equal(as.numeric(out$adjCoordinateUncertainty), c(3.19, NA, 1.19, 1.18), tolerance=0.01)
+})
+
+test_that("Select smammal named locations with a history are correct", {
+  df<-data.frame(uid=c('uid1','uid2','uid3','uid4'),
+                 namedLocation=c('HEAL_032.mammalGrid.mam', 'HEAL_032.mammalGrid.mam',
+                                 'HEAL_032.mammalGrid.mam', 'HEAL_032.mammalGrid.mam'), 
+                 trapCoordinate=c('D3','D3','E8','E8'),
+                 collectDate=c(as.POSIXct('2015-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                               as.POSIXct('2023-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                               as.POSIXct('2015-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                               as.POSIXct('2023-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT')))
+  out<-getLocTOS(df, 'mam_pertrapnight')
+  expect_equal(as.numeric(out$adjEasting), c(388636.76997, 388559.32848, 388646.74103, 388609.35656), 
+               tolerance=1)
+  expect_equal(as.numeric(out$adjElevation), c(669.95, 664.24, 669.68, 666.72), tolerance=0.1)
 })
 
 test_that("Select plant pres named locations are correct", {

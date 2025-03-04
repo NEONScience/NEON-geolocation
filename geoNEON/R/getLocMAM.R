@@ -27,13 +27,17 @@ getLocMAM <- function(
   #      point named locations
   points <- paste(data$namedLocation, data$trapCoordinate, sep=".")
   data <- cbind(data, points)
+  data$row.index <- 1:nrow(data)
   
   #remove any X columns
   
   # Use the getLocByName function to pull the subplot geolocations from the API
   # Don't bother looking up any of the 'X' traps - those have uncertain geolocations
+  dataX <- data[grepl('X', data$points),]
+  data <- data[!grepl('X', data$points),]
+  
   locCol <- "points"
-  point.loc <- getLocByName(data[!grepl('X', data$points),], locCol=locCol, 
+  point.loc <- getLocByName(data, locCol=locCol, 
                             history=TRUE, locOnly=TRUE, token=token)
   names(point.loc)[names(point.loc)=='namedLocation']<-locCol
   point.loc$adjCoordinateUncertainty<-as.numeric(point.loc$namedLocationCoordUncertainty)
@@ -45,20 +49,18 @@ getLocMAM <- function(
   # to those monumented points, that the max per monumented point applies
   # to the rest of the points
   
-  # this doesn't work. need to break up by plot and then apply the calculation to each grid point
-  # it's always been like this
-  maxUncPerGrid<-data.frame(tapply(point.loc$adjCoordinateUncertainty, point.loc$points, 
+  maxUncPerGrid <- data.frame(tapply(point.loc$adjCoordinateUncertainty, INDEX=point.loc$plotID, 
                                    FUN=function(x) {
                                      if(all(is.na(x))){
                                        NA
                                        } else {
                                          max(x, na.rm=T)
                                          }
-                                   }))
-  maxUncPerGrid$points<-row.names(maxUncPerGrid)
-  names(maxUncPerGrid)[1]<-'maxUncertainty'
+                                   }, simplify=TRUE))
+  maxUncPerGrid$plotID <- row.names(maxUncPerGrid)
+  names(maxUncPerGrid)[1] <- 'maxUncertainty'
   
-  point.loc<-merge(point.loc, maxUncPerGrid)
+  point.loc <- merge(point.loc, maxUncPerGrid)
   
   #add additional coordinateUncertainty 3m for nonmonumented, 1m otherwise
   
@@ -88,16 +90,17 @@ getLocMAM <- function(
                               "adjDecimalLongitude","adjElevation",
                               "adjElevationUncertainty","locationCurrent",
                               "locationStartDate","locationEndDate")
-  data$row.index<-1:nrow(data)
-  all.return <- merge(data,point.return, by=locCol, all.x=T)
+  all.return <- merge(data, point.return, by=locCol, all.x=T)
   
   # get the correct location from the history
   if(any(all.return$locationCurrent=="FALSE" | isFALSE(all.return$locationCurrent))) {
     all.return <- findDateMatch(all.return, locCol="points", recDate="collectDate")
   }
   
-  all.return<-all.return[order(all.return$row.index),]
-  all.return<-all.return[,!names(all.return) %in% c("row.index","locationCurrent",
+  all.return <- data.frame(data.table::rbindlist(list(all.return, dataX), fill=TRUE))
+  
+  all.return <- all.return[order(all.return$row.index),]
+  all.return <- all.return[,!names(all.return) %in% c("row.index","locationCurrent",
                                                     "locationStartDate","locationEndDate")]
 
   return(all.return)
