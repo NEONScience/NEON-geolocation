@@ -53,7 +53,7 @@ test_that("Select soil locations are correct", {
 
 test_that("Select litter trap named locations are correct", {
   df<-data.frame(namedLocation=c('WREF_088.basePlot.ltr', 'WREF_088.basePlot.ltr',
-                                 'WREF_075.basePlot.ltr'), subplotID=c('39','41', '23'),
+                                 'WREF_075.basePlot.ltr'), subplotID=c('39_400','41_400', '23_400'),
                  trapID=c('WREF_088_524', 'WREF_088_823', 'WREF_075_276'))
   out<-getLocTOS(df, 'ltr_pertrap')
   expect_equal(as.numeric(out$adjNorthing), c(5075552.04572389, 5075557.51949259, 5075325.03289727), tolerance=1)
@@ -82,7 +82,7 @@ test_that("Select phenology named locations are correct", {
 
 test_that("Select herb clip named locations are correct", {
   df<-data.frame(namedLocation=c('KONZ_045.basePlot.hbp', 'KONZ_069.basePlot.hbp',
-                                 'KONZ_052.basePlot.hbp'), subplotID=c('31','31', '31'),
+                                 'KONZ_052.basePlot.hbp'), subplotID=c('31_400','31_400', '31_400'),
                  clipID=c('KONZ_045_0193', 'KONZ_069_0043', 'KONZ_052_055'))
   out<-getLocTOS(df, 'hbp_perbout')
   expect_equal(as.numeric(out$adjEasting), c(710831.7982755, 710882.8424974, 710980.5469347), tolerance=0.1)
@@ -91,7 +91,7 @@ test_that("Select herb clip named locations are correct", {
 
 test_that("Select herbaceous cfc named locations are correct", {
   df<-data.frame(namedLocation=c('WOOD_044.basePlot.cfc', 'SJER_012.basePlot.cfc',
-                                 'SOAP_002.basePlot.cfc'), subplotID=c('31','31', NA),
+                                 'SOAP_002.basePlot.cfc'), subplotID=c('31_400','31_400', NA),
                  clipID=c('WOOD_044_067', 'SJER_012_069', NA))
   out<-getLocTOS(df, 'cfc_fieldData')
   expect_equal(as.numeric(out$adjEasting), c(481536.1, 258495.2, NA), tolerance=0.1)
@@ -100,7 +100,7 @@ test_that("Select herbaceous cfc named locations are correct", {
 
 test_that("Select root sampling locations are correct", {
   df<-data.frame(namedLocation=c('TALL_051.basePlot.bbc', 'TALL_051.basePlot.bbc',
-                                 'TALL_060.basePlot.bbc'), subplotID=c('39','21', '41'),
+                                 'TALL_060.basePlot.bbc'), subplotID=c('39_400','21_400', '41_400'),
                  clipID=c('TALL_051_703', 'TALL_051_041', 'TALL_060_882'))
   out<-getLocTOS(df, 'bbc_percore')
   expect_equal(as.numeric(out$adjEasting), c(462857.9, 462848.6, 462729.9), tolerance=0.1)

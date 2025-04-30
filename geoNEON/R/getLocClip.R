@@ -25,10 +25,11 @@ getLocClip <- function(
     token=NA_character_
 ){
   
-  # Concatenate the named location (the plot) and subplot IDs to get the 
-  #      subplot named locations
-  subplots <- paste(data$namedLocation, data$subplotID, sep=".")
-  data <- cbind(data, subplots)
+  # Use the first two digits of the subplotID to get the pointID
+  # Concatenate the named location (the plot) and the pointID to get the 
+  #      point named locations
+  pointIDs <- substring(data$subplotID, 1, 2)
+  data$points <- paste(data$namedLocation, pointIDs, sep=".")
   data$rowid <- 1:nrow(data)
   
   if(dataProd=="cfc_fieldData") {
@@ -37,7 +38,7 @@ getLocClip <- function(
   }
   
   # Use the getLocByName function to pull the subplot geolocations from the API
-  locCol <- "subplots"
+  locCol <- "points"
   
   # samplingImpractical records have subplotID = NA
   dataS <- data[which(is.na(data$subplotID)),]
@@ -65,14 +66,14 @@ getLocClip <- function(
   subplot.loc <- base::merge(data, subplot.merg, by=locCol, all.x=T)
   if(any(subplot.loc$locationCurrent=="FALSE")) {
     if(dataProd=="ltr_pertrap") {
-      subplot.loc <- findDateMatch(subplot.loc, locCol="subplots", recDate="date")
+      subplot.loc <- findDateMatch(subplot.loc, locCol="points", recDate="date")
     } else {
-      subplot.loc <- findDateMatch(subplot.loc, locCol="subplots", recDate="collectDate")
+      subplot.loc <- findDateMatch(subplot.loc, locCol="points", recDate="collectDate")
     }
   }
   subplot.loc <- subplot.loc[order(subplot.loc$rowid),]
   
-  # Strip the final 3 digits of trapID to get the clip cell numbers
+  # Strip the final 3 digits of trapID or clipID to get the clip cell numbers
   if(dataProd=="ltr_pertrap") {
     cellID <- data$trapID
     data$cellID <- cellID
@@ -131,7 +132,7 @@ getLocClip <- function(
     all.return <- plyr::rbind.fill(subplot.loc, dataN)
     print("Please note locations have been calculated only for herbaceous clip samples. Woody vegetation sample locations can be calculated based on the vst_mappingandtagging table.")
   } else {
-    all.return <- subplot.loc
+    all.return <- plyr::rbind.fill(subplot.loc, dataS)
   }
   all.return <- all.return[order(all.return$rowid),]
   all.return <- all.return[,!names(all.return) %in% c('rowid','cellID')]
