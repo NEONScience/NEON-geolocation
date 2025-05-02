@@ -64,6 +64,8 @@ getLocClip <- function(
     subplot.merg <- subplot.merg[,which(colnames(subplot.merg)!="utmZone")]
   }
   subplot.loc <- base::merge(data, subplot.merg, by=locCol, all.x=T)
+  
+  # keep location data that matches date of collection
   if(any(subplot.loc$locationCurrent=="FALSE")) {
     if(dataProd=="ltr_pertrap") {
       subplot.loc <- findDateMatch(subplot.loc, locCol="points", recDate="date")
@@ -130,9 +132,9 @@ getLocClip <- function(
   
   if(dataProd=="cfc_fieldData") {
     all.return <- plyr::rbind.fill(subplot.loc, dataN)
-    print("Please note locations have been calculated only for herbaceous clip samples. Woody vegetation sample locations can be calculated based on the vst_mappingandtagging table.")
+    message("Please note locations have been calculated only for herbaceous clip samples. Woody vegetation sample locations can be calculated based on the vst_mappingandtagging table.")
   } else {
-    all.return <- plyr::rbind.fill(subplot.loc, dataS)
+    all.return <- subplot.loc
   }
   all.return <- all.return[order(all.return$rowid),]
   all.return <- all.return[,!names(all.return) %in% c('rowid','cellID')]

@@ -60,6 +60,18 @@ test_that("Select litter trap named locations are correct", {
   expect_equal(as.numeric(out$adjCoordinateUncertainty), c(1.22, 1.19, 1.14), tolerance=0.1)
 })
 
+test_that("Select litter trap named locations with history are correct", {
+  df<-data.frame(uid=c('uid1','uid2'),
+                 namedLocation=c('GRSM_051.basePlot.ltr', 'GRSM_051.basePlot.ltr'), 
+                 subplotID=c('23_400', '23_400'),
+                 trapID=c('GRSM_051_310', 'GRSM_051_324'),
+                 date=c(as.POSIXct('2017-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                        as.POSIXct('2022-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT')))
+  out<-getLocTOS(df, 'ltr_pertrap')
+  expect_equal(as.numeric(out$adjEasting), c(273127.4, 273117.0), tolerance=0.1)
+  expect_equal(as.numeric(out$adjCoordinateUncertainty), c(1.15, 1.12), tolerance=0.1)
+})
+
 test_that("Select phenology named locations are correct", {
   df<-data.frame(namedLocation=c('CPER_091.phenology.phe', 'CPER_077.phenology.phe',
                                  'CPER_077.phenology.phe'), 
@@ -89,6 +101,21 @@ test_that("Select herb clip named locations are correct", {
   expect_equal(as.numeric(out$adjElevation), c(394.88, 394.88, 407.95), tolerance=0.1)
 })
 
+test_that("Select herb clip named locations with a history are correct", {
+  df<-data.frame(uid=c('uid1','uid2','uid3','uid4'),
+                 namedLocation=c('BART_046.basePlot.hbp', 'BART_046.basePlot.hbp',
+                                 'GRSM_051.basePlot.hbp', 'GRSM_051.basePlot.hbp'), 
+                 subplotID=c('39_400','39_400', '23_400','23_400'),
+                 collectDate=c(as.POSIXct('2015-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                               as.POSIXct('2023-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                               as.POSIXct('2017-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                               as.POSIXct('2023-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT')),
+                 clipID=c('BART_046_552', 'BART_046_663', 'GRSM_051_0324', 'GRSM_051_258'))
+  out<-getLocTOS(df, 'hbp_perbout')
+  expect_equal(as.numeric(out$adjEasting), c(316939.7, 316940.5, 273116.4, 273120.0), tolerance=0.1)
+  expect_equal(as.numeric(out$adjElevation), c(298.46, 299.79, 654.24, 654.87), tolerance=0.1)
+})
+
 test_that("Select herbaceous cfc named locations are correct", {
   df<-data.frame(namedLocation=c('WOOD_044.basePlot.cfc', 'SJER_012.basePlot.cfc',
                                  'SOAP_002.basePlot.cfc'), subplotID=c('31_400','31_400', NA),
@@ -98,6 +125,18 @@ test_that("Select herbaceous cfc named locations are correct", {
   expect_equal(as.numeric(out$adjElevation), c(586.53, 320.98, NA), tolerance=0.1)
 })
 
+test_that("Select herbaceous cfc locations with history are correct", {
+  df<-data.frame(uid=c('uid1','uid2'),
+                 namedLocation=c('DSNY_044.basePlot.cfc', 'DSNY_043.basePlot.cfc'), 
+                 subplotID=c('31_400','31_400'),
+                 clipID=c('DSNY_044_136', 'DSNY_043_006'),
+                 collectDate=c(as.POSIXct('2013-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                               as.POSIXct('2023-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT')))
+  out<-getLocTOS(df, 'cfc_fieldData')
+  expect_equal(as.numeric(out$adjEasting), c(457416.1, 457284.3), tolerance=0.1)
+  expect_equal(as.numeric(out$adjElevation), c(20.3, 18.31), tolerance=0.1)
+})
+
 test_that("Select root sampling locations are correct", {
   df<-data.frame(namedLocation=c('TALL_051.basePlot.bbc', 'TALL_051.basePlot.bbc',
                                  'TALL_060.basePlot.bbc'), subplotID=c('39_400','21_400', '41_400'),
@@ -105,6 +144,18 @@ test_that("Select root sampling locations are correct", {
   out<-getLocTOS(df, 'bbc_percore')
   expect_equal(as.numeric(out$adjEasting), c(462857.9, 462848.6, 462729.9), tolerance=0.1)
   expect_equal(as.numeric(out$adjElevation), c(120.63, 117.93, 128.37), tolerance=0.1)
+})
+
+test_that("Select root sampling locations with history are correct", {
+  df<-data.frame(uid=c('uid1','uid2'),
+                 namedLocation=c('JERC_049.basePlot.bbc', 'JERC_049.basePlot.bbc'), 
+                 subplotID=c('39_400','21_400'),
+                 clipID=c('JERC_049_643', 'JERC_049_178'),
+                 collectDate=c(as.POSIXct('2018-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                               as.POSIXct('2023-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT')))
+  out<-getLocTOS(df, 'bbc_percore')
+  expect_equal(as.numeric(out$adjEasting), c(741628.4, 741627.8), tolerance=0.1)
+  expect_equal(as.numeric(out$adjElevation), c(46.89, 44.79), tolerance=0.1)
 })
 
 test_that("Select woody veg named locations are correct", {

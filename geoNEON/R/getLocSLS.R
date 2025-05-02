@@ -27,18 +27,27 @@ getLocSLS <- function(
   
   # Use the getLocByName function to pull the plot geolocations from the API
   locCol <- "namedLocation"
-  plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+  plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=TRUE, 
+                                    history=TRUE, token=token)
   
   # Use relevant columns
   plot.merg <- plot.all[,c("namedLocation","utmZone",
                            "northing","easting","namedLocationCoordUncertainty",
                            "decimalLatitude","decimalLongitude",
-                           "elevation","namedLocationElevUncertainty")]
+                           "elevation","namedLocationElevUncertainty",
+                           "current","locationStartDate","locationEndDate")]
   colnames(plot.merg) <- c(locCol, 'utmZone',"adjNorthing","adjEasting",
                            "adjCoordinateUncertainty","adjDecimalLatitude",
                            "adjDecimalLongitude","adjElevation",
-                           "adjElevationUncertainty")
+                           "adjElevationUncertainty",
+                           "locationCurrent","locationStartDate","locationEndDate")
   plot.loc <- base::merge(data, plot.merg, by=locCol, all.x=T)
+  
+  # keep location data that matches date of collection
+  if(any(plot.loc$locationCurrent=="FALSE")) {
+    plot.loc <- findDateMatch(plot.loc, locCol="namedLocation", 
+                                 recDate="collectDate")
+  }
   plot.loc <- plot.loc[order(plot.loc$rowid),]
   
   # Subtract 20 meters from the easting and northing values to get the 
