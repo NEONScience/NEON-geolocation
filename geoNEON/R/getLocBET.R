@@ -37,14 +37,22 @@ getLocBET <- function(
   trap.all <- trap.all[,c("namedLocation","utmZone",
                           "northing","easting","namedLocationCoordUncertainty",
                           "decimalLatitude","decimalLongitude",
-                          "elevation","namedLocationElevUncertainty")]
+                          "elevation","namedLocationElevUncertainty",
+                          "current","locationStartDate","locationEndDate")]
   names(trap.all) <- c(locCol,"utmZone",
                        "adjNorthing","adjEasting","adjCoordinateUncertainty",
                        "adjDecimalLatitude","adjDecimalLongitude",
-                       "adjElevation","adjElevationUncertainty")
+                       "adjElevation","adjElevationUncertainty",
+                       "locationCurrent","locationStartDate","locationEndDate")
   
   # merge location data with original data
   trap.loc <- merge(data, trap.all, by="traps", all.x=T)
+  
+  # keep location data that matches date of collection
+  if(any(trap.loc$locationCurrent=="FALSE", na.rm=TRUE)) {
+    trap.loc <- findDateMatch(trap.loc, locCol="traps", 
+                                 recDate="collectDate")
+  }
   
   # increase coordinate uncertainty: traps may be moved up to 2 meters to avoid obstacles
   trap.loc$adjCoordinateUncertainty <- as.numeric(trap.loc$adjCoordinateUncertainty) + 2
