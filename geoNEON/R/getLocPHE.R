@@ -34,15 +34,15 @@ getLocPHE <- function(
   phenocamRows$adjElevation <- phenocamRows$sampleElevation
   phenocamRows$adjElevationUncertainty <- phenocamRows$sampleElevationUncertainty
   
-  data$tempLat <- data$decimalLatitude
-  data$tempLong <- data$decimalLongitude
   data <- data[!data$subtypeSpecification=='phenocam',]
   corners <- data.frame(namedLocation=paste(unique(data$namedLocation), 
                                             c('N', 'E', 'S', 'W', 'NE', 'SE', 'SW', 'NW'), sep="."), vals=NA)
   
   # Use the getLocByName function to pull the subplot geolocations from the API
   locCol="namedLocation"
-  pointSpatialData <- geoNEON::getLocByName(corners, locCol=locCol, locOnly=T, token=token)
+  pointSpatialData <- geoNEON::getLocByName(corners, locCol=locCol, 
+                                            locOnly=TRUE, history=TRUE,
+                                            token=token)
   
   #exception handling for missing inputs
   nogeo <- data[which(is.na(data$transectMeter) | is.na(data$directionFromTransect)),]
@@ -117,27 +117,44 @@ getLocPHE <- function(
   for (i in 1:nrow(data)){
     if (!is.na(data$referencePoint_tempA[i])&
         !is.na(data$referencePoint_tempB[i])){
-      northingA<-as.numeric(pointSpatialData$northing[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-                                                        pointSpatialData$locationPointID==data$referencePoint_tempA[i]])
-      northingB<-as.numeric(pointSpatialData$northing[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-                                                        pointSpatialData$locationPointID==data$referencePoint_tempB[i]])
-      eastingA<-as.numeric(pointSpatialData$easting[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-                                                      pointSpatialData$locationPointID==data$referencePoint_tempA[i]])
-      eastingB<-as.numeric(pointSpatialData$easting[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-                                                      pointSpatialData$locationPointID==data$referencePoint_tempB[i]])
       
-      elevationA<-as.numeric(pointSpatialData$elevation[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-                                                          pointSpatialData$locationPointID==data$referencePoint_tempA[i]])
-      elevationB<-as.numeric(pointSpatialData$elevation[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i] &
-                                                          pointSpatialData$locationPointID==data$referencePoint_tempB[i]])
+      # check for location histories and get spatial data matching date of collection
+      if(any(pointSpatialData$current=="FALSE" | isFALSE(pointSpatialData$current))) {
+        startind <- which(pointSpatialData$locationStartDate <= data$date[i])
+        endind <- union(which(pointSpatialData$locationEndDate > data$date[i]), 
+                        which(is.na(pointSpatialData$locationEndDate)))
+        indj <- intersect(startind, endind)
+        if(length(indj)==0) {
+          message(paste(data$date[i], " is outside the valid date range for associated locations. Spatial data returned match most recent valid date.", sep=""))
+          pointSpatialSub <- pointSpatialData[which(pointSpatialData$current=="TRUE" | isTRUE(pointSpatialData$current)),]
+        } else {
+          pointSpatialSub <- pointSpatialData[indj,]
+        }
+      } else {
+        pointSpatialSub <- pointSpatialData
+      }
+      
+      northingA<-as.numeric(pointSpatialSub$northing[substr(pointSpatialSub$namedLocation,1,22)==data$namedLocation[i] &
+                                                        pointSpatialSub$locationPointID==data$referencePoint_tempA[i]])
+      northingB<-as.numeric(pointSpatialSub$northing[substr(pointSpatialSub$namedLocation,1,22)==data$namedLocation[i] &
+                                                        pointSpatialSub$locationPointID==data$referencePoint_tempB[i]])
+      eastingA<-as.numeric(pointSpatialSub$easting[substr(pointSpatialSub$namedLocation,1,22)==data$namedLocation[i] &
+                                                      pointSpatialSub$locationPointID==data$referencePoint_tempA[i]])
+      eastingB<-as.numeric(pointSpatialSub$easting[substr(pointSpatialSub$namedLocation,1,22)==data$namedLocation[i] &
+                                                      pointSpatialSub$locationPointID==data$referencePoint_tempB[i]])
+      
+      elevationA<-as.numeric(pointSpatialSub$elevation[substr(pointSpatialSub$namedLocation,1,22)==data$namedLocation[i] &
+                                                          pointSpatialSub$locationPointID==data$referencePoint_tempA[i]])
+      elevationB<-as.numeric(pointSpatialSub$elevation[substr(pointSpatialSub$namedLocation,1,22)==data$namedLocation[i] &
+                                                          pointSpatialSub$locationPointID==data$referencePoint_tempB[i]])
       wt<-c(100-data$distFromLastPoint[i],data$distFromLastPoint[i])
       if (length(c(northingA, northingB, eastingA, eastingB))==4){#make sure all elements known
         northing <- stats::weighted.mean(c(northingA,northingB), wt)
         easting <- stats::weighted.mean(c(eastingA,eastingB), wt)
-        data$adjCoordinateUncertainty[i]<-max (as.numeric(pointSpatialData$namedLocationCoordUncertainty[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
-                                                                                                           pointSpatialData$locationPointID==data$referencePoint_tempA[i]]),
-                                               as.numeric(pointSpatialData$namedLocationCoordUncertainty[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
-                                                                                                           pointSpatialData$locationPointID==data$referencePoint_tempB[i]]))+2
+        data$adjCoordinateUncertainty[i]<-max (as.numeric(pointSpatialSub$namedLocationCoordUncertainty[substr(pointSpatialSub$namedLocation,1,22)==data$namedLocation[i]&
+                                                                                                           pointSpatialSub$locationPointID==data$referencePoint_tempA[i]]),
+                                               as.numeric(pointSpatialSub$namedLocationCoordUncertainty[substr(pointSpatialSub$namedLocation,1,22)==data$namedLocation[i]&
+                                                                                                           pointSpatialSub$locationPointID==data$referencePoint_tempB[i]]))+2
       }else{
         northing<-NA
         easting<-NA
@@ -166,8 +183,8 @@ getLocPHE <- function(
       data$easting[i]<-easting
       data$northing[i]<-northing
       if (!is.na(northing)&&!is.na(easting)){
-        data$utmZone[i]<-pointSpatialData$utmZone[substr(pointSpatialData$namedLocation,1,22)==data$namedLocation[i]&
-                                                    pointSpatialData$locationPointID==data$referencePoint_tempA[i]]
+        data$utmZone[i]<-pointSpatialSub$utmZone[substr(pointSpatialSub$namedLocation,1,22)==data$namedLocation[i]&
+                                                    pointSpatialSub$locationPointID==data$referencePoint_tempA[i]]
       }
     }
   }
@@ -191,9 +208,7 @@ getLocPHE <- function(
   
   names(data)[names(data)=='easting'] <- 'adjEasting'
   names(data)[names(data)=='northing'] <- 'adjNorthing'
-  names(data)[names(data)=='tempLat'] <- 'decimalLatitude'
-  names(data)[names(data)=='tempLong'] <- 'decimalLongitude'
-  
+
   # merge with other data
   if (nrow(nogeo)>0){
     data <- data.table::rbindlist(list(data, nogeo), fill=T)
@@ -206,7 +221,7 @@ getLocPHE <- function(
   #cleanup
   data <- data[order(data$row.index),]
   data <- data[,which(!names(data) %in% c('row.index','referencePoint_tempA', 'referencePoint_tempB',
-                                  'offset_sign', 'distFromLastPoint', 'tempLat', 'tempLong'))]
+                                  'offset_sign', 'distFromLastPoint'))]
 
   return(data)
  

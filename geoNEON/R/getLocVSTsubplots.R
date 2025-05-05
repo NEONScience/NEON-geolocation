@@ -48,14 +48,22 @@ getLocVSTsubplots <- function(
   subplot.all <- subplot.all[,c("namedLocation","utmZone",
                                 "northing","easting","namedLocationCoordUncertainty",
                                 "decimalLatitude","decimalLongitude",
-                                "elevation","namedLocationElevUncertainty")]
+                                "elevation","namedLocationElevUncertainty",
+                                "current","locationStartDate","locationEndDate")]
   names(subplot.all) <- c(locCol,"utmZone",
                           "adjNorthing","adjEasting","adjCoordinateUncertainty",
                           "adjDecimalLatitude","adjDecimalLongitude",
-                          "adjElevation","adjElevationUncertainty")
+                          "adjElevation","adjElevationUncertainty",
+                          "locationCurrent","locationStartDate","locationEndDate")
   
   # merge location data with original data
   subplot.loc <- merge(data, subplot.all, by="subplots", all.x=T)
+  
+  # keep location data that matches date of collection
+  if(any(subplot.loc$locationCurrent=="FALSE", na.rm=TRUE)) {
+    subplot.loc <- findDateMatch(subplot.loc, locCol="subplots", 
+                               recDate="date")
+  }
   
   return(subplot.loc)
  

@@ -10,6 +10,17 @@ test_that("Select bird named locations are correct", {
   expect_equal(as.numeric(out$adjCoordinateUncertainty), c(0.24, 15, 0.32, NA), tolerance=0.1)
 })
 
+test_that("Select bird named locations with history are correct", {
+  df<-data.frame(uid=c('uid1','uid2'),
+                 namedLocation=c('SCBI_022.basePlot.brd', 'SCBI_022.basePlot.brd'), 
+                 pointID=c(21,21),
+                 startDate=c(as.POSIXct('2018-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                             as.POSIXct('2022-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT')))
+  out<-getLocTOS(df, 'brd_perpoint')
+  expect_equal(as.numeric(out$adjNorthing), c(4307659.96, 4307658.31), tolerance=0.1)
+  expect_equal(as.numeric(out$adjCoordinateUncertainty), c(0.19, 0.18), tolerance=0.1)
+})
+
 test_that("Select smammal named locations are correct", {
   df<-data.frame(namedLocation=c('BART_001.mammalGrid.mam', 'BART_001.mammalGrid.mam',
                                  'BART_001.mammalGrid.mam', 'BART_084.mammalGrid.mam'), 
@@ -43,12 +54,39 @@ test_that("Select plant pres named locations are correct", {
   expect_equal(as.numeric(out$adjCoordinateUncertainty), c(NA, NA, 2.29), tolerance=0.5)
 })
 
+test_that("Select plant pres named locations with history are correct", {
+  df<-data.frame(uid=c('uid1','uid2','uid3','uid4'),
+                 namedLocation=c('OSBS_002.basePlot.div', 'OSBS_002.basePlot.div',
+                                 'OSBS_013.basePlot.div', 'OSBS_013.basePlot.div'), 
+                 subplotID=c('32_1_4','32_1_4', '31_1_1', '31_1_1'),
+                 endDate=c(as.POSIXct('2019-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                               as.POSIXct('2024-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                               as.POSIXct('2019-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                               as.POSIXct('2024-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT')))
+  out<-getLocTOS(df, 'div_1m2Data')
+  expect_equal(as.numeric(out$adjEasting), c(407451.24, 407451.279, 
+                                             406953.467, 406953.507), tolerance=0.1)
+  expect_equal(as.numeric(out$adjDecimalLatitude), c(29.703858, 29.70385769, 
+                                                     29.682072, 29.682071932), tolerance=0.01)
+})
+
 test_that("Select soil locations are correct", {
   df<-data.frame(namedLocation=c('UNDE_017.basePlot.bgc', 'UNDE_013.basePlot.bgc'), 
                  coreCoordinateX=c(15,18), coreCoordinateY=c(33,37))
   out<-getLocTOS(df, 'sls_soilCoreCollection')
   expect_equal(as.numeric(out$adjNorthing), c(5123529, 5122515), tolerance=1)
   expect_equal(as.numeric(out$adjCoordinateUncertainty), c(0.5,0.5), tolerance=0.1)
+})
+
+test_that("Select soil locations with history are correct", {
+  df<-data.frame(uid=c('uid1','uid2'),
+                 namedLocation=c('JERC_006.basePlot.bgc', 'JERC_006.basePlot.bgc'), 
+                 coreCoordinateX=c(15,21), coreCoordinateY=c(33,39),
+                 collectDate=c(as.POSIXct('2015-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                               as.POSIXct('2023-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT')))
+  out<-getLocTOS(df, 'sls_soilCoreCollection')
+  expect_equal(as.numeric(out$adjNorthing), c(3453202, 3453209), tolerance=1)
+  expect_equal(as.numeric(out$adjElevationUncertainty), c(0.27,0.14), tolerance=0.1)
 })
 
 test_that("Select litter trap named locations are correct", {
@@ -91,6 +129,10 @@ test_that("Select phenology named locations are correct", {
   expect_equal(as.numeric(out$adjDecimalLatitude), c(40.81592300, 40.81747037, 40.81808392), tolerance=0.1)
   expect_equal(as.numeric(out$adjCoordinateUncertainty), c(0.3, 2.1, 2.1), tolerance=0.1)
 })
+
+# test for phenology locations with history currently omitted, because there are no 
+# instances of moved phenology plots, and the sampling design de facto prevents 
+# moving of plots
 
 test_that("Select herb clip named locations are correct", {
   df<-data.frame(namedLocation=c('KONZ_045.basePlot.hbp', 'KONZ_069.basePlot.hbp',
@@ -158,7 +200,7 @@ test_that("Select root sampling locations with history are correct", {
   expect_equal(as.numeric(out$adjElevation), c(46.89, 44.79), tolerance=0.1)
 })
 
-test_that("Select woody veg named locations are correct", {
+test_that("Select woody veg mapped individuals are correct", {
   df<-data.frame(namedLocation=c('NIWO_061.basePlot.vst', 'NIWO_064.basePlot.vst',
                                  'NIWO_004.basePlot.vst'), pointID=c('33', NA, '49'),
                  stemDistance=c(7.7, NA, 7.8),
@@ -167,6 +209,39 @@ test_that("Select woody veg named locations are correct", {
                                 'NEON.PLA.D13.NIWO.01138'))
   out<-getLocTOS(df, 'vst_mappingandtagging')
   expect_equal(as.numeric(out$adjNorthing), c(4433200.50143, NA, 4432708.48699), tolerance=0.1)
+})
+
+test_that("Select woody veg mapped individuals with history are correct", {
+  df<-data.frame(uid=c('uid1','uid2','uid3','uid4'),
+                 namedLocation=c('JERC_005.basePlot.vst', 'JERC_005.basePlot.vst',
+                                 'JERC_006.basePlot.vst', 'JERC_006.basePlot.vst'), 
+                 pointID=c('41', '41', '41', '41'),
+                 stemDistance=c(6.1, 6.1, 8.1, 8.1),
+                 stemAzimuth=c(190, 190, 357.4, 357.4),
+                 individualID=c('NEON.PLA.D03.JERC.00005', 'NEON.PLA.D03.JERC.00005',
+                                'NEON.PLA.D03.JERC.01390', 'NEON.PLA.D03.JERC.01390'),
+                 date=c(as.POSIXct('2017-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                               as.POSIXct('2024-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                               as.POSIXct('2017-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                               as.POSIXct('2024-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT')))
+  out<-getLocTOS(df, 'vst_mappingandtagging')
+  expect_equal(as.numeric(out$adjEasting), c(742858.5, 742858.3, 742439.9, 742440.8), tolerance=0.1)
+  expect_equal(as.numeric(out$adjElevation), c(46.75, 46.31, 42.18, 42.27), tolerance=0.1)
+})
+
+# most location data match before and after change. confirmed in API, differences are tiny
+test_that("Select veg structure subplots with history are correct", {
+  df<-data.frame(uid=c('uid1','uid2','uid3','uid4'),
+                 namedLocation=c('DSNY_017.basePlot.vst', 'DSNY_017.basePlot.vst',
+                                 'DSNY_017.basePlot.vst', 'DSNY_017.basePlot.vst'),
+                 subplotID=c('31_100', '31_100', '40_100', '40_100'),
+                 date=c(as.POSIXct('2017-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'),
+                        as.POSIXct('2024-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'),
+                        as.POSIXct('2017-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'),
+                        as.POSIXct('2024-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT')))
+  out<-getLocTOS(df, 'vst_apparentindividual')
+  expect_equal(as.numeric(out$adjEasting), c(460404.4, 460404.5, 460404.3, 460404.3), tolerance=0.1)
+  expect_equal(as.numeric(out$adjElevation), c(20.28, 20.28, 19.88, 19.88), tolerance=0.1)
 })
 
 test_that('Select beetle locations are correct', {

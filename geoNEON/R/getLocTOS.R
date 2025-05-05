@@ -88,7 +88,7 @@ getLocTOS <- function(
   # woody vegetation structure locations of individuals
   if(dataProd=='vst_mappingandtagging'){
     
-    print("Please note locations will be calculated only for mapped woody individuals. To find subplot locations for unmapped individuals, use this function with the vst_apparentindividual, vst_non-woody, and/or vst_shrubgroup tables.")
+    message("Please note locations will be calculated only for mapped woody individuals. To find subplot locations for unmapped individuals, use this function with the vst_apparentindividual, vst_non-woody, and/or vst_shrubgroup tables.")
     
     ind.return <- getLocVSTmapped(data=data, token=token)
     return(ind.return)
@@ -100,7 +100,7 @@ getLocTOS <- function(
      dataProd=="vst_non-woody" | 
      dataProd=="vst_shrubgroup") {
     
-    print("Please note locations will be calculated for all subplots. For mapped individuals, it is possible to calculate more precise locations by using this function with the vst_mappingandtagging table.")
+    message("Please note locations will be calculated for all subplots. For mapped individuals, it is possible to calculate more precise locations by using this function with the vst_mappingandtagging table.")
     
     subplot.return <- getLocVSTsubplots(data=data, token=token)
     return(subplot.return)

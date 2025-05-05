@@ -42,7 +42,8 @@ getLocBRD <- function(
   
   # Use the getLocByName function to pull the subplot geolocations from the API
   locCol <- "points"
-  point.loc <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+  point.loc <- geoNEON::getLocByName(data, locCol=locCol, history=TRUE,
+                                     locOnly=TRUE, token=token)
   names(point.loc)[names(point.loc)=='namedLocation']<-locCol
   
   #add additional coordinateUncertainty
@@ -66,7 +67,8 @@ getLocBRD <- function(
                                "utmZone","northing","easting",
                                "adjCoordinateUncertainty",
                                "decimalLatitude","decimalLongitude",
-                               "elevation","namedLocationElevUncertainty")]
+                               "elevation","namedLocationElevUncertainty",
+                               "current","locationStartDate","locationEndDate")]
   
   col.name.list <- names(point.return)
   col.name.list <- gsub('northing','adjNorthing', col.name.list)
@@ -75,11 +77,19 @@ getLocBRD <- function(
   col.name.list <- gsub('decimalLongitude','adjDecimalLongitude', col.name.list)
   col.name.list <- gsub('elevation','adjElevation', col.name.list)
   col.name.list <- gsub('namedLocationElevUncertainty','adjElevationUncertainty', col.name.list)
+  col.name.list <- gsub('current','locationCurrent', col.name.list)
   colnames(point.return) <- col.name.list
   
   data$row.index <- 1:nrow(data)
   all.return <- merge(data, point.return, by=locCol)
   all.return <- all.return[order(all.return$row.index),]
+  
+  # keep location data that matches date of collection
+  if(any(all.return$locationCurrent=="FALSE")) {
+    all.return <- findDateMatch(all.return, locCol="points", 
+                              recDate="startDate")
+  }
+  
   all.return <- all.return[,!names(all.return) %in% 'row.index']
   
   return(all.return)
