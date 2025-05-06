@@ -251,9 +251,19 @@ test_that('Select beetle locations are correct', {
   expect_equal(as.numeric(out$adjCoordinateUncertainty), c(4.3,4.13), tolerance=0.5)
 })
 
+test_that('Select beetle locations with history are correct', {
+  df <- data.frame(uid=c('uid1','uid2'),
+                   namedLocation=c('JERC_005.basePlot.bet','JERC_005.basePlot.bet'),
+                   trapID=c('W','S'),
+                   collectDate=c(as.POSIXct('2018-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                                 as.POSIXct('2024-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT')))
+  out <- getLocTOS(df, 'bet_fielddata')
+  expect_equal(as.numeric(out$adjCoordinateUncertainty), c(4.29,4.12), tolerance=0.1)
+})
+
 test_that('Mosquitoes correctly returns only a message', {
   df <- NA
-  expect_output(getLocTOS(df, 'mos_trapping'), 'Mosquito trapping location is flexible within the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
+  expect_message(getLocTOS(df, 'mos_trapping'), 'Mosquito trapping location is flexible within the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
 })
 
 test_that('Select DHP locations are correct', {
@@ -263,11 +273,50 @@ test_that('Select DHP locations are correct', {
   expect_equal(as.numeric(out$adjNorthing), c(4111210,4110846), tolerance=1)
 })
 
+test_that('Select DHP locations with history are correct', {
+  df <- data.frame(uid=c('uid1','uid2'),
+                   namedLocation=c('OSBS_010.basePlot.dhp','OSBS_010.basePlot.dhp'),
+                   pointID=c('E10','E10'),
+                   endDate=c(as.POSIXct('2018-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'), 
+                                 as.POSIXct('2024-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT')))
+  out <- getLocTOS(df, 'dhp_perimagefile')
+  expect_equal(as.numeric(out$adjElevation), c(38.98,40.9), tolerance=0.2)
+})
+
 test_that('Select CDW tally locations are correct', {
   df <- data.frame(namedLocation=c('MLBS_018.basePlot.cdw','GUAN_042.basePlot.cdw',
                                    'SCBI_010.basePlot.cdw'),
                    lidsAzimuth=c(110,130,350), logDistance=c(NA,1.3,10.1))
   out <- getLocTOS(df, 'cdw_fieldtally')
   expect_equal(as.numeric(out$adjNorthing), c(NA,1988245,4307931), tolerance=1)
+})
+
+test_that('Select CDW tally locations with history are correct', {
+  df <- data.frame(uid=c('uid1','uid2','uid3','uid4'),
+                   namedLocation=c('SOAP_043.basePlot.cdw','SOAP_043.basePlot.cdw',
+                                   'UNDE_058.basePlot.cdw','UNDE_058.basePlot.cdw'),
+                   lidsAzimuth=c(210,210,190,190), logDistance=c(44.5,44.5,16,16),
+                   date=c(as.POSIXct('2017-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'),
+                          as.POSIXct('2024-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'),
+                          as.POSIXct('2017-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'),
+                          as.POSIXct('2024-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT')))
+  out <- getLocTOS(df, 'cdw_fieldtally')
+  expect_equal(as.numeric(out$adjEasting), c(298190.8,298191.3,304230.6,304231.3), tolerance=0.1)
+  expect_equal(as.numeric(out$adjElevation), c(1247.62,1249.07,520.62,524.4), tolerance=0.1)
+})
+
+# since SPC locations are used only once, the plot may move but the SPC sampling location shouldn't
+test_that('Select SPC locations with and without history are correct', {
+  df <- data.frame(uid=c('uid1','uid2','uid3'),
+                   namedLocation=c('JERC_021.basePlot.all','JERC_005.basePlot.all',
+                                   'LAJA_020.basePlot.all'),
+                   referenceCorner=c('SW20','SW20','SW40'), 
+                   sampleDistance=c(0.2,0.2,0.2), sampleBearing=c(45,45,45),
+                   collectDate=c(as.POSIXct('2015-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'),
+                          as.POSIXct('2015-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'),
+                          as.POSIXct('2017-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT')))
+  out <- getLocTOS(df, 'spc_perplot')
+  expect_equal(as.numeric(out$adjEasting), c(741201.1,742849.7,703664.2), tolerance=0.1)
+  expect_equal(as.numeric(out$adjElevation), c(37.3,46.75,27.06), tolerance=0.1)
 })
 

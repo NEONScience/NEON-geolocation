@@ -31,7 +31,8 @@ getLocBET <- function(
   
   # Use the getLocByName function to pull the subplot geolocations from the API
   locCol <- "traps"
-  trap.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+  trap.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=TRUE,
+                                    history=TRUE, token=token)
   
   # Use relevant columns
   trap.all <- trap.all[,c("namedLocation","utmZone",

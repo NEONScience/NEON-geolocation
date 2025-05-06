@@ -33,7 +33,7 @@ getLocSIM <- function(
   
   # get spatial data for each location
   locdata <- getLocByName(data.frame(namedLocation=locset), 
-                          locOnly = T, token=Sys.getenv('NEON_TOKEN'))
+                          locOnly=TRUE, history=TRUE, token=token)
   locd <- locdata[,1:46]
   
   # merge spatial data back into data frame

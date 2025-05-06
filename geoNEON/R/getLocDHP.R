@@ -27,20 +27,29 @@ getLocDHP <- function(
   
   # plot spatial data are in the dhp_perplot table, so need to download
   locCol <- 'namedLocation'
-  plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+  plot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=TRUE, 
+                                    history=TRUE, token=token)
   
   # Use relevant columns
   plot.all <- plot.all[,c("namedLocation","utmZone",
                           "northing","easting","namedLocationCoordUncertainty",
                           "decimalLatitude","decimalLongitude",
-                          "elevation","namedLocationElevUncertainty")]
+                          "elevation","namedLocationElevUncertainty",
+                          "current","locationStartDate","locationEndDate")]
   names(plot.all) <- c(locCol,"utmZone",
                        "adjNorthing","adjEasting","adjCoordinateUncertainty",
                        "adjDecimalLatitude","adjDecimalLongitude",
-                       "adjElevation","adjElevationUncertainty")
+                       "adjElevation","adjElevationUncertainty",
+                       "locationCurrent","locationStartDate","locationEndDate")
   
   # merge location data with original data
   plot.loc <- merge(data, plot.all, by="namedLocation", all.x=T)
+  
+  # keep location data that matches date of collection
+  if(any(plot.loc$locationCurrent=="FALSE", na.rm=TRUE)) {
+    plot.loc <- findDateMatch(plot.loc, locCol="namedLocation", 
+                              recDate="endDate")
+  }
   
   # adjust northing and easting using point offsets
   plot.loc$adjEasting <- as.numeric(plot.loc$adjEasting)

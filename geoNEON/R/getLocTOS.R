@@ -122,11 +122,11 @@ getLocTOS <- function(
   }
   
   if(dataProd=="mos_trapping") {
-    cat('Mosquito trapping location is flexible within the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
+    message('Mosquito trapping location is flexible within the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
   }
 
   if(dataProd=="tck_fielddata") {
-    cat('Ticks are sampled around the entire perimeter of the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
+    message('Ticks are sampled around the entire perimeter of the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
   }
   
   if(dataProd=='dhp_perimagefile') {
@@ -149,7 +149,7 @@ getLocTOS <- function(
   }
   
   else {
-    print(paste("This function has not been configured for data product table ", 
+    message(paste("This function has not been configured for data product table ", 
                  dataProd, sep=""))
   }
 }
