@@ -8,6 +8,8 @@
 #' Transpose location properties format. Helper function for getLocValues().
 #'
 #' @param locProps A data frame of location properties values as returned by the NEON API.
+#' 
+#' @keywords internal
 
 #' @return A data frame of location properties with columns named by the value names.
 

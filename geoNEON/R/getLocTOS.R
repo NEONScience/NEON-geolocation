@@ -9,7 +9,7 @@
 #' 
 #' @param data A data frame containing NEON named locations and other sampling information. For reliable results, use data tables as downloaded from the NEON data portal or API.
 #' @param dataProd The table name of the NEON data product table to find locations for. Refer to package readme for list of possible input data tables.
-#' @param token User specific API token (generated within neon.datascience user accounts). Optional.
+#' @param token User specific API token (generated within data.neonscience.org user accounts). Optional.
 
 #' @return A data frame of geolocations for the input product and data
 
@@ -88,7 +88,7 @@ getLocTOS <- function(
   # woody vegetation structure locations of individuals
   if(dataProd=='vst_mappingandtagging'){
     
-    print("Please note locations will be calculated only for mapped woody individuals. To find subplot locations for unmapped individuals, use this function with the vst_apparentindividual, vst_non-woody, and/or vst_shrubgroup tables.")
+    message("Please note locations will be calculated only for mapped woody individuals. To find subplot locations for unmapped individuals, use this function with the vst_apparentindividual, vst_non-woody, and/or vst_shrubgroup tables.")
     
     ind.return <- getLocVSTmapped(data=data, token=token)
     return(ind.return)
@@ -100,7 +100,7 @@ getLocTOS <- function(
      dataProd=="vst_non-woody" | 
      dataProd=="vst_shrubgroup") {
     
-    print("Please note locations will be calculated for all subplots. For mapped individuals, it is possible to calculate more precise locations by using this function with the vst_mappingandtagging table.")
+    message("Please note locations will be calculated for all subplots. For mapped individuals, it is possible to calculate more precise locations by using this function with the vst_mappingandtagging table.")
     
     subplot.return <- getLocVSTsubplots(data=data, token=token)
     return(subplot.return)
@@ -122,11 +122,11 @@ getLocTOS <- function(
   }
   
   if(dataProd=="mos_trapping") {
-    cat('Mosquito trapping location is flexible within the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
+    message('Mosquito trapping location is flexible within the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
   }
 
   if(dataProd=="tck_fielddata") {
-    cat('Ticks are sampled around the entire perimeter of the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
+    message('Ticks are sampled around the entire perimeter of the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
   }
   
   if(dataProd=='dhp_perimagefile') {
@@ -149,7 +149,7 @@ getLocTOS <- function(
   }
   
   else {
-    print(paste("This function has not been configured for data product table ", 
+    message(paste("This function has not been configured for data product table ", 
                  dataProd, sep=""))
   }
 }

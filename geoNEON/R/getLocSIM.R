@@ -9,6 +9,8 @@
 #' 
 #' @param data A data frame containing NEON named locations and other sampling information.
 #' @param token User specific API token (generated within neon.datascience user accounts). Optional.
+#' 
+#' @keywords internal
 
 #' @return A data frame of geolocations for the input product and data
 
@@ -33,7 +35,7 @@ getLocSIM <- function(
   
   # get spatial data for each location
   locdata <- getLocByName(data.frame(namedLocation=locset), 
-                          locOnly = T, token=Sys.getenv('NEON_TOKEN'))
+                          locOnly=TRUE, history=TRUE, token=token)
   locd <- locdata[,1:46]
   
   # merge spatial data back into data frame

@@ -10,6 +10,8 @@
 #' @param data A data frame containing NEON named locations and other sampling information.
 #' @param dataProd The table name of the NEON data product table to find locations for. 
 #' @param token User specific API token (generated within neon.datascience user accounts). Optional.
+#' 
+#' @keywords internal
 
 #' @return A data frame of geolocations for the input product and data
 
@@ -42,7 +44,8 @@ getLocBRD <- function(
   
   # Use the getLocByName function to pull the subplot geolocations from the API
   locCol <- "points"
-  point.loc <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+  point.loc <- geoNEON::getLocByName(data, locCol=locCol, history=TRUE,
+                                     locOnly=TRUE, token=token)
   names(point.loc)[names(point.loc)=='namedLocation']<-locCol
   
   #add additional coordinateUncertainty
@@ -58,15 +61,16 @@ getLocBRD <- function(
   point.loc$adjCoordinateUncertainty[!grepl('\\.21$|\\.B2$',point.loc[[locCol]])] <- 15
   
   #88 points uncertainty unknown, all that's being provided is the site (aka tower) location
-  point.loc$adjCoordinateUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
-  point.loc$namedLocationElevUncertainty[is.na(point.loc$Value.for.Point.ID)]<-NA
+  point.loc$adjCoordinateUncertainty[nchar(point.loc$points)==4]<-NA
+  point.loc$namedLocationElevUncertainty[nchar(point.loc$points)==4]<-NA
   
   # Return relevant columns
   point.return <- point.loc[,c(locCol, 
                                "utmZone","northing","easting",
                                "adjCoordinateUncertainty",
                                "decimalLatitude","decimalLongitude",
-                               "elevation","namedLocationElevUncertainty")]
+                               "elevation","namedLocationElevUncertainty",
+                               "current","locationStartDate","locationEndDate")]
   
   col.name.list <- names(point.return)
   col.name.list <- gsub('northing','adjNorthing', col.name.list)
@@ -75,11 +79,19 @@ getLocBRD <- function(
   col.name.list <- gsub('decimalLongitude','adjDecimalLongitude', col.name.list)
   col.name.list <- gsub('elevation','adjElevation', col.name.list)
   col.name.list <- gsub('namedLocationElevUncertainty','adjElevationUncertainty', col.name.list)
+  col.name.list <- gsub('current','locationCurrent', col.name.list)
   colnames(point.return) <- col.name.list
   
   data$row.index <- 1:nrow(data)
   all.return <- merge(data, point.return, by=locCol)
   all.return <- all.return[order(all.return$row.index),]
+  
+  # keep location data that matches date of collection
+  if(any(all.return$locationCurrent=="FALSE")) {
+    all.return <- findDateMatch(all.return, locCol="points", 
+                              recDate="startDate")
+  }
+  
   all.return <- all.return[,!names(all.return) %in% 'row.index']
   
   return(all.return)

@@ -9,6 +9,8 @@
 #' 
 #' @param data A data frame containing NEON named locations and other sampling information.
 #' @param token User specific API token (generated within neon.datascience user accounts). Optional.
+#' 
+#' @keywords internal
 
 #' @return A data frame of geolocations for the input product and data
 
@@ -30,7 +32,8 @@ getLocDIV <- function(
   
   # Use the getLocByName function to pull the subplot geolocations from the API
   locCol="subplots"
-  subplot.loc <- getLocByName(data, locCol=locCol, locOnly=T, token=token)
+  subplot.loc <- getLocByName(data, locCol=locCol, locOnly=TRUE, 
+                              history=TRUE, token=token)
   names(subplot.loc)[names(subplot.loc)=='namedLocation']<-locCol
   subplot.loc$adjCoordinateUncertainty<-as.numeric(subplot.loc$namedLocationCoordUncertainty)
   
@@ -57,14 +60,23 @@ getLocDIV <- function(
   subplot.loc$adjElevationUncertainty <- subplot.loc$namedLocationElevUncertainty
   subplot.loc$adjNorthing <- subplot.loc$northing
   subplot.loc$adjEasting <- subplot.loc$easting
+  subplot.loc$locationCurrent <- subplot.loc$current
   
   # Return relevant columns
   subplot.return <- subplot.loc[,c(locCol,"utmZone",
                                    "adjNorthing","adjEasting","adjCoordinateUncertainty",
                                    "adjDecimalLatitude","adjDecimalLongitude",
-                                   "adjElevation","adjElevationUncertainty")]
+                                   "adjElevation","adjElevationUncertainty",
+                                   "locationCurrent","locationStartDate","locationEndDate")]
   data$row.index<-1:nrow(data)
   all.return <- merge(data, subplot.return, by=locCol, all.x=T)
+  
+  # keep location data that matches date of collection
+  if(any(all.return$locationCurrent=="FALSE")) {
+    all.return <- findDateMatch(all.return, locCol="subplots", 
+                              recDate="endDate")
+  }
+
   all.return<-all.return[order(all.return$row.index),]
   all.return<-all.return[,!names(all.return)%in%'row.index']
   

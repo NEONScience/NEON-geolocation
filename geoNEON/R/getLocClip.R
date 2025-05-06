@@ -10,6 +10,8 @@
 #' @param data A data frame containing NEON named locations and other sampling information.
 #' @param dataProd The table name of the NEON data product table to find locations for. 
 #' @param token User specific API token (generated within neon.datascience user accounts). Optional.
+#' 
+#' @keywords internal
 
 #' @return A data frame of geolocations for the input product and data
 
@@ -25,10 +27,11 @@ getLocClip <- function(
     token=NA_character_
 ){
   
-  # Concatenate the named location (the plot) and subplot IDs to get the 
-  #      subplot named locations
-  subplots <- paste(data$namedLocation, data$subplotID, sep=".")
-  data <- cbind(data, subplots)
+  # Use the first two digits of the subplotID to get the pointID
+  # Concatenate the named location (the plot) and the pointID to get the 
+  #      point named locations
+  pointIDs <- substring(data$subplotID, 1, 2)
+  data$points <- paste(data$namedLocation, pointIDs, sep=".")
   data$rowid <- 1:nrow(data)
   
   if(dataProd=="cfc_fieldData") {
@@ -37,13 +40,14 @@ getLocClip <- function(
   }
   
   # Use the getLocByName function to pull the subplot geolocations from the API
-  locCol <- "subplots"
+  locCol <- "points"
   
   # samplingImpractical records have subplotID = NA
   dataS <- data[which(is.na(data$subplotID)),]
   data <- data[which(!is.na(data$subplotID)),]
   
-  subplot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+  subplot.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=TRUE, 
+                                       history=TRUE, token=token)
   data <- plyr::rbind.fill(data, dataS)
   data <- data[order(data$rowid),]
   
@@ -51,18 +55,29 @@ getLocClip <- function(
   subplot.merg <- subplot.all[,c("namedLocation","utmZone",
                                  "northing","easting","namedLocationCoordUncertainty",
                                  "decimalLatitude","decimalLongitude",
-                                 "elevation","namedLocationElevUncertainty")]
+                                 "elevation","namedLocationElevUncertainty",
+                                 "current","locationStartDate","locationEndDate")]
   colnames(subplot.merg) <- c(locCol, "utmZone","adjNorthing","adjEasting",
                               "adjCoordinateUncertainty","adjDecimalLatitude",
                               "adjDecimalLongitude","adjElevation",
-                              "adjElevationUncertainty")
+                              "adjElevationUncertainty",
+                              "locationCurrent","locationStartDate","locationEndDate")
   if(!is.null(data$utmZone)) { 
     subplot.merg <- subplot.merg[,which(colnames(subplot.merg)!="utmZone")]
   }
   subplot.loc <- base::merge(data, subplot.merg, by=locCol, all.x=T)
+  
+  # keep location data that matches date of collection
+  if(any(subplot.loc$locationCurrent=="FALSE")) {
+    if(dataProd=="ltr_pertrap") {
+      subplot.loc <- findDateMatch(subplot.loc, locCol="points", recDate="date")
+    } else {
+      subplot.loc <- findDateMatch(subplot.loc, locCol="points", recDate="collectDate")
+    }
+  }
   subplot.loc <- subplot.loc[order(subplot.loc$rowid),]
   
-  # Strip the final 3 digits of trapID to get the clip cell numbers
+  # Strip the final 3 digits of trapID or clipID to get the clip cell numbers
   if(dataProd=="ltr_pertrap") {
     cellID <- data$trapID
     data$cellID <- cellID
@@ -94,7 +109,7 @@ getLocClip <- function(
     }
     
     if(length(clipInd)==0) {
-      print(paste("Subplot ", data$subplotID[i], " and clip cell ", 
+      message(paste("Subplot ", data$subplotID[i], " and clip cell ", 
                   subplot.loc$cellNum[i], " is not a valid location", sep=""))
       subplot.loc$eastOff[i] <- NA
       subplot.loc$northOff[i] <- NA
@@ -119,7 +134,7 @@ getLocClip <- function(
   
   if(dataProd=="cfc_fieldData") {
     all.return <- plyr::rbind.fill(subplot.loc, dataN)
-    print("Please note locations have been calculated only for herbaceous clip samples. Woody vegetation sample locations can be calculated based on the vst_mappingandtagging table.")
+    message("Please note locations have been calculated only for herbaceous clip samples. Woody vegetation sample locations can be calculated based on the vst_mappingandtagging table.")
   } else {
     all.return <- subplot.loc
   }

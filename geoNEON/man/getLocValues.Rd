@@ -4,7 +4,7 @@
 \alias{getLocValues}
 \title{Extract location values from the JSON returned by the NEON API}
 \usage{
-getLocValues(locJSON, history = F)
+getLocValues(locJSON, history = FALSE)
 }
 \arguments{
 \item{locJSON}{A JSON object returned by the locations endpoint of the NEON API.}
@@ -23,3 +23,4 @@ License: GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007
 \author{
 Claire Lunch \email{clunch@battelleecology.org}
 }
+\keyword{internal}

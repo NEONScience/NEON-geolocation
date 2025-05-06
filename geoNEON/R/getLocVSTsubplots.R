@@ -9,6 +9,8 @@
 #' 
 #' @param data A data frame containing NEON named locations and other sampling information.
 #' @param token User specific API token (generated within neon.datascience user accounts). Optional.
+#' 
+#' @keywords internal
 
 #' @return A data frame of geolocations for the input product and data
 
@@ -48,14 +50,22 @@ getLocVSTsubplots <- function(
   subplot.all <- subplot.all[,c("namedLocation","utmZone",
                                 "northing","easting","namedLocationCoordUncertainty",
                                 "decimalLatitude","decimalLongitude",
-                                "elevation","namedLocationElevUncertainty")]
+                                "elevation","namedLocationElevUncertainty",
+                                "current","locationStartDate","locationEndDate")]
   names(subplot.all) <- c(locCol,"utmZone",
                           "adjNorthing","adjEasting","adjCoordinateUncertainty",
                           "adjDecimalLatitude","adjDecimalLongitude",
-                          "adjElevation","adjElevationUncertainty")
+                          "adjElevation","adjElevationUncertainty",
+                          "locationCurrent","locationStartDate","locationEndDate")
   
   # merge location data with original data
   subplot.loc <- merge(data, subplot.all, by="subplots", all.x=T)
+  
+  # keep location data that matches date of collection
+  if(any(subplot.loc$locationCurrent=="FALSE", na.rm=TRUE)) {
+    subplot.loc <- findDateMatch(subplot.loc, locCol="subplots", 
+                               recDate="date")
+  }
   
   return(subplot.loc)
  

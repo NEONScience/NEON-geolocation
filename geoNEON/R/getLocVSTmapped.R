@@ -9,6 +9,8 @@
 #' 
 #' @param data A data frame containing NEON named locations and other sampling information.
 #' @param token User specific API token (generated within neon.datascience user accounts). Optional.
+#' 
+#' @keywords internal
 
 #' @return A data frame of geolocations for the input product and data
 
@@ -39,21 +41,30 @@ getLocVSTmapped <- function(
   
   # Use the getLocByName function to pull the subplot geolocations from the API
   locCol <- "points"
-  point.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=T, token=token)
+  point.all <- geoNEON::getLocByName(data, locCol=locCol, locOnly=TRUE, 
+                                     history=TRUE, token=token)
   
   # Use relevant columns
   point.all <- point.all[,c("namedLocation","utmZone",
                             "northing","easting","namedLocationCoordUncertainty",
                             "decimalLatitude","decimalLongitude",
-                            "elevation","namedLocationElevUncertainty")]
+                            "elevation","namedLocationElevUncertainty",
+                            "current","locationStartDate","locationEndDate")]
   names(point.all) <- c(locCol,"utmZone",
                         "adjNorthing","adjEasting","adjCoordinateUncertainty",
                         "adjDecimalLatitude","adjDecimalLongitude",
-                        "adjElevation","adjElevationUncertainty")
+                        "adjElevation","adjElevationUncertainty",
+                        "locationCurrent","locationStartDate","locationEndDate")
   
   # merge location data with original data
   point.loc <- merge(data, point.all, by="points", all.x=T)
   
+  # keep location data that matches date of collection
+  if(any(point.loc$locationCurrent=="FALSE")) {
+    point.loc <- findDateMatch(point.loc, locCol="points", 
+                              recDate="date")
+  }
+
   # Calculate easting and northing for individuals
   point.loc$adjEasting <- as.numeric(point.loc$adjEasting) + as.numeric(point.loc$stemDistance) * 
     sin((as.numeric(point.loc$stemAzimuth) * pi) / 180)
