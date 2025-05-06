@@ -28,5 +28,4 @@ Currently none
 \author{
 Claire Lunch \email{clunch@battelleecology.org}
 }
-\keyword{Currently}
-\keyword{none}
+\keyword{internal}

@@ -9,6 +9,8 @@
 #'
 #' @param locJSON A JSON object returned by the locations endpoint of the NEON API.
 #' @param history Does locJSON include the location history? T or F, defaults to F.
+#' 
+#' @keywords internal
 
 #' @return A data frame of location data.
 

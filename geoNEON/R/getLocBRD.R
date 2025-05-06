@@ -10,6 +10,8 @@
 #' @param data A data frame containing NEON named locations and other sampling information.
 #' @param dataProd The table name of the NEON data product table to find locations for. 
 #' @param token User specific API token (generated within neon.datascience user accounts). Optional.
+#' 
+#' @keywords internal
 
 #' @return A data frame of geolocations for the input product and data
 

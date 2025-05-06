@@ -10,6 +10,8 @@
 #' @param namedLocation A NEON named location name.
 #' @param history Should the location history be included in the query? T or F, defaults to F.
 #' @param token User specific API token (generated within neon.datascience user accounts). Optional.
+#' 
+#' @keywords internal
 
 #' @return A vector of named location names of all descendents of the input named location.
 
@@ -46,7 +48,7 @@ getLocChildren <- function(namedLocation, history=F, token=NA_character_) {
       loc.children <- loc$data$locationChildren
       loc.values <- getLocValues(loc, history)
       
-      cat('Finding spatial data for', namedLocation, rep('', 50), '\r')
+      message('Finding spatial data for', namedLocation, rep('', 50), '\r')
       #utils::flush.console()
       
       if(length(loc.children)==0) {

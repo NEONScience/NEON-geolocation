@@ -9,6 +9,8 @@
 #' 
 #' @param data A data frame containing NEON named locations and other sampling information.
 #' @param token User specific API token (generated within neon.datascience user accounts). Optional.
+#' 
+#' @keywords internal
 
 #' @return A data frame of geolocations for the input product and data
 
@@ -60,7 +62,7 @@ getLocDHP <- function(
     
     # if point in data doesn't match any point in DHP offsets, skip and delete location data
     if(length(eastOff.i)==0 | length(northOff.i)==0) {
-      cat(paste('Point ', i, ' not found in DHP points. Locations not calculated.', sep=''))
+      message(paste('Point ', i, ' not found in DHP points. Locations not calculated.', sep=''))
       plot.loc$easting[which(plot.loc$pointID==i)] <- NA
       plot.loc$northing[which(plot.loc$pointID==i)] <- NA
       next

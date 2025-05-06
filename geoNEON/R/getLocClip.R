@@ -10,6 +10,8 @@
 #' @param data A data frame containing NEON named locations and other sampling information.
 #' @param dataProd The table name of the NEON data product table to find locations for. 
 #' @param token User specific API token (generated within neon.datascience user accounts). Optional.
+#' 
+#' @keywords internal
 
 #' @return A data frame of geolocations for the input product and data
 
@@ -107,7 +109,7 @@ getLocClip <- function(
     }
     
     if(length(clipInd)==0) {
-      print(paste("Subplot ", data$subplotID[i], " and clip cell ", 
+      message(paste("Subplot ", data$subplotID[i], " and clip cell ", 
                   subplot.loc$cellNum[i], " is not a valid location", sep=""))
       subplot.loc$eastOff[i] <- NA
       subplot.loc$northOff[i] <- NA

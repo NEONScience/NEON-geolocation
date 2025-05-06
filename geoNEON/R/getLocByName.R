@@ -196,9 +196,9 @@ getLocByName <- function(
       # report locations and variables with value mismatches
       if(!all(is.na(messages))) {
         colnames(messages) <- c('variable', 'namedLocation')
-        cat('\nMismatch between input data and location database for the following variables and locations:\n')
+        message('\nMismatch between input data and location database for the following variables and locations:\n')
         print.table(messages[-1,])
-        cat('\nUsually this indicates database has been updated since data were processed. Output data are database values.')
+        message('\nUsually this indicates database has been updated since data were processed. Output data are database values.')
       }
     } else {
       # when history=TRUE

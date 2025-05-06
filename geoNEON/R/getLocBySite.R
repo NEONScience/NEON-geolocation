@@ -64,7 +64,7 @@ getLocBySite <- function(site, type='site', history=F, token=NA_character_) {
     if(loc$data$locationProperties$locationPropertyValue
        [which(loc$data$locationProperties$locationPropertyName=='Value for HABITAT')]
        =='Terrestrial') {
-      cat('Warning: using getLocBySite() to access OS locations at terrestrial sites is very slow.\nMost terrestrial sites have 5000+ OS locations. A more targeted approach is recommended, such as using getLocTOS().\n')
+      message('Warning: using getLocBySite() to access OS locations at terrestrial sites is very slow.\nMost terrestrial sites have 5000+ OS locations. A more targeted approach is recommended, such as using getLocTOS().\n')
     }
     loc.des <- getLocChildren(site, history)
   }
@@ -73,7 +73,7 @@ getLocBySite <- function(site, type='site', history=F, token=NA_character_) {
     if(loc$data$locationProperties$locationPropertyValue
        [which(loc$data$locationProperties$locationPropertyName=='Value for HABITAT')]
        =='Terrestrial') {
-      cat('Warning: using getLocBySite() to access OS locations at terrestrial sites is very slow.\nMost terrestrial sites have 5000+ OS locations. A more targeted approach is recommended, such as using getLocTOS().\n')
+      message('Warning: using getLocBySite() to access OS locations at terrestrial sites is very slow.\nMost terrestrial sites have 5000+ OS locations. A more targeted approach is recommended, such as using getLocTOS().\n')
     }
     loc.site <- getLocValues(req.content, history)
     loc <- req.content$data$locationChildren[which(substring(req.content$data$locationChildren, 1, 4)==site)]
