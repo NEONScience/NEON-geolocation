@@ -60,7 +60,8 @@ getLocVSTmapped <- function(
   point.loc <- merge(data, point.all, by="points", all.x=T)
   
   # keep location data that matches date of collection
-  if(any(point.loc$locationCurrent=="FALSE")) {
+  if(any(point.loc$locationCurrent=="FALSE" | isFALSE(point.loc$locationCurrent), 
+         na.rm=TRUE)) {
     point.loc <- findDateMatch(point.loc, locCol="points", 
                               recDate="date")
   }

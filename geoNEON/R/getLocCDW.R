@@ -51,7 +51,8 @@ getLocCDW <- function(
   plot.loc <- merge(data, plot.all, by="namedLocation", all.x=T)
   
   # keep location data that matches date of collection
-  if(any(plot.loc$locationCurrent=="FALSE", na.rm=TRUE)) {
+  if(any(plot.loc$locationCurrent=="FALSE" | isFALSE(plot.loc$locationCurrent), 
+         na.rm=TRUE)) {
     plot.loc <- findDateMatch(plot.loc, locCol="namedLocation", 
                               recDate="date")
   }

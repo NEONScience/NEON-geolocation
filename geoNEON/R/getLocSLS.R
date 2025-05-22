@@ -46,7 +46,8 @@ getLocSLS <- function(
   plot.loc <- base::merge(data, plot.merg, by=locCol, all.x=T)
   
   # keep location data that matches date of collection
-  if(any(plot.loc$locationCurrent=="FALSE")) {
+  if(any(plot.loc$locationCurrent=="FALSE" | isFALSE(plot.loc$locationCurrent),
+         na.rm=TRUE)) {
     plot.loc <- findDateMatch(plot.loc, locCol="namedLocation", 
                                  recDate="collectDate")
   }

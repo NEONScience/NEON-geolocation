@@ -52,7 +52,8 @@ getLocBET <- function(
   trap.loc <- merge(data, trap.all, by="traps", all.x=T)
   
   # keep location data that matches date of collection
-  if(any(trap.loc$locationCurrent=="FALSE", na.rm=TRUE)) {
+  if(any(trap.loc$locationCurrent=="FALSE" | isFALSE(trap.loc$locationCurrent), 
+         na.rm=TRUE)) {
     trap.loc <- findDateMatch(trap.loc, locCol="traps", 
                                  recDate="collectDate")
   }

@@ -68,7 +68,8 @@ getLocClip <- function(
   subplot.loc <- base::merge(data, subplot.merg, by=locCol, all.x=T)
   
   # keep location data that matches date of collection
-  if(any(subplot.loc$locationCurrent=="FALSE")) {
+  if(any(subplot.loc$locationCurrent=="FALSE" | isFALSE(subplot.loc$locationCurrent),
+         na.rm=TRUE)) {
     if(dataProd=="ltr_pertrap") {
       subplot.loc <- findDateMatch(subplot.loc, locCol="points", recDate="date")
     } else {

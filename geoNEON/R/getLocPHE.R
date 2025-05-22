@@ -121,7 +121,8 @@ getLocPHE <- function(
         !is.na(data$referencePoint_tempB[i])){
       
       # check for location histories and get spatial data matching date of collection
-      if(any(pointSpatialData$current=="FALSE" | isFALSE(pointSpatialData$current))) {
+      if(any(pointSpatialData$current=="FALSE" | isFALSE(pointSpatialData$current),
+             na.rm=TRUE)) {
         startind <- which(pointSpatialData$locationStartDate <= data$date[i])
         endind <- union(which(pointSpatialData$locationEndDate > data$date[i]), 
                         which(is.na(pointSpatialData$locationEndDate)))

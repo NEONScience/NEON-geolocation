@@ -72,7 +72,8 @@ getLocDIV <- function(
   all.return <- merge(data, subplot.return, by=locCol, all.x=T)
   
   # keep location data that matches date of collection
-  if(any(all.return$locationCurrent=="FALSE")) {
+  if(any(all.return$locationCurrent=="FALSE" | isFALSE(all.return$locationCurrent),
+         na.rm=TRUE)) {
     all.return <- findDateMatch(all.return, locCol="subplots", 
                               recDate="endDate")
   }

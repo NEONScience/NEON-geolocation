@@ -87,7 +87,8 @@ getLocBRD <- function(
   all.return <- all.return[order(all.return$row.index),]
   
   # keep location data that matches date of collection
-  if(any(all.return$locationCurrent=="FALSE")) {
+  if(any(all.return$locationCurrent=="FALSE" | isFALSE(all.return$locationCurrent),
+         na.rm=TRUE)) {
     all.return <- findDateMatch(all.return, locCol="points", 
                               recDate="startDate")
   }

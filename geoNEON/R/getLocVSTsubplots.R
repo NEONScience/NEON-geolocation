@@ -62,7 +62,8 @@ getLocVSTsubplots <- function(
   subplot.loc <- merge(data, subplot.all, by="subplots", all.x=T)
   
   # keep location data that matches date of collection
-  if(any(subplot.loc$locationCurrent=="FALSE", na.rm=TRUE)) {
+  if(any(subplot.loc$locationCurrent=="FALSE" | isFALSE(subplot.loc$locationCurrent), 
+         na.rm=TRUE)) {
     subplot.loc <- findDateMatch(subplot.loc, locCol="subplots", 
                                recDate="date")
   }

@@ -95,7 +95,8 @@ getLocMAM <- function(
   all.return <- merge(data, point.return, by=locCol, all.x=T)
   
   # get the correct location from the history
-  if(any(all.return$locationCurrent=="FALSE" | isFALSE(all.return$locationCurrent))) {
+  if(any(all.return$locationCurrent=="FALSE" | isFALSE(all.return$locationCurrent),
+         na.rm=TRUE)) {
     all.return <- findDateMatch(all.return, locCol="points", recDate="collectDate")
   }
   
