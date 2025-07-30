@@ -4,12 +4,14 @@
 \alias{getLocTOS}
 \title{Calculate more precise geolocations for specific NEON data products}
 \usage{
-getLocTOS(data, dataProd, token = NA_character_)
+getLocTOS(data, dataProd, convertBLAN = FALSE, token = NA_character_)
 }
 \arguments{
 \item{data}{A data frame containing NEON named locations and other sampling information. For reliable results, use data tables as downloaded from the NEON data portal or API.}
 
 \item{dataProd}{The table name of the NEON data product table to find locations for. Refer to package readme for list of possible input data tables.}
+
+\item{convertBLAN}{T or F: Convert locations at BLAN and LEWI from 18N to 17N to match remote sensing data? Defaults to FALSE.}
 
 \item{token}{User specific API token (generated within data.neonscience.org user accounts). Optional.}
 }

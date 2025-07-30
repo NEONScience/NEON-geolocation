@@ -9,6 +9,7 @@
 #' 
 #' @param data A data frame containing NEON named locations and other sampling information. For reliable results, use data tables as downloaded from the NEON data portal or API.
 #' @param dataProd The table name of the NEON data product table to find locations for. Refer to package readme for list of possible input data tables.
+#' @param convertBLAN T or F: Convert locations at BLAN and LEWI from 18N to 17N to match remote sensing data? Defaults to FALSE.
 #' @param token User specific API token (generated within data.neonscience.org user accounts). Optional.
 
 #' @return A data frame of geolocations for the input product and data
@@ -34,55 +35,52 @@
 getLocTOS <- function(
   data,
   dataProd,
+  convertBLAN=FALSE,
   token=NA_character_
 ){
   
   # convert format for safety
   data <- data.frame(data)
   
+  dat.return <- NULL
+  
   # Litter trap, herb clip, cfc herb clip, and root sampling location calculations
   # These are all protocols using clip strips
   if(dataProd=="ltr_pertrap" | dataProd=="hbp_perbout" | dataProd=="cfc_fieldData" | 
      dataProd=="bbc_percore"){
     
-    all.return <- getLocClip(data=data, dataProd=dataProd, token=token)
-    return(all.return)
+    dat.return <- getLocClip(data=data, dataProd=dataProd, token=token)
   }
   
   # Soil core location calculations:
   if(dataProd=="sls_soilCoreCollection") {
     
-    all.return <- getLocSLS(data=data, token=token)
-    return(all.return)
+    dat.return <- getLocSLS(data=data, token=token)
   }
   
   # Bird point calculations:
   if(dataProd=="brd_perpoint" | dataProd=="brd_countdata") {
-
-    all.return <- getLocBRD(data=data, dataProd=dataProd, token=token)
-    return(all.return)
+    
+    dat.return <- getLocBRD(data=data, dataProd=dataProd, token=token)
   }
   
   #Plant phenology individual location calculations:
   if(dataProd=="phe_perindividual") {
-
-    all.return <- getLocPHE(data=data, token=token)
-    return(all.return)
+    
+    dat.return <- getLocPHE(data=data, token=token)
   }
-
+  
   
   #Small mammal trap locations:
   if(dataProd=="mam_pertrapnight"){
     
-    all.return <- getLocMAM(data=data, token=token)
-    return(all.return)
+    dat.return <- getLocMAM(data=data, token=token)
   }
   
   #Plant present and percent cover subplot centroids:
   if(dataProd=="div_1m2Data"|dataProd=="div_10m2Data100m2Data"){
     
-    all.return <- getLocDIV(data=data, token=token)
-    return(all.return)
+    dat.return <- getLocDIV(data=data, token=token)
   }
   
   # woody vegetation structure locations of individuals
@@ -90,8 +88,7 @@ getLocTOS <- function(
     
     message("Please note locations will be calculated only for mapped woody individuals. To find subplot locations for unmapped individuals, use this function with the vst_apparentindividual, vst_non-woody, and/or vst_shrubgroup tables.")
     
-    ind.return <- getLocVSTmapped(data=data, token=token)
-    return(ind.return)
+    dat.return <- getLocVSTmapped(data=data, token=token)
     
   }
   
@@ -102,55 +99,68 @@ getLocTOS <- function(
     
     message("Please note locations will be calculated for all subplots. For mapped individuals, it is possible to calculate more precise locations by using this function with the vst_mappingandtagging table.")
     
-    subplot.return <- getLocVSTsubplots(data=data, token=token)
-    return(subplot.return)
+    dat.return <- getLocVSTsubplots(data=data, token=token)
     
   }
-    
+  
   if(dataProd=='cdw_fieldtally') {
     
-    all.return <- getLocCDW(data=data, token=token)
-    return(all.return)
+    dat.return <- getLocCDW(data=data, token=token)
     
   }
-    
+  
   if(dataProd=="bet_fielddata") {
     
-    trap.return <- getLocBET(data=data, token=token)
-    return(trap.return)
+    dat.return <- getLocBET(data=data, token=token)
     
   }
   
   if(dataProd=="mos_trapping") {
     message('Mosquito trapping location is flexible within the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
   }
-
+  
   if(dataProd=="tck_fielddata") {
     message('Ticks are sampled around the entire perimeter of the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
   }
   
   if(dataProd=='dhp_perimagefile') {
     
-    plot.return <- getLocDHP(data=data, token=token)
-    return(plot.return)
+    dat.return <- getLocDHP(data=data, token=token)
   }
   
   if(dataProd=='spc_perplot') {
     
-    plot.return <- getLocSPC(data=data, token=token)
-    return(plot.return)
+    dat.return <- getLocSPC(data=data, token=token)
   }
   
   if(dataProd=='sim_eventData') {
     
-    plot.return <- getLocSIM(data=data, token=token)
-    return(plot.return)
+    dat.return <- getLocSIM(data=data, token=token)
     
   }
   
-  else {
+  if(is.null(dat.return)) {
     message(paste("This function has not been configured for data product table ", 
-                 dataProd, sep=""))
+                  dataProd, sep=""))
+    return(invisible())
   }
+  
+  if(all(c("siteID","adjEasting","adjNorthing") %in% names(dat.return))) {
+    if(any(c("BLAN","LEWI") %in% dat.return$siteID) &
+       isTRUE(convertBLAN)) {
+      dat.conv <- try(convertBLAN(data=dat.return, 
+                                  easting="adjEasting",
+                                  northing="adjNorthing"), silent=TRUE)
+      if(inherits(dat.conv, "try-error")) {
+        message("BLAN/LEWI location conversion failed, locations are in original UTM zones.")
+      } else {
+        dat.return <- dat.conv
+        message("BLAN/LEWI locations in 18N have been converted to 17N to match remote sensing data.")
+      }
+    }
+  }
+  
+  return(dat.return)
+  
 }
 

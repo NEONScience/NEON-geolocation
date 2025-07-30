@@ -71,6 +71,10 @@ convertBLAN <- function(data,
   data18[,easting] <- df18coords$x
   data18[,northing] <- df18coords$y
   
+  if("utmZone" %in% names(data18)) {
+    data18$utmZone <- gsub(pattern="18", replacement="17", x=data18$utmZone)
+  }
+  
   # stitch back together and align to original row order
   dataConv <- rbind(data17, data18)
   dataOut <- rbind(dataConv, dataN)
