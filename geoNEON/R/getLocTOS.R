@@ -152,10 +152,10 @@ getLocTOS <- function(
                                   easting="adjEasting",
                                   northing="adjNorthing"), silent=TRUE)
       if(inherits(dat.conv, "try-error")) {
-        message("BLAN/LEWI location conversion failed, locations are in original UTM zones.")
+        message("BLAN/LEWI location conversion failed, adjEasting and adjNorthing are in original UTM zones.")
       } else {
         dat.return <- dat.conv
-        message("BLAN/LEWI locations in 18N have been converted to 17N to match remote sensing data.")
+        message("adjEasting and adjNorthing at BLAN/LEWI locations in 18N have been converted to 17N to match remote sensing data.")
       }
     }
   }
