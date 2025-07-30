@@ -2,6 +2,7 @@
 
 export(calcLatLong)
 export(calcLatLongByZone)
+export(convertBLAN)
 export(getLocByName)
 export(getLocBySite)
 export(getLocTOS)
