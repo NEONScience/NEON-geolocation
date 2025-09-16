@@ -9,7 +9,7 @@
 #'
 #' @param locJSON A JSON object returned by the locations endpoint of the NEON API.
 #' @param history Does locJSON include the location history? T or F, defaults to F.
-#' 
+#'
 #' @keywords internal
 
 #' @return A data frame of location data.
@@ -23,35 +23,36 @@
 ##############################################################################################
 
 getLocValues <- function(locJSON, history=FALSE) {
-  
+
   if(!history) {
     loc.all <- getLocProperties(locList=locJSON, history=FALSE)
   }
-  
+
   if(history) {
-    locids <- cbind(rep(locJSON$data$locationDescription, length(locJSON$data$locationHistory)), 
-                    rep(locJSON$data$locationName, length(locJSON$data$locationHistory)), 
-                    rep(locJSON$data$domainCode, length(locJSON$data$locationHistory)), 
+    locids <- cbind(rep(locJSON$data$locationDescription, length(locJSON$data$locationHistory)),
+                    rep(locJSON$data$locationName, length(locJSON$data$locationHistory)),
+                    rep(locJSON$data$domainCode, length(locJSON$data$locationHistory)),
                     rep(locJSON$data$siteCode, length(locJSON$data$locationHistory)))
     loc.values <- data.frame(locids)
     names(loc.values) <- c('locationDescription', 'locationName', 'domainCode', 'siteCode')
-    
+
     loc.props.mat <- locJSON$data$locationProperties
     loc.props <- unlist(lapply(loc.props.mat, function(x) {
       x$locationPropertyValue
     }))
-    names(loc.props) <- unlist(lapply(loc.props.mat, function(x) { 
+    names(loc.props) <- unlist(lapply(loc.props.mat, function(x) {
       x$locationPropertyName
     }))
-    
+
     if(length(loc.props)>0) {
       loc.p <- data.frame(t(unlist(loc.props, use.names=T)))
     } else {
       loc.p <- NA
     }
-    
+
     loc.each <- lapply(locJSON$data$locationHistory, FUN=getLocProperties, history=TRUE)
     loc.temp <- data.frame(data.table::rbindlist(loc.each, fill=TRUE))
+
     loc.temp <- cbind(loc.values, loc.temp)
     if(!all(is.na(loc.p))) {
       loc.all <- try(base::merge(loc.temp, loc.p, all=TRUE), silent=TRUE)
@@ -63,7 +64,7 @@ getLocValues <- function(locJSON, history=FALSE) {
       loc.all <- loc.temp
     }
   }
-  
+
   names(loc.all)[names(loc.all)=='locationName'] <- 'namedLocation'
   names(loc.all)[names(loc.all)=='siteCode'] <- 'siteID'
   names(loc.all)[names(loc.all)=='domainCode'] <- 'domainID'
@@ -108,6 +109,7 @@ getLocValues <- function(locJSON, history=FALSE) {
                                        'Value for Slope gradient')] <- 'slopeGradient'
   names(loc.all)[names(loc.all) %in% c('Value.for.Minimum.elevation',
                                        'Value for Minimum elevation')] <- 'minimumElevation'
+  #names(loc.all)[names(loc.all)=='offsetLocation'] <- 'referenceLocationID'
   names(loc.all)[names(loc.all) %in% c('Value.for.Coordinate.source',
                                        'Value for Coordinate source')] <- 'coordinateSource'
   names(loc.all)[names(loc.all) %in% c('Value.for.Filtered.positions',
@@ -167,5 +169,5 @@ getLocValues <- function(locJSON, history=FALSE) {
   coreNamesUsed <- coreNames[which(coreNames %in% names(loc.all))]
   loc.all <- loc.all[,c(coreNamesUsed, names(loc.all)[which(!names(loc.all) %in% coreNamesUsed)])]
   return(loc.all)
-  
+
 }
