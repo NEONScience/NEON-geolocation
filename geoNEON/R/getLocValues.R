@@ -109,7 +109,7 @@ getLocValues <- function(locJSON, history=FALSE) {
                                        'Value for Slope gradient')] <- 'slopeGradient'
   names(loc.all)[names(loc.all) %in% c('Value.for.Minimum.elevation',
                                        'Value for Minimum elevation')] <- 'minimumElevation'
-  #names(loc.all)[names(loc.all)=='offsetLocation'] <- 'referenceLocationID'
+  names(loc.all)[names(loc.all)=='offsetLocation'] <- 'referenceLocationID'
   names(loc.all)[names(loc.all) %in% c('offsetLocation.locationName',
                                        'offsetLocation locationName')] <- 'referenceLocationID'
 
