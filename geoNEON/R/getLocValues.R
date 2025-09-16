@@ -110,6 +110,9 @@ getLocValues <- function(locJSON, history=FALSE) {
   names(loc.all)[names(loc.all) %in% c('Value.for.Minimum.elevation',
                                        'Value for Minimum elevation')] <- 'minimumElevation'
   #names(loc.all)[names(loc.all)=='offsetLocation'] <- 'referenceLocationID'
+  names(loc.all)[names(loc.all) %in% c('offsetLocation.locationName',
+                                       'offsetLocation locationName')] <- 'referenceLocationID'
+
   names(loc.all)[names(loc.all) %in% c('Value.for.Coordinate.source',
                                        'Value for Coordinate source')] <- 'coordinateSource'
   names(loc.all)[names(loc.all) %in% c('Value.for.Filtered.positions',
