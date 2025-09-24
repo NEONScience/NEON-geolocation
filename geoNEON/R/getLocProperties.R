@@ -39,12 +39,19 @@ getLocProperties <- function(locList, history=FALSE) {
 
     loc.props.mat <- locList$data$locationProperties
     loc.props <- unlist(lapply(loc.props.mat, function(x) {
-      x$locationPropertyValue
-    }))
-
+      #x$locationPropertyValue
+    #}))
+      #test
+      if (is.null(x$locationPropertyValue)) NA else x$locationPropertyValue
+    }), use.names = FALSE)
+    #
     names(loc.props) <- unlist(lapply(loc.props.mat, function(x) {
-      x$locationPropertyName
+      #x$locationPropertyName
+    #}))
+      #test
+      if (is.null(x$locationPropertyName)) NA_character_ else x$locationPropertyName
     }))
+    #
 
     loc.all <- unlist(c(loc.values, loc.props), use.names=T)
     loc.all <- data.frame(t(loc.all))
