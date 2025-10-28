@@ -36,9 +36,24 @@ getLocPHE <- function(
   phenocamRows$adjElevation <- phenocamRows$sampleElevation
   phenocamRows$adjElevationUncertainty <- phenocamRows$sampleElevationUncertainty
   
+  # utm zone not included in data
+  phenoutms <- getLocByName(phenocamRows, locOnly=TRUE, history=FALSE, token=token)
+  phenoutms <- phenoutms[,c("namedLocation", "utmZone")]
+  phenocamRows <- merge(phenocamRows, phenoutms, by="namedLocation", all.x=TRUE)
+  phenocamEastNorth <- calcEastNorth(latitude=phenocamRows$adjDecimalLatitude,
+                                     longitude=phenocamRows$adjDecimalLongitude,
+                                     utmZone=phenocamRows$utmZone)
+  phenocamRows$adjEasting <- phenocamEastNorth$easting
+  phenocamRows$adjNorthing <- phenocamEastNorth$northing
+ 
   data <- data[!data$subtypeSpecification=='phenocam',]
-  corners <- data.frame(namedLocation=paste(unique(data$namedLocation), 
-                                            c('N', 'E', 'S', 'W', 'NE', 'SE', 'SW', 'NW'), sep="."), vals=NA)
+  corners <- data.frame(data.table::rbindlist(lapply(unique(data$namedLocation), 
+                                                     function(x) {
+                                                       tx <- data.frame(namedLocation=paste(x, 
+                                                                                      c('N', 'E', 'S', 'W', 'NE', 'SE', 'SW', 'NW'), sep="."), vals=NA)
+                                                       return(tx)
+  }), fill=TRUE))
+    
   
   # Use the getLocByName function to pull the subplot geolocations from the API
   locCol="namedLocation"
@@ -113,6 +128,8 @@ getLocPHE <- function(
   data$northing <- rep(NA, nrow(data))
   data$easting <- rep(NA, nrow(data))
   data$utmZone <- rep(NA, nrow(data))
+  data$adjCoordinateUncertainty <- rep(NA, nrow(data))
+  data$adjElevation <- rep(NA, nrow(data))
   data$namedLocation <- as.character(data$namedLocation)
   pointSpatialData$namedLocation <- as.character(pointSpatialData$namedLocation)
   
