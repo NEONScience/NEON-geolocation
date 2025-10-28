@@ -37,7 +37,7 @@ getLocPHE <- function(
   phenocamRows$adjElevationUncertainty <- phenocamRows$sampleElevationUncertainty
   
   # utm zone not included in data
-  phenoutms <- getLocByName(phenocamRows, locOnly=TRUE, history=FALSE, token=token)
+  phenoutms <- getLocByName(phenocamRows, locOnly=TRUE, history=FALSE, token=token) # history not needed - locations come from the data, this lookup is just to get the utm zone, which doesn't change
   phenoutms <- phenoutms[,c("namedLocation", "utmZone")]
   phenocamRows <- merge(phenocamRows, phenoutms, by="namedLocation", all.x=TRUE)
   phenocamEastNorth <- calcEastNorth(latitude=phenocamRows$adjDecimalLatitude,
