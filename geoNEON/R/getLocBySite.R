@@ -57,7 +57,7 @@ getLocBySite <- function(site, type='site', history=F, token=NA_character_) {
   loc <- jsonlite::fromJSON(httr::content(req, as='text', encoding='UTF-8'))
   
   if(type=='site') {
-    loc.des <- getLocValues(req.content, history)
+    loc.des <- getLocValues(req.content, history=history)
   }
   
   if(type=='all' | type=='AQU') {
@@ -66,7 +66,7 @@ getLocBySite <- function(site, type='site', history=F, token=NA_character_) {
        =='Terrestrial') {
       message('Warning: using getLocBySite() to access OS locations at terrestrial sites is very slow.\nMost terrestrial sites have 5000+ OS locations. A more targeted approach is recommended, such as using getLocTOS().\n')
     }
-    loc.des <- getLocChildren(site, history)
+    loc.des <- getLocChildren(site, history=history, token=token)
   }
   
   if(type=='TOS') {
@@ -75,17 +75,17 @@ getLocBySite <- function(site, type='site', history=F, token=NA_character_) {
        =='Terrestrial') {
       message('Warning: using getLocBySite() to access OS locations at terrestrial sites is very slow.\nMost terrestrial sites have 5000+ OS locations. A more targeted approach is recommended, such as using getLocTOS().\n')
     }
-    loc.site <- getLocValues(req.content, history)
+    loc.site <- getLocValues(req.content, history=history)
     loc <- req.content$data$locationChildren[which(substring(req.content$data$locationChildren, 1, 4)==site)]
-    loc.des <- data.table::rbindlist(lapply(loc, getLocChildren, history=history), fill=T)
+    loc.des <- data.table::rbindlist(lapply(loc, getLocChildren, history=history, token=token), fill=T)
     loc.des <- data.table::rbindlist(list(loc.site, loc.des), fill=T)
     loc.des <- data.frame(loc.des)
   }
   
   if(type=='TIS') {
-    loc.site <- getLocValues(req.content, history)
+    loc.site <- getLocValues(req.content, history=history)
     loc <- req.content$data$locationChildren[which(substring(req.content$data$locationChildren, 1, 4)!=site)]
-    loc.des <- data.table::rbindlist(lapply(loc, getLocChildren, history=history), fill=T)
+    loc.des <- data.table::rbindlist(lapply(loc, getLocChildren, history=history, token=token), fill=T)
     loc.des <- data.table::rbindlist(list(loc.site, loc.des), fill=T)
     loc.des <- data.frame(loc.des)
   }

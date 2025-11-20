@@ -46,17 +46,18 @@ getLocChildren <- function(namedLocation, history=F, token=NA_character_) {
       loc <- req.content
       
       loc.children <- loc$data$locationChildren
-      loc.values <- getLocValues(loc, history)
+      loc.values <- getLocValues(loc, history=history)
       
-      message('Finding spatial data for', namedLocation, rep('', 50), '\r')
+      message('Finding spatial data for ', namedLocation, rep('', 50), '\r')
       #utils::flush.console()
       
       if(length(loc.children)==0) {
-        loc.all <- getLocValues(loc, history)
+        loc.all <- getLocValues(loc, history=history)
         return(loc.all)
       } else {
         loc.all <- data.table::rbindlist(list(loc.values, 
-                                    data.table::rbindlist(lapply(loc.children, getLocChildren, history), 
+                                    data.table::rbindlist(lapply(loc.children, getLocChildren, 
+                                                                 history=history, token=token), 
                                                           fill=T)), fill=T)
         loc.all <- data.frame(loc.all)
         return(loc.all)
