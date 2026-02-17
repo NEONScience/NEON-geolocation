@@ -9,16 +9,18 @@
 #' 
 #' @param data A data frame including named locations and sampling dates, with duplicated records for locations with a history. This function identifies the record to keep.
 #' @param locCol The column name of the column containing the named locations
-#' @param recDate The field name of the date field to be used for matching
+#' @param recDate The column name of the date field to be used for matching
 
 #' @return The original data frame with the correct location data added
 
 #' @references
 #' License: GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007
 
-#' @keywords internal
+#' @keywords none
 
 #' @seealso Currently none
+#' 
+#' @export
 
 
 # changelog and author contributions / copyrights

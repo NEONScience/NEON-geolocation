@@ -11,7 +11,7 @@ findDateMatch(data, locCol, recDate)
 
 \item{locCol}{The column name of the column containing the named locations}
 
-\item{recDate}{The field name of the date field to be used for matching}
+\item{recDate}{The column name of the date field to be used for matching}
 }
 \value{
 The original data frame with the correct location data added
@@ -28,4 +28,4 @@ Currently none
 \author{
 Claire Lunch \email{clunch@battelleecology.org}
 }
-\keyword{internal}
+\keyword{none}
