@@ -22,7 +22,8 @@ A data frame of geolocations for the input product and data
 Calculation Function. Refine the geolocation data associated with NEON data products, based on product-specific rules and spatial designs.
 }
 \examples{
-d <- data.frame(namedLocation="GUAN_044.basePlot.ltr", subplotID=23, trapID="GUAN_044_385")
+d <- data.frame(uid="e4b111d5", namedLocation="GUAN_044.basePlot.ltr", 
+                subplotID=23, trapID="GUAN_044_385")
 getLocTOS(d, "ltr_pertrap")
 }
 \references{

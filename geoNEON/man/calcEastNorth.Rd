@@ -19,6 +19,9 @@ A data frame with 2 columns: easting, northing
 \description{
 Conversion Function. Given vectors of decimalLatitude, decimalLongitude, and UTM zone, return corresponding easting and northing.
 }
+\examples{
+calcEastNorth(latitude=c(45.8, 45.7), longitude=c(-101, -101.2), utmZone=c('17N','17N'))
+}
 \references{
 License: GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007
 }

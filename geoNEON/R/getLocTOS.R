@@ -20,7 +20,8 @@
 #' @keywords Currently none
 
 #' @examples 
-#' d <- data.frame(namedLocation="GUAN_044.basePlot.ltr", subplotID=23, trapID="GUAN_044_385")
+#' d <- data.frame(uid="e4b111d5", namedLocation="GUAN_044.basePlot.ltr", 
+#'                 subplotID=23, trapID="GUAN_044_385")
 #' getLocTOS(d, "ltr_pertrap")
 
 #' @seealso Currently none
@@ -39,8 +40,24 @@ getLocTOS <- function(
   token=NA_character_
 ){
   
+  # exceptions first
+  if(dataProd=="mos_trapping") {
+    message('Mosquito trapping location is flexible within the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
+    return(invisible())
+  }
+  
+  if(dataProd=="tck_fielddata") {
+    message('Ticks are sampled around the entire perimeter of the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
+    return(invisible())
+  }
+  
   # convert format for safety
   data <- data.frame(data)
+  
+  # check for uid column
+  if(!"uid" %in% colnames(data)) {
+    stop("Data file does not include uid column. uid is required to determine location histories.")
+  }
   
   dat.return <- NULL
   
@@ -115,13 +132,6 @@ getLocTOS <- function(
     
   }
   
-  if(dataProd=="mos_trapping") {
-    message('Mosquito trapping location is flexible within the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
-  }
-  
-  if(dataProd=="tck_fielddata") {
-    message('Ticks are sampled around the entire perimeter of the plot; plot-level location and uncertainty provided in downloaded data are accurate.')
-  }
   
   if(dataProd=='dhp_perimagefile') {
     

@@ -19,6 +19,7 @@
 #' @keywords Currently none
 
 #' @examples
+#' calcEastNorth(latitude=c(45.8, 45.7), longitude=c(-101, -101.2), utmZone=c('17N','17N'))
 
 #' @export
 
