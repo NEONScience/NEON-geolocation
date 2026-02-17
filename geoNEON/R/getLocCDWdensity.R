@@ -25,8 +25,9 @@ getLocCDWdensity <- function(
     token=NA_character_
 ){
   
-  # Pull out data with no distance or azimuth
   data$rowid <- 1:nrow(data)
+  
+  # first subset: mapped logs with distance and azimuth populated
   dataN <- data[which(is.na(data$logDistance) | is.na(data$logAzimuth)),]
   data <- data[which(!is.na(data$logDistance) & !is.na(data$logAzimuth)),]
   
@@ -92,8 +93,31 @@ getLocCDWdensity <- function(
   point.loc$adjDecimalLatitude <- adjLatLong$decimalLatitude
   point.loc$adjDecimalLongitude <- adjLatLong$decimalLongitude
   
+  # second subset: GPS-mapped records with easting and northing populated
+  dataS <- dataN[which(!is.na(dataN$sampleEasting) & !is.na(dataN$sampleNorthing)),]
+  dataSN <- dataN[which(is.na(dataN$sampleEasting) | is.na(dataN$sampleNorthing)),]
+  
+  # rename columns from inputs
+  dataS$adjEasting <- dataS$sampleEasting
+  dataS$adjNorthing <- dataS$sampleNorthing
+  dataS$adjCoordinateUncertainty <- dataS$coordinateUncertainty
+  dataS$adjElevation <- dataS$elevation
+  dataS$adjElevationUncertainty <- dataS$elevationUncertainty
+  
+  # get utm zone. should not change with history
+  GPSpts <- geoNEON::getLocByName(dataS, locCol="namedLocation", locOnly=TRUE, 
+                                     history=FALSE, token=token)
+  locS <- merge(dataS, GPSpts[,c("namedLocation", "utmZone")], all.x=TRUE)
+  
+  # calculate latitude and longitude
+  adjLatLongS <- geoNEON::calcLatLong(easting=locS$adjEasting, 
+                                      northing=locS$adjNorthing,
+                                      utmZone=locS$utmZone)
+  locS$adjDecimalLatitude <- locS$decimalLatitude
+  locS$adjDecimalLongitude <- locS$decimalLongitude
+  
   # add back in individuals that weren't mapped
-  all.return <- plyr::rbind.fill(point.loc, dataN)
+  all.return <- plyr::rbind.fill(point.loc, locS, dataSN)
   all.return <- all.return[order(all.return$rowid),]
   all.return <- all.return[,-which(colnames(all.return)=='rowid')]
   
