@@ -31,6 +31,11 @@ findDateMatch <- function(
   recDate
 ){
   
+  # check for uid column
+  if(!"uid" %in% colnames(data)) {
+    stop("Data file does not include uid column. Cannot determine location history.")
+  }
+  
   # find locations with history
   histloc <- unique(data[,locCol][which(data$locationCurrent=="FALSE" | isFALSE(data$locationCurrent))])
   histind <- which(data[,locCol] %in% histloc)

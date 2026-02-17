@@ -59,8 +59,8 @@ getLocSLS <- function(
   plot.loc$adjNorthing <- as.numeric(plot.loc$adjNorthing) - 20
   
   # Add coreCoordinateX to the easting value and coreCoordinateY to the northing value
-  plot.loc$adjEasting <- plot.loc$adjEasting + data$coreCoordinateX
-  plot.loc$adjNorthing <- plot.loc$adjNorthing + data$coreCoordinateY
+  plot.loc$adjEasting <- plot.loc$adjEasting + plot.loc$coreCoordinateX
+  plot.loc$adjNorthing <- plot.loc$adjNorthing + plot.loc$coreCoordinateY
   
   # Set the coordinate uncertainty to 0.5 meter
   plot.loc$adjCoordinateUncertainty <- 0.5
