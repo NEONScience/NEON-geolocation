@@ -37,6 +37,10 @@ getLocClip <- function(
   if(dataProd=="cfc_fieldData") {
     dataN <- data[which(data$clipID=="" | is.na(data$clipID)),]
     data <- data[which(data$clipID!="" & !is.na(data$clipID)),]
+    if(nrow(data)==0) {
+      message("Data table does not include any clip strips. Use the vst_mappingandtagging table to calculate locations of woody individuals.")
+      return(invisible())
+    }
   }
   
   # Use the getLocByName function to pull the subplot geolocations from the API

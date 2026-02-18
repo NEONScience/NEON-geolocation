@@ -67,6 +67,9 @@ getLocTOS <- function(
      dataProd=="bbc_percore"){
     
     dat.return <- getLocClip(data=data, dataProd=dataProd, token=token)
+    if(is.null(dat.return)) {
+      return(invisible())
+    }
   }
   
   # Soil core location calculations:
