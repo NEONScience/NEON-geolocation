@@ -68,8 +68,9 @@ Not just any table from a covered data product can be used, because typically th
 + Ground beetles: bet_fielddata
 + Digital hemispherical photos: dhp_perimagefile
 + Coarse downed wood log survey: cdw_fieldtally
++ Coarse downed wood bulk density: cdw_densitylog
 + Soil physical and chemical properties, initial characterization: spc_perplot
-
++ Site management and event reporting: sim_eventData
 
 
 ### Known issues

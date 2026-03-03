@@ -128,6 +128,12 @@ getLocTOS <- function(
     dat.return <- getLocCDW(data=data, token=token)
     
   }
+
+  if(dataProd=='cdw_densitylog') {
+    
+    dat.return <- getLocCDWdensity(data=data, token=token)
+    
+  }
   
   if(dataProd=="bet_fielddata") {
     

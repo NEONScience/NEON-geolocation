@@ -57,15 +57,6 @@ getLocCDWdensity <- function(
   # merge location data with original data
   point.loc <- merge(data, point.all, by="points", all.x=T)
   
-  # correct azimuth to be azimuth from point to log
-  correctedAzimuth <- data$logAzimuth + 180
-  
-  # Calculate easting and northing for individuals
-  point.loc$adjEasting <- as.numeric(point.loc$adjEasting) + as.numeric(point.loc$logDistance) * 
-    sin((as.numeric(point.loc$correctedAzimuth) * pi) / 180)
-  point.loc$adjNorthing <- as.numeric(point.loc$adjNorthing) + as.numeric(point.loc$logDistance) * 
-    cos((as.numeric(point.loc$correctedAzimuth) * pi) / 180)
-  
   # keep location data that matches date of collection
   if(any(point.loc$locationCurrent=="FALSE" | isFALSE(point.loc$locationCurrent), 
          na.rm=TRUE)) {
@@ -73,13 +64,15 @@ getLocCDWdensity <- function(
                               recDate="date")
   }
   
-  # Calculate easting and northing from distance and azimuth,
-  # adding 3 to distance because transects start at a 3 meter radius from plot centroid
-  point.loc$adjEasting <- as.numeric(point.loc$adjEasting) + (point.loc$logDistance + 3) * 
-    sin((point.loc$lidsAzimuth * pi) / 180)
-  point.loc$adjNorthing <- as.numeric(point.loc$adjNorthing) + (point.loc$logDistance + 3) * 
-    cos((point.loc$lidsAzimuth * pi) / 180)
+  # correct azimuth to be azimuth from point to log
+  correctedAzimuth <- point.loc$logAzimuth + 180
   
+  # Calculate easting and northing for individuals
+  point.loc$adjEasting <- as.numeric(point.loc$adjEasting) + as.numeric(point.loc$logDistance) * 
+    sin((correctedAzimuth * pi) / 180)
+  point.loc$adjNorthing <- as.numeric(point.loc$adjNorthing) + as.numeric(point.loc$logDistance) * 
+    cos((correctedAzimuth * pi) / 180)
+
   # Increase coordinate uncertainties by reasonable estimate for navigation error
   point.loc$adjCoordinateUncertainty <- 
     as.numeric(point.loc$adjCoordinateUncertainty) + 0.6
