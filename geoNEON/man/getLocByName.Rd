@@ -24,13 +24,28 @@ getLocByName(
 \item{token}{User specific API token (generated within data.neonscience.org user accounts). Optional.}
 }
 \value{
-A data frame of the geolocation data for the input named locations
+A data frame of the geolocation data for the input named locations. If locOnly=F (the default), 
+ location data are merged into the input data frame for each record. If locOnly=T, the data frame returned 
+ contains only the location names and location data for each unique location in the input data.
+ 
+ If history=T (the default), the data frame returned by locOnly=T includes the full history for each 
+ named location, presented as multiple records for each named location. If history=F, only the 
+ currently active location data are returned.
+ 
+ If history=T and locOnly=F, the data frame returned presents the location data for the date of 
+ collection recorded in the input data. If the same location is sampled more than once in the input 
+ data, at different times, it is possible there may be different location data for each event. If 
+ history=F and locOnly=F, the currently active location data are returned.
+ 
+ For the most accurate location data possible, use history=T.
 }
 \description{
 Get geolocation data from the NEON API, for a given set of named location values
 }
 \examples{
-d <- data.frame(namedLocation=c("GUAN_044.basePlot.ltr","GRSM_003.birdGrid.brd"), otherData=c(1,2))
+d <- data.frame(uid=c("uid1","uid2"), 
+  namedLocation=c("GUAN_044.basePlot.ltr","GRSM_003.birdGrid.brd"), 
+  otherData=c(1,2))
 getLocByName(d, "namedLocation")
 }
 \references{

@@ -60,8 +60,7 @@ getLocDIV <- function(
   subplot.loc$adjElevationUncertainty <- subplot.loc$namedLocationElevUncertainty
   subplot.loc$adjNorthing <- subplot.loc$northing
   subplot.loc$adjEasting <- subplot.loc$easting
-  subplot.loc$locationCurrent <- subplot.loc$current
-  
+
   # Return relevant columns
   subplot.return <- subplot.loc[,c(locCol,"utmZone",
                                    "adjNorthing","adjEasting","adjCoordinateUncertainty",

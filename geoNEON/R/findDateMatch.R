@@ -20,12 +20,10 @@
 
 #' @seealso Currently none
 #' 
-#' @export
 
 
 # changelog and author contributions / copyrights
-#   Claire Lunch (2019-09-03)
-#     adapted from and replaces def.extr.geo.os()
+#   Claire Lunch (2025-02-26)
 ##############################################################################################
 findDateMatch <- function(
   data,
@@ -56,7 +54,7 @@ findDateMatch <- function(
     } else {
       datefield <- recDate
       dates <- unique(subj[,datefield])
-      if(length(dates)>1) {
+      if(length(dates)>1 | length(dates)==0) {
         message("Valid dates could not be identified for location ", 
                 subj$namedLocation[1], 
                 ". Spatial data returned match most recent valid date.", sep="")

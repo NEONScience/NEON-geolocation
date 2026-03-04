@@ -37,7 +37,7 @@ getLocDHP <- function(
                           "northing","easting","namedLocationCoordUncertainty",
                           "decimalLatitude","decimalLongitude",
                           "elevation","namedLocationElevUncertainty",
-                          "current","locationStartDate","locationEndDate")]
+                          "locationCurrent","locationStartDate","locationEndDate")]
   names(plot.all) <- c(locCol,"utmZone",
                        "adjNorthing","adjEasting","adjCoordinateUncertainty",
                        "adjDecimalLatitude","adjDecimalLongitude",

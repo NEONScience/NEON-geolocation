@@ -70,7 +70,7 @@ getLocBRD <- function(
                                "adjCoordinateUncertainty",
                                "decimalLatitude","decimalLongitude",
                                "elevation","namedLocationElevUncertainty",
-                               "current","locationStartDate","locationEndDate")]
+                               "locationCurrent","locationStartDate","locationEndDate")]
   
   col.name.list <- names(point.return)
   col.name.list <- gsub('northing','adjNorthing', col.name.list)
@@ -79,7 +79,6 @@ getLocBRD <- function(
   col.name.list <- gsub('decimalLongitude','adjDecimalLongitude', col.name.list)
   col.name.list <- gsub('elevation','adjElevation', col.name.list)
   col.name.list <- gsub('namedLocationElevUncertainty','adjElevationUncertainty', col.name.list)
-  col.name.list <- gsub('current','locationCurrent', col.name.list)
   colnames(point.return) <- col.name.list
   
   data$row.index <- 1:nrow(data)

@@ -13,6 +13,13 @@
 #' @param token User specific API token (generated within data.neonscience.org user accounts). Optional.
 
 #' @return A data frame of geolocations for the input product and data
+#' 
+#' @details In some cases, locations may move slightly over time. The database retains the history, so 
+#'  the location data for a particular named location may include multiple records, one for each time 
+#'  period in the history. When this is the case, getLocTOS() returns the location data matching the 
+#'  collection date in the input data for each record. This means if the same named location is sampled 
+#'  repeatedly over time in the input data, it is possible the location data may differ slightly in 
+#'  different records at the same named location.
 
 #' @references
 #' License: GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007

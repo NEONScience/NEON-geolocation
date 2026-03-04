@@ -37,7 +37,7 @@ getLocSLS <- function(
                            "northing","easting","namedLocationCoordUncertainty",
                            "decimalLatitude","decimalLongitude",
                            "elevation","namedLocationElevUncertainty",
-                           "current","locationStartDate","locationEndDate")]
+                           "locationCurrent","locationStartDate","locationEndDate")]
   colnames(plot.merg) <- c(locCol, 'utmZone',"adjNorthing","adjEasting",
                            "adjCoordinateUncertainty","adjDecimalLatitude",
                            "adjDecimalLongitude","adjElevation",

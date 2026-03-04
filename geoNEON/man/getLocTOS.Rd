@@ -21,6 +21,14 @@ A data frame of geolocations for the input product and data
 \description{
 Calculation Function. Refine the geolocation data associated with NEON data products, based on product-specific rules and spatial designs.
 }
+\details{
+In some cases, locations may move slightly over time. The database retains the history, so 
+ the location data for a particular named location may include multiple records, one for each time 
+ period in the history. When this is the case, getLocTOS() returns the location data matching the 
+ collection date in the input data for each record. This means if the same named location is sampled 
+ repeatedly over time in the input data, it is possible the location data may differ slightly in 
+ different records at the same named location.
+}
 \examples{
 d <- data.frame(uid="e4b111d5", namedLocation="GUAN_044.basePlot.ltr", 
                 subplotID=23, trapID="GUAN_044_385")

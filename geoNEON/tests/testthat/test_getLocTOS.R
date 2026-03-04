@@ -333,3 +333,15 @@ test_that('Select SPC locations with and without history are correct', {
   expect_equal(as.numeric(out$adjElevation), c(37.3,46.75,27.06), tolerance=0.1)
 })
 
+test_that('Select CDW density locations are correct (as of Feb 2026 there are none with history)', {
+  df <- data.frame(uid=c('uid1','uid2'),
+                   namedLocation=c('BART_075.basePlot.all','SCBI_064.basePlot.all'),
+                   pointID=c(41,57),
+                   logAzimuth=c(115,183), logDistance=c(18.7,17.8),
+                   date=c(as.POSIXct('2017-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT'),
+                          as.POSIXct('2024-06-01T18:00:00', format='%Y-%m-%dT%H:%M:%S', tz='GMT')))
+  out <- getLocTOS(df, 'cdw_densitylog')
+  expect_equal(as.numeric(out$adjNorthing), c(4880991,4308677), tolerance=0.5)
+  expect_equal(as.numeric(out$adjElevation), c(296.95,347.75), tolerance=0.05)
+})
+

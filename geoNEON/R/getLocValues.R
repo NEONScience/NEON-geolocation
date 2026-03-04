@@ -132,7 +132,8 @@ getLocValues <- function(locJSON, history=FALSE) {
                                        'Value for Coordinate source')] <- 'coordinateSource'
   names(loc.all)[names(loc.all)=='locationUtmHemisphere'] <- 'utmHemisphere'
   names(loc.all)[names(loc.all)=='locationUtmZone'] <- 'utmZoneNumber'
-
+  names(loc.all)[names(loc.all)=='current'] <- 'locationCurrent'
+  
   if(length(which(names(loc.all) %in% c('Value.for.DURATION',
                                         'Value.for.Has.Location.Started.Receiving.Data',
                                         'Value.for.IS_ACTIVE',
@@ -161,7 +162,7 @@ getLocValues <- function(locJSON, history=FALSE) {
 
   # re-order to get essential columns first
   coreNames <- c("namedLocation", "locationDescription", "domainID", "siteID",
-                 "current","locationStartDate","locationEndDate","decimalLatitude",
+                 "locationCurrent","locationStartDate","locationEndDate","decimalLatitude",
                  "decimalLongitude","elevation","easting","northing","utmZone",
                  "namedLocationCoordUncertainty","namedLocationElevUncertainty")
   coreNamesUsed <- coreNames[which(coreNames %in% names(loc.all))]

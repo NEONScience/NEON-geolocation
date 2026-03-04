@@ -138,7 +138,7 @@ getLocPHE <- function(
         !is.na(data$referencePoint_tempB[i])){
       
       # check for location histories and get spatial data matching date of collection
-      if(any(pointSpatialData$current=="FALSE" | isFALSE(pointSpatialData$current),
+      if(any(pointSpatialData$locationCurrent=="FALSE" | isFALSE(pointSpatialData$locationCurrent),
              na.rm=TRUE)) {
         startind <- which(pointSpatialData$locationStartDate <= data$date[i])
         endind <- union(which(pointSpatialData$locationEndDate > data$date[i]), 
@@ -146,7 +146,7 @@ getLocPHE <- function(
         indj <- intersect(startind, endind)
         if(length(indj)==0) {
           message(paste(data$date[i], " is outside the valid date range for associated locations. Spatial data returned match most recent valid date.", sep=""))
-          pointSpatialSub <- pointSpatialData[which(pointSpatialData$current=="TRUE" | isTRUE(pointSpatialData$current)),]
+          pointSpatialSub <- pointSpatialData[which(pointSpatialData$locationCurrent=="TRUE" | isTRUE(pointSpatialData$locationCurrent)),]
         } else {
           pointSpatialSub <- pointSpatialData[indj,]
         }

@@ -13,7 +13,20 @@
 #' @param history Boolean whether to retrieve the current location (FALSE) or the full location history (TRUE). If locOnly=FALSE and history=TRUE (the default), returns the location data that were active at the data collection date for each row.
 #' @param token User specific API token (generated within data.neonscience.org user accounts). Optional.
 
-#' @return A data frame of the geolocation data for the input named locations
+#' @return A data frame of the geolocation data for the input named locations. If locOnly=F (the default), 
+#'  location data are merged into the input data frame for each record. If locOnly=T, the data frame returned 
+#'  contains only the location names and location data for each unique location in the input data.
+#'  
+#'  If history=T (the default), the data frame returned by locOnly=T includes the full history for each 
+#'  named location, presented as multiple records for each named location. If history=F, only the 
+#'  currently active location data are returned.
+#'  
+#'  If history=T and locOnly=F, the data frame returned presents the location data for the date of 
+#'  collection recorded in the input data. If the same location is sampled more than once in the input 
+#'  data, at different times, it is possible there may be different location data for each event. If 
+#'  history=F and locOnly=F, the currently active location data are returned.
+#'  
+#'  For the most accurate location data possible, use history=T.
 
 #' @references
 #' License: GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007
@@ -21,7 +34,9 @@
 #' @keywords Currently none
 
 #' @examples 
-#' d <- data.frame(namedLocation=c("GUAN_044.basePlot.ltr","GRSM_003.birdGrid.brd"), otherData=c(1,2))
+#' d <- data.frame(uid=c("uid1","uid2"), 
+#'   namedLocation=c("GUAN_044.basePlot.ltr","GRSM_003.birdGrid.brd"), 
+#'   otherData=c(1,2))
 #' getLocByName(d, "namedLocation")
 
 #' @seealso Currently none
@@ -42,6 +57,13 @@ getLocByName <- function(
   
   # ensure data are in data frame
   data <- as.data.frame(data, stringsAsFactors=F)
+  
+  # check for uid column where needed
+  if(isFALSE(locOnly) & isTRUE(history)) {
+    if(!"uid" %in% colnames(data)) {
+      stop("Data table does not include uid column. uid is required to resolve location histories.")
+    }
+  }
   
   # Initiate list of outputs
   outList <- list()
@@ -84,7 +106,7 @@ getLocByName <- function(
   }
   
   if(length(outList)==0) {
-    stop('\nNone of the input named locations were found.')
+    stop('None of the input named locations were found.')
   }
   
   # Make data frame of locations to return
@@ -101,7 +123,7 @@ getLocByName <- function(
                   'locationDescription','locationType','utmHemisphere','utmZoneNumber',
                   'alphaOrientation','betaOrientation','gammaOrientation','xOffset',
                   'yOffset','zOffset','locationParent','locationParentUrl','geodeticDatum',
-                  'current','locationStartDate','locationEndDate')
+                  'locationCurrent','locationStartDate','locationEndDate')
   } else {
     allTerms <- c('domainID', 'type', 'description', 'filteredPositions', 'coordinateSource',
                   'minimumElevation','slopeGradient', 'plotPdop', 'plotHdop', 'slopeAspect', 
@@ -129,13 +151,13 @@ getLocByName <- function(
   # Return the original data with location data added, unless locOnly=T
   # Only add columns that weren't already in the data
   messages <- NA
-  if(!locOnly) {
+  if(isFALSE(locOnly)) {
     data$row.index <- 1:nrow(data)
     # check for locations with history. if there are none, use non-history workflow
     if(!any(duplicated(plotInfo$namedLocation))) {
       history <- FALSE
     }
-    if(!history) {
+    if(isFALSE(history)) {
       dataRep <- data[data[,locCol] %in% plotInfo$namedLocation,
                       names(data) %in% names(plotInfo)]
       
@@ -196,9 +218,9 @@ getLocByName <- function(
       # report locations and variables with value mismatches
       if(!all(is.na(messages))) {
         colnames(messages) <- c('variable', 'namedLocation')
-        message('\nMismatch between input data and location database for the following variables and locations:\n')
+        message('Mismatch between input data and location database for the following variables and locations:\n')
         print.table(messages[-1,])
-        message('\nUsually this indicates database has been updated since data were processed. Output data are database values.')
+        message('Usually this indicates database has been updated since data were processed. Output data are database values.')
       }
     } else {
       # when history=TRUE
@@ -213,64 +235,35 @@ getLocByName <- function(
       }
       
       # drop columns from data that are available in location data
-      data <- data[,-which(names(data) %in% dataRep)]
+      if(length(dataRep)>0) {
+        data <- data[,-which(names(data) %in% dataRep)]
+      }
       
       # merge data and plotInfo - no columns besides namedLocation should be in both at this point
       allInfo <- base::merge(data, plotInfo, by.x=locCol, by.y="namedLocation", all.x=T)
       
-      # find locations with history
-      histloc <- unique(allInfo$namedLocation[which(allInfo$current==FALSE)])
-      histind <- which(allInfo$namedLocation %in% histloc)
-      histsub <- allInfo[histind,]
-      
-      # remove the rows with history and add back below
-      allInfo <- allInfo[-histind,]
-      
-      # uids should be duplicated for locations with history. for each uid, figure out which one to keep based on date.
-      for(j in unique(histsub$uid)) {
-        subj <- histsub[which(histsub$uid==j),]
+      # check for any locations with history and then match
+      if(any(allInfo$locationCurrent=="FALSE" | isFALSE(allInfo$locationCurrent), 
+             na.rm=TRUE)) {
         
-        # if contents are identical keep the first one - this will probably never happen
-        if(all(duplicated(subj)[2:nrow(subj)])) {
-          allInfo <- base::rbind(allInfo, subj[1,])
+        # try to figure out the date field
+        datefields <- c("collectDate", "endDate", "date", "startDate")
+        datefield <- intersect(datefields, names(allInfo))
+        if(length(datefield)>1) {
+          datefield <- datefield[1]
         } else {
-          # get date field from data to compare to location dates
-          datefields <- c("collectDate", "endDate", "date", "startDate")
-          datefield <- intersect(datefields, names(subj))
-          if(length(datefield)>1) {
-            datefield <- datefield[1]
-          }
           if(length(datefield)==0) {
-            message("Valid dates could not be identified for location ", 
-                          subj$namedLocation[1], 
-                          ". Spatial data returned match most recent valid date.", sep="")
-            allInfo <- base::rbind(allInfo, 
-                             subj[which(subj$locationStartDate==max(subj$locationStartDate, na.rm=T)),])
-          }
-          dates <- unique(subj[,datefield])
-          if(length(dates)>1) {
-            message("Valid dates could not be identified for location ", 
-                    subj$namedLocation[1], 
-                    ". Spatial data returned match most recent valid date.", sep="")
-            allInfo <- base::rbind(allInfo, 
-                             subj[which(subj$locationStartDate==max(subj$locationStartDate, na.rm=T)),])
-          }
-          startind <- which(subj$locationStartDate <= dates)
-          endind <- union(which(subj$locationEndDate > dates), which(is.na(subj$locationEndDate)))
-          indj <- intersect(startind, endind)
-          if(length(indj)==0) {
-            message(paste(unique(dates), " is outside the valid date range for location ", 
-                          subj$namedLocation[1], 
-                          ". Spatial data returned match most recent valid date.", sep=""))
-            allInfo <- base::rbind(allInfo, 
-                             subj[which(subj$locationStartDate==max(subj$locationStartDate, na.rm=T)),])
-          } else {
-            allInfo <- base::rbind(allInfo, subj[indj,])
+            message("Valid dates could not be identified in data table. Spatial data returned match most recent valid date.")
+            datefield <- "garbage"
           }
         }
+        
+        allInfo <- findDateMatch(allInfo, locCol="namedLocation", 
+                                  recDate=datefield)
+        
       }
       allInfo <- allInfo[order(allInfo$row.index),]
-      allInfo <- allInfo[,!names(allInfo) %in% c('row.index')]
+      allInfo <- allInfo[,!names(allInfo) %in% c("row.index")]
     }
 
   } else { 

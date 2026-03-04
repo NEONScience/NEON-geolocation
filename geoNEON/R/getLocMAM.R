@@ -85,7 +85,7 @@ getLocMAM <- function(
                                "northing","easting","tot.unc",
                                "decimalLatitude","decimalLongitude",
                                "elevation","namedLocationElevUncertainty",
-                               "current","locationStartDate",
+                               "locationCurrent","locationStartDate",
                                "locationEndDate")]
   colnames(point.return) <- c("points", "utmZone", "adjNorthing", "adjEasting", 
                               "adjCoordinateUncertainty","adjDecimalLatitude",
@@ -103,8 +103,7 @@ getLocMAM <- function(
   all.return <- data.frame(data.table::rbindlist(list(all.return, dataX), fill=TRUE))
   
   all.return <- all.return[order(all.return$row.index),]
-  all.return <- all.return[,!names(all.return) %in% c("row.index","locationCurrent",
-                                                    "locationStartDate","locationEndDate")]
+  all.return <- all.return[,!names(all.return) %in% c("row.index")]
 
   return(all.return)
  
