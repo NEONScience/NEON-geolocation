@@ -123,7 +123,10 @@ getLocByName <- function(
                   'locationDescription','locationType','utmHemisphere','utmZoneNumber',
                   'alphaOrientation','betaOrientation','gammaOrientation','xOffset',
                   'yOffset','zOffset','locationParent','locationParentUrl','geodeticDatum',
-                  'locationCurrent','locationStartDate','locationEndDate')
+                  'locationCurrent','locationStartDate','locationEndDate','referenceLocation.locationName',
+                  'referenceLocation.locationDecimalLatitude','referenceLocation.locationDecimalLongitude',
+                  'referenceLocation.locationElevation','referenceLocation.locationUtmEasting',
+                  'referenceLocation.locationUtmNorthing')
   } else {
     allTerms <- c('domainID', 'type', 'description', 'filteredPositions', 'coordinateSource',
                   'minimumElevation','slopeGradient', 'plotPdop', 'plotHdop', 'slopeAspect', 
@@ -134,7 +137,11 @@ getLocByName <- function(
                   'subtypeSpecification', 'county', 'stateProvince', 'country','plotID','locationPointID',
                   'locationDescription','locationType','utmHemisphere','utmZoneNumber',
                   'alphaOrientation','betaOrientation','gammaOrientation','xOffset',
-                  'yOffset','zOffset','locationParent','locationParentUrl','geodeticDatum')
+                  'yOffset','zOffset','locationParent','locationParentUrl','geodeticDatum',
+                  'referenceLocation.locationName',
+                  'referenceLocation.locationDecimalLatitude','referenceLocation.locationDecimalLongitude',
+                  'referenceLocation.locationElevation','referenceLocation.locationUtmEasting',
+                  'referenceLocation.locationUtmNorthing')
   }
   
   # Fill unused fields with NA

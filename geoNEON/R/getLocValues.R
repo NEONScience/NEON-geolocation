@@ -133,6 +133,7 @@ getLocValues <- function(locJSON, history=FALSE) {
   names(loc.all)[names(loc.all)=='locationUtmHemisphere'] <- 'utmHemisphere'
   names(loc.all)[names(loc.all)=='locationUtmZone'] <- 'utmZoneNumber'
   names(loc.all)[names(loc.all)=='current'] <- 'locationCurrent'
+  names(loc.all) <- gsub(pattern="offsetLocation", replacement="referenceLocation", x=names(loc.all))
   
   if(length(which(names(loc.all) %in% c('Value.for.DURATION',
                                         'Value.for.Has.Location.Started.Receiving.Data',
