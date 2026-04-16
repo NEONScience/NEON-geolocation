@@ -104,9 +104,10 @@ getLocSIM <- function(
 
       locis <- data.table::rbindlist(list(locisnrf, locisll), fill=TRUE)
     }
+    
+    locd <- data.table::rbindlist(list(locd, locis), fill=TRUE)
+    
   }
-  
-  locd <- data.table::rbindlist(list(locd, locis), fill=TRUE)
   
   # merge spatial data back into data frame
   for(i in 1:length(loclist)) {
