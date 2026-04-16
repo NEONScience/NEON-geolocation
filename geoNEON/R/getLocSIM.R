@@ -80,29 +80,33 @@ getLocSIM <- function(
     }
     
     # get coordinates from reference locations
-    # if(any(is.na(locis$decimalLatitude))) {
-    #   locisnrf <- locis[which(is.na(locis$decimalLatitude)),]
-    #   locisll <- locis[which(!is.na(locis$decimalLatitude)),]
-    #   
-    #   if(any(!is.na(locisnrf$xOffset))) {
-    #     locisnrf$easting <- locisnrf$referenceLocation.locationUtmEasting + 
-    #       locisnrf$xOffset
-    #     locisnrf$northing <- locisnrf$referenceLocation.locationUtmNorthing + 
-    #       locisnrf$yOffset
-    #     locisnrf$elevation <- locisnrf$referenceLocation.locationElevation + 
-    #       locisnrf$zOffset
-    #     
-    #     locisnrfll <- calcLatLong(locisnrf$easting,
-    #                               locisnrf$northing,
-    #                               locisnrf$utmZone)
-    #     
-    #     locisnrf$decimalLatitude <- locisnrfll$decimalLatitude
-    #     locisnrf$decimalLongitude <- locisnrfll$decimalLongitude
-    #   }
-    #   
-    #   locis <- data.table::rbindlist(list(locisnrf, locisll), fill=TRUE)
-    # }
+    if(any(is.na(locis$decimalLatitude))) {
+      locisnrf <- locis[which(is.na(locis$decimalLatitude)),]
+      locisll <- locis[which(!is.na(locis$decimalLatitude)),]
+
+      if(any(!is.na(locisnrf$xOffset))) {
+        if(all(!is.na(locisnrf$referenceLocation.locationUtmEasting))) {
+          locisnrf$easting <- locisnrf$referenceLocation.locationUtmEasting +
+            locisnrf$xOffset
+          locisnrf$northing <- locisnrf$referenceLocation.locationUtmNorthing +
+            locisnrf$yOffset
+          locisnrf$elevation <- locisnrf$referenceLocation.locationElevation +
+            locisnrf$zOffset
+          
+          locisnrfll <- calcLatLong(locisnrf$easting,
+                                    locisnrf$northing,
+                                    locisnrf$utmZone)
+          
+          locisnrf$decimalLatitude <- locisnrfll$decimalLatitude
+          locisnrf$decimalLongitude <- locisnrfll$decimalLongitude
+        }
+      }
+
+      locis <- data.table::rbindlist(list(locisnrf, locisll), fill=TRUE)
+    }
   }
+  
+  locd <- data.table::rbindlist(list(locd, locis), fill=TRUE)
   
   # merge spatial data back into data frame
   for(i in 1:length(loclist)) {
