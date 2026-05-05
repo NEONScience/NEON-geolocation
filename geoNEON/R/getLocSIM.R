@@ -114,7 +114,22 @@ getLocSIM <- function(
     data$locationID[i] <- list(base::merge(loclist[[i]], 
                                            locd, by="namedLocation",
                                            all.x=T))
+    # remove outdated locations
+    # have to do this at this step to have the linkage to the dates
+    startDate <- data$startDate[i]
+    endDate <- data$endDate[i]
+    if("locationEndDate" %in% colnames(data$locationID[[i]])) {
+      if(any(!is.na(data$locationID[[i]]$locationEndDate))) {
+        if(any(data$locationID[[i]]$locationEndDate < endDate, na.rm=TRUE)) {
+          data$locationID[[i]] <- data$locationID[[i]][which((data$locationID[[i]]$locationEndDate >= endDate |
+                                                                is.na(data$locationID[[i]]$locationEndDate)) & 
+                                                               (data$locationID[[i]]$locationStartDate < startDate |
+                                                                  is.na(data$locationID[[i]]$locationStartDate))),]
+        }
+      }
+    }
   }
+  
   return(data)
  
 }
